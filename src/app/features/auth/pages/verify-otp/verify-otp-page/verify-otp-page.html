@@ -1,0 +1,82 @@
+<div class="otp-page">
+  <section class="otp-section">
+    <div class="logo-wrapper">
+      <img src="/assets/images/Logo.svg" alt="LAW8" class="law8-logo" />
+    </div>
+
+    <div class="otp-card">
+      <h1 class="otp-header">{{ translate('otp.title') }}</h1>
+
+      <div class="otp-inputs">
+        @for (item of otp; track $index; let i = $index) {
+          <input
+            #otpInput
+            type="text"
+            inputmode="numeric"
+            maxlength="1"
+            autocomplete="one-time-code"
+            class="otp-input"
+            [value]="otp[i]"
+            (input)="onOtpInput($event, i)"
+            (keydown)="onOtpKeyDown($event, i)"
+            (paste)="onOtpPaste($event)"
+            [autofocus]="i === 0"
+            aria-label="OTP digit"
+          />
+        }
+      </div>
+
+      <button
+        type="button"
+        class="verify-button"
+        [disabled]="isLoading || otp.join('').length !== 5"
+        (click)="verifyOtp()"
+      >
+        @if (isLoading) {
+          <span class="button-loader"></span>
+        } @else {
+          <span>{{ translate('otp.verify') }}</span>
+        }
+      </button>
+
+      <div class="otp-timer">
+        {{ formattedTime }}
+      </div>
+
+      <button
+        type="button"
+        class="resend-button"
+        [disabled]="remainingSeconds > 0 || isLoading"
+        (click)="resendCode()"
+      >
+        {{ translate('otp.sendAgain') }}
+      </button>
+
+      <div class="powered-by">
+        {{ translate('otp.poweredBy') }}
+      </div>
+    </div>
+  </section>
+
+  <section class="branding-section">
+    <div class="branding-header">
+      <button type="button" class="help-button">
+        {{ translate('login.help') }}
+      </button>
+
+      <app-language-switcher></app-language-switcher>
+    </div>
+
+    <div class="branding-content">
+      <img src="/assets/images/textlogo.svg" alt="LAW8 Application" class="login-illustration" />
+
+      <h2>
+        {{ translate('otp.heading') }}
+      </h2>
+
+      <p>
+        {{ translate('otp.description') }}
+      </p>
+    </div>
+  </section>
+</div>

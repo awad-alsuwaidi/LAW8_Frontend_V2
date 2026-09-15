@@ -1,0 +1,48 @@
+{
+  "login": {
+    "title": "Login to your account",
+    "username": "Username",
+    "password": "Password",
+    "required": "*",
+    "rememberMe": "Remember Me",
+    "forgotPassword": "Forget Password",
+    "signIn": "Sign In",
+    "poweredBy": "Powered by LAW8",
+    "help": "Help",
+    "language": "English",
+    "errors": {
+      "emptyFields": "Please enter your username and password.",
+      "invalidCredentials": "Invalid username or password.",
+      "networkError": "Network error. Please try again.",
+      "serverError": "Server error. Please try again later.",
+      "loginFailed":"Login Failed. Please try again."
+    }
+  },
+  "otp": {
+    "title": "Enter Verification Code",
+    "verify": "Verify",
+    "sendAgain": "Send Code Again",
+    "poweredBy": "Powered by LAW8",
+    "description": "Streamline your law firm's workflow with our all-in-one case management and billing solution—efficient, accurate, and built for legal excellence.",
+    "heading": "All In One Application",
+    "help": "Help",
+    "language": "English"
+  },
+  "forgotPassword": {
+    "title": "Forget Password?",
+    "description": "Enter your email address and we will send you instructions to reset your password.",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "required": "*",
+    "resetPassword": "Reset Password",
+    "backToLogin": "Back to Login",
+    "success": "Password reset instructions have been sent to your email.",
+    "brandingTitle": "Reset Your Password",
+    "brandingDescription": "Don't worry. Enter your email address and we'll help you get back into your account.",
+    "errors": {
+      "required": "Email address is required.",
+      "invalidEmail": "Please enter a valid email address.",
+      "failed": "Unable to process your request. Please try again."
+    }
+  }
+}
