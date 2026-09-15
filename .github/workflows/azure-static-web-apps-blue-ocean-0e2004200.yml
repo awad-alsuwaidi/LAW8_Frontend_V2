@@ -30,7 +30,8 @@ jobs:
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/" # App source code path
           api_location: "" # Api source code path - optional
-          output_location: "dist/prod/browser" # Built app content directory - optional
+          ## Taha's edits only
+          output_location: "dist/law8-tenant" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
