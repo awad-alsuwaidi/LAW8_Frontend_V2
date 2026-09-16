@@ -1,7 +1,15 @@
-import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
+import { Subject, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TranslationService, Language } from '../../../services/Translation.service';
 import { LanguageSwitcher } from '../../language-switcher/Language switcher.component';
@@ -18,6 +26,8 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly translationService = inject(TranslationService);
   private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
   email = '';
@@ -38,6 +48,7 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((lang) => {
         this.currentLanguage = lang;
+        this.cdr.markForCheck();
       });
   }
 
@@ -46,6 +57,10 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    if (this.isLoading) {
+      return;
+    }
+
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -53,13 +68,11 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
 
     if (!email) {
       this.errorMessage = this.translate('forgotPassword.errors.required');
-
       return;
     }
 
     if (!this.isValidEmail(email)) {
       this.errorMessage = this.translate('forgotPassword.errors.invalidEmail');
-
       return;
     }
 
@@ -69,13 +82,17 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
       .forgotPassword(email)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: { data: { message: string } }) => {
+        next: (response: { data?: { message?: string } }) => {
           this.isLoading = false;
 
           this.successMessage = response?.data?.message ?? this.translate('forgotPassword.success');
+          this.authService.setUsername(email);
+          this.authService.setOtpFlow('reset');
+          this.cdr.markForCheck();
+          this.redirectToOtp();
         },
 
-        error: (error: { error: { data: { message: any }; message: any } }) => {
+        error: (error: { error?: { data?: { message?: string }; message?: string } }) => {
           console.error('[ForgotPasswordPage] Forgot password failed:', error);
 
           this.isLoading = false;
@@ -84,7 +101,25 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
             error?.error?.data?.message ??
             error?.error?.message ??
             this.translate('forgotPassword.errors.failed');
+
+          this.cdr.markForCheck();
         },
+      });
+  }
+
+
+  private redirectToOtp(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      this.router.navigate(['/auth/verifyResetOtp']);
+      return;
+    }
+
+    const delayMs = 1500;
+
+    timer(delayMs)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.router.navigate(['/auth/verifyResetOtp']);
       });
   }
 

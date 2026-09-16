@@ -3,10 +3,12 @@ export const API_ENDPOINTS = {
     login: '/Auth/login',
     generatePkce: '/Auth/generate-pkce-pair',
     verifyOtp: '/Auth/verify-otp',
+    verifyResetOtp: '/Auth/verify-reset-otp',
     token: '/Auth/token',
     changePassword: '/Auth/change-password',
     forgotPassword: '/Auth/forgot-password',
     resendOtp: '/Auth/resend-otp',
+    resetPassword: '/Auth/reset-password',
   },
 
   users: {

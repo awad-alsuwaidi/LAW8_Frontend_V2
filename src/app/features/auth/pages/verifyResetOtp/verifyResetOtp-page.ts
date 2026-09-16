@@ -15,47 +15,50 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  TranslationService,
-  Language,
-} from '../../../services/Translation.service';
-import { LanguageSwitcher } from '../../language-switcher/Language switcher.component';
-import { AuthService } from '../../../../../core/auth/services/auth.service';
+import { TranslationService, Language } from '../../services/Translation.service';
+import { LanguageSwitcher } from '../language-switcher/Language switcher.component';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { ApiClientService } from '../../../../core/api/api-client.service';
 
 const OTP_LENGTH = 5;
 const RESEND_SECONDS = 297;
 
 @Component({
-  selector: 'app-verify-otp-page',
-  standalone: true,
+  selector: 'app-verifyResetOtp-page',
   imports: [CommonModule, LanguageSwitcher],
-  templateUrl: './verify-otp-page.html',
-  styleUrl: './verify-otp-page.scss',
+  standalone: true,
+  templateUrl: './verifyResetOtp-page.html',
+  styleUrl: './verifyResetOtp-page.scss',
 })
-export class VerifyOtpPage implements OnInit, OnDestroy {
-
+export class verifyResetOtp implements OnInit, OnDestroy {
   readonly otpLength = OTP_LENGTH;
-  readonly otp = signal<string[]>(Array(OTP_LENGTH).fill(''));
-  readonly isLoading = signal(false);
-  readonly remainingSeconds = signal(RESEND_SECONDS);
-  readonly isOtpComplete = computed(() =>
-    this.otp().every((digit) => digit !== '')
-  );
 
-  // ✅ أضف error و success messages
-  readonly errorMessage = signal('');
-  readonly successMessage = signal('');
+  readonly otp = signal<string[]>(Array(OTP_LENGTH).fill(''));
+
+  readonly isLoading = signal(false);
+
+  readonly remainingSeconds = signal(RESEND_SECONDS);
+
+  readonly isOtpComplete = computed(() => this.otp().every((digit) => digit !== ''));
 
   currentLanguage: Language = 'en';
+  successMessage = '';
+  errorMessage = '';
 
   private timer?: ReturnType<typeof setInterval>;
 
   private readonly destroy$ = new Subject<void>();
 
   private readonly router = inject(Router);
+
   private readonly platformId = inject(PLATFORM_ID);
+
   private readonly translationService = inject(TranslationService);
+
+  private readonly apiClient = inject(ApiClientService);
+
   private readonly authService = inject(AuthService);
+
   private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChildren('otpInput')
@@ -66,6 +69,8 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId)) {
       this.startTimer();
+
+      this.focusFirstInput();
     }
   }
 
@@ -77,12 +82,14 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((lang: Language) => {
         this.currentLanguage = lang;
+
         this.cdr.markForCheck();
       });
   }
 
   toggleLanguage(): void {
     const newLang: Language = this.currentLanguage === 'en' ? 'ar' : 'en';
+
     this.translationService.setLanguage(newLang);
   }
 
@@ -90,22 +97,40 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     return this.translationService.translate(key);
   }
 
+  private focusFirstInput(): void {
+    setTimeout(() => {
+      const input = this.otpInputs?.first?.nativeElement;
+
+      if (!input) {
+        return;
+      }
+
+      input.focus();
+      input.select();
+    });
+  }
+
   private setDigit(index: number, value: string): void {
     const next = [...this.otp()];
+
     next[index] = value;
+
     this.otp.set(next);
   }
 
   private applyDigits(raw: string, startIndex: number): void {
     const digits = raw.replace(/\D/g, '');
+
     if (!digits) {
       return;
     }
 
     const available = this.otpLength - startIndex;
+
     const toFill = digits.slice(0, available);
 
     const next = [...this.otp()];
+
     for (let i = startIndex; i < this.otpLength; i++) {
       next[i] = '';
     }
@@ -115,12 +140,10 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     });
 
     this.otp.set(next);
+
     this.cdr.markForCheck();
 
-    const focusIndex = Math.min(
-      startIndex + toFill.length,
-      this.otpLength - 1
-    );
+    const focusIndex = Math.min(startIndex + toFill.length, this.otpLength - 1);
 
     this.focusInput(focusIndex);
   }
@@ -128,9 +151,11 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
   private focusInput(index: number): void {
     setTimeout(() => {
       const input = this.otpInputs?.get(index)?.nativeElement;
+
       if (!input) {
         return;
       }
+
       input.focus();
       input.select();
     });
@@ -138,26 +163,37 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
   onOtpFocus(event: FocusEvent): void {
     const input = event.target as HTMLInputElement;
-    setTimeout(() => input.select());
+
+    setTimeout(() => {
+      input.select();
+    });
   }
 
   onOtpInput(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
+
     const digits = input.value.replace(/\D/g, '');
 
     if (!digits) {
       this.setDigit(index, '');
+
       input.value = '';
+
       return;
     }
+
     if (digits.length > 1) {
       input.value = '';
+
       const startIndex = digits.length >= this.otpLength ? 0 : index;
+
       this.applyDigits(digits, startIndex);
+
       return;
     }
 
     this.setDigit(index, digits);
+
     input.value = digits;
 
     if (index < this.otpLength - 1) {
@@ -167,6 +203,7 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
   onOtpKeyDown(event: KeyboardEvent, index: number): void {
     const { key } = event;
+
     const input = event.target as HTMLInputElement;
 
     if (key === 'Backspace') {
@@ -174,41 +211,54 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
       if (this.otp()[index]) {
         this.setDigit(index, '');
+
         input.value = '';
+
         return;
       }
 
       if (index > 0) {
         this.setDigit(index - 1, '');
+
         const prev = this.otpInputs?.get(index - 1)?.nativeElement;
+
         if (prev) {
           prev.value = '';
         }
+
         this.focusInput(index - 1);
       }
+
       return;
     }
 
     if (key === 'Delete') {
       event.preventDefault();
+
       this.setDigit(index, '');
+
       input.value = '';
+
       return;
     }
 
     if (key === 'ArrowLeft') {
       event.preventDefault();
+
       if (index > 0) {
         this.focusInput(index - 1);
       }
+
       return;
     }
 
     if (key === 'ArrowRight') {
       event.preventDefault();
+
       if (index < this.otpLength - 1) {
         this.focusInput(index + 1);
       }
+
       return;
     }
 
@@ -220,11 +270,13 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
       event.preventDefault();
 
       this.setDigit(index, key);
+
       input.value = key;
 
       if (index < this.otpLength - 1) {
         this.focusInput(index + 1);
       }
+
       return;
     }
 
@@ -237,10 +289,10 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     event.preventDefault();
 
     const pastedText = event.clipboardData?.getData('text') ?? '';
+
     this.applyDigits(pastedText, 0);
   }
 
-  // ✅ تحديث كامل: استخدم verifyOtpAndLogin + navigation
   verifyOtp(): void {
     if (this.isLoading()) {
       return;
@@ -252,33 +304,47 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
       return;
     }
 
-    this.errorMessage.set('');
-    this.successMessage.set('');
+    const username = this.authService.getUsername();
+
+    if (!username) {
+      console.error('[VerifyResetOtpPage] Username is missing.');
+      return;
+    }
+
     this.isLoading.set(true);
 
     this.authService
-      .verifyOtpAndLogin(otpValue) 
+      .verifyResetOtp(otpValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
+        next: (response) => {
           this.isLoading.set(false);
-          
-          this.successMessage.set(this.translate('otp.success.verified'));
+
+          console.log('[VerifyResetOtpPage] Reset OTP verified successfully:', response);
+
+          const resetToken = response?.data?.token || response?.token;
+          if (resetToken) {
+            this.apiClient.setResetToken(resetToken);
+          }
+
+          this.successMessage = this.translate('otp.success.verified');
           this.cdr.markForCheck();
+
           setTimeout(() => {
-            this.router.navigate(['/dashboard']); 
+            this.router.navigate(['/auth/change-password']);
           }, 800);
         },
 
         error: (error) => {
           this.isLoading.set(false);
-          console.error('[VerifyOtpPage] OTP verification failed:', error);
-          this.errorMessage.set(
+
+          console.error('[VerifyResetOtpPage] Reset OTP verification failed:', error);
+
+          this.errorMessage =
             error?.error?.data?.message ??
             error?.error?.message ??
-            this.translate('otp.errors.verificationFailed')
-          );
-          
+            this.translate('otp.errors.verificationFailed');
+
           this.cdr.markForCheck();
         },
       });
@@ -288,38 +354,27 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     if (this.remainingSeconds() > 0 || this.isLoading()) {
       return;
     }
+
     const username = this.authService.getUsername();
+
     if (!username) {
-      this.errorMessage.set(this.translate('otp.errors.usernameMissing'));
-      this.cdr.markForCheck();
+      console.error('[VerifyResetOtpPage] Username is missing.');
+
       return;
     }
-    this.errorMessage.set('');
-    this.successMessage.set('');
 
     this.authService
       .resendOtp(username)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('[VerifyOtpPage] OTP resent successfully');
-                    this.successMessage.set(
-            this.translate('otp.success.resent')
-          );
-          
+          console.log('[VerifyResetOtpPage] OTP resent successfully.');
+
           this.startTimer();
-          this.cdr.markForCheck();
         },
 
         error: (error) => {
-          console.error('[VerifyOtpPage] Resend OTP failed:', error);
-                    this.errorMessage.set(
-            error?.error?.data?.message ??
-            error?.error?.message ??
-            this.translate('otp.errors.resendFailed')
-          );
-          
-          this.cdr.markForCheck();
+          console.error('[VerifyResetOtpPage] Resend OTP failed:', error);
         },
       });
   }
@@ -338,6 +393,7 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
       if (current > 0) {
         this.remainingSeconds.set(current - 1);
+
         this.cdr.markForCheck();
       } else {
         this.clearTimer();
@@ -347,24 +403,27 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
   get formattedTime(): string {
     const total = this.remainingSeconds();
+
     const minutes = Math.floor(total / 60);
+
     const seconds = total % 60;
 
-    return `${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   private clearTimer(): void {
     if (this.timer) {
       clearInterval(this.timer);
+
       this.timer = undefined;
     }
   }
 
   ngOnDestroy(): void {
     this.clearTimer();
+
     this.destroy$.next();
+
     this.destroy$.complete();
   }
 }

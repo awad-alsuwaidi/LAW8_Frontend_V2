@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { API_ENDPOINTS } from './api-endpoints';
 
@@ -14,7 +14,7 @@ export class ApiClientService {
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
-    const jwt = localStorage.getItem('auth_token');
+    const jwt = sessionStorage.getItem('auth_token');
 
     const subdomain = localStorage.getItem('tenant_subdomain') || environment.tenant;
 
@@ -33,19 +33,19 @@ export class ApiClientService {
     return this.http.get(`${this.authUrl}${API_ENDPOINTS.auth.generatePkce}`);
   }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.login}`, {
-      Username: username,
-      Password: password,
-    });
-  }
-
   verifyOtp(username: string, otp: string, codeChallenge: string): Observable<any> {
     return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.verifyOtp}`, {
       Username: username,
       Otp: otp,
       CodeChallenge: codeChallenge,
       RedirectUri: environment.auth.redirectUri,
+    });
+  }
+
+  verifyResetOtp(username: string, otp: string): Observable<any> {
+    return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.verifyResetOtp}`, {
+      username,
+      otp,
     });
   }
 
@@ -64,9 +64,9 @@ export class ApiClientService {
     });
   }
 
-  forgotPassword(email: string): Observable<any> {
+  forgotPassword(username: string): Observable<any> {
     return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.forgotPassword}`, {
-      email,
+      username,
     });
   }
 
@@ -74,6 +74,46 @@ export class ApiClientService {
     return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.resendOtp}`, {
       username,
     });
+  }
+
+  
+login(username: string, password: string): Observable<any> {
+  return this.http.post<any>(
+    `${this.authUrl}${API_ENDPOINTS.auth.login}`,
+    {
+      Username: username,
+      Password: password,
+    }
+  );
+}
+
+
+ resetPassword(
+  username: string,
+  newPassword: string,
+  resetToken: string
+): Observable<any> {
+  return this.http.post(
+    `${this.authUrl}${API_ENDPOINTS.auth.resetPassword}`,
+    {
+      username,
+      token: resetToken,
+      newPassword,
+    }
+  );
+}
+
+
+  setResetToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('reset_token', token);
+    }
+  }
+
+  clearResetToken(): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('reset_token');
+    }
   }
 
   get<T>(endpoint: string): Observable<T> {

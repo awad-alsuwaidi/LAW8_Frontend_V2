@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/auth/guards/auth.guard';
 
+
 export const routes: Routes = [
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
   },
-  {
+    {
     path: 'dashboard',
     canActivate: [AuthGuard],
     loadComponent: () => import('./layout/admin-layout/admin-layout').then(c => c.AdminLayout)
@@ -41,9 +42,16 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/self-service/self-service.routes').then(m => m.SELF_SERVICE_ROUTES)
   },
+
   {
     path: '',
     redirectTo: '/dashboard',
+    pathMatch: 'full'
+  },
+
+  {
+    path: '**',
+    redirectTo: '/auth/login',
     pathMatch: 'full'
   }
 ];

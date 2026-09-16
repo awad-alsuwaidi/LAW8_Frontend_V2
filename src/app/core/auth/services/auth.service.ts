@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, tap, map } from 'rxjs';
+import { BehaviorSubject, map, Observable, switchMap, tap } from 'rxjs';
+
 import { ApiClientService } from '../../api/api-client.service';
+import { API_ENDPOINTS } from '../../api/api-endpoints';
 
 interface PkceResponse {
   codeChallenge: string;
   codeVerifier: string;
-}
-
-interface LoginResponse {
-  data?: {
-    message?: string;
-  };
 }
 
 interface VerifyOtpResponse {
@@ -27,143 +23,206 @@ interface TokenResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<any>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
 
-  /**
-   * PKCE values must remain in memory until token exchange.
-   */
+  public currentUser$ = this.currentUserSubject.asObservable();
   private codeChallenge: string | null = null;
   private codeVerifier: string | null = null;
 
   private username: string | null = null;
 
-  constructor(
-    private apiClient: ApiClientService
-  ) {
+  private readonly redirectUri = 'http://localhost/callback';
+  private readonly otpFlowKey = 'auth_otp_flow';
+  private readonly usernameKey = 'auth_username';
+  private readonly pkceVerifierKey = 'pkce_verifier';
+  private readonly resetTokenKey = 'auth_reset_token';
+
+  constructor(private apiClient: ApiClientService) {
     this.loadCurrentUser();
+    this.loadUsername();
+    this.loadPkceVerifier();
   }
 
+login(username: string, password: string): Observable<any> {
+  this.username = username.trim();
+  this.setUsername(this.username);
 
-login(
-  username: string,
-  password: string
-): Observable<any> {
+  return this.apiClient.generatePkce().pipe(
+    tap((pkce: PkceResponse) => {
+      this.codeChallenge = pkce.codeChallenge;
+      this.codeVerifier = pkce.codeVerifier;
 
-  this.username = username;
+      this.savePkceVerifier(pkce.codeVerifier);
+    }),
 
-  return this.apiClient
-    .generatePkce()
-    .pipe(
-      tap((pkce) => {
-        this.codeChallenge = pkce.codeChallenge;
-        this.codeVerifier = pkce.codeVerifier;
-      }),
-
-      switchMap(() =>
-        this.apiClient.login(
-          username,
-          password
-        )
+    switchMap(() =>
+      this.apiClient.login(
+        this.username!,
+        password
       )
-    );
-}
+    ),
 
-verifyOtp(
-  otp: string
-): Observable<any> {
+    map((response) => {
+      if (response?.success === false) {
+        throw new Error(
+          response?.message ??
+          'Invalid credentials.'
+        );
+      }
 
-  if (!this.username) {
-    throw new Error('Username is missing.');
-  }
-
-  if (!this.codeChallenge) {
-    throw new Error(
-      'PKCE code challenge is missing.'
-    );
-  }
-
-  return this.apiClient.verifyOtp(
-    this.username,
-    otp,
-    this.codeChallenge
+      return response;
+    }),
   );
 }
 
-getToken(
-  code: string
-): Observable<any> {
+  setUsername(username: string): void {
+    this.username = username;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(this.usernameKey, username);
+    }
+  }
 
-  if (!this.codeVerifier) {
-    throw new Error(
-      'PKCE code verifier is missing.'
+  private loadUsername(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    this.username = sessionStorage.getItem(this.usernameKey);
+  }
+
+  verifyOtp(otp: string): Observable<VerifyOtpResponse> {
+    if (!this.username) {
+      this.username = this.getStoredUsername();
+    }
+
+    if (!this.username) {
+      throw new Error('Username is missing.');
+    }
+    if (!this.codeChallenge) {
+      throw new Error('PKCE code challenge is missing.');
+    }
+    return this.apiClient.verifyOtp(this.username, otp, this.codeChallenge);
+  }
+
+  verifyResetOtp(otp: string): Observable<any> {
+    if (!this.username) {
+      this.username = this.getStoredUsername();
+    }
+
+    if (!this.username) {
+      throw new Error('Username is missing.');
+    }
+
+    return this.apiClient.verifyResetOtp(this.username, otp).pipe(
+      tap((response) => {
+        const resetToken = response?.data?.resetToken;
+
+        if (!resetToken) {
+          throw new Error('Reset token was not returned.');
+        }
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(this.resetTokenKey, resetToken);
+        }
+
+        this.setOtpFlow('reset');
+      }),
     );
   }
 
-  return this.apiClient
-    .getToken(
-      code,
-      this.codeVerifier
-    )
-    .pipe(
-      tap((response) => {
+  setOtpFlow(flow: 'login' | 'reset'): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(this.otpFlowKey, flow);
+    }
+  }
 
-        const accessToken =
-          response?.data?.accessToken;
+  getOtpFlow(): 'login' | 'reset' | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
 
-        const refreshToken =
-          response?.data?.refreshToken;
+    const flow = sessionStorage.getItem(this.otpFlowKey);
+
+    if (flow === 'login' || flow === 'reset') {
+      return flow;
+    }
+
+    return null;
+  }
+
+  clearOtpFlow(): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(this.otpFlowKey);
+    }
+  }
+
+  getToken(code: string): Observable<TokenResponse> {
+    let verifier = this.codeVerifier;
+
+    if (!verifier) {
+      verifier = this.getStoredPkceVerifier();
+    }
+
+    if (!verifier) {
+      throw new Error('PKCE code verifier is missing.');
+    }
+
+    return this.apiClient.getToken(code, verifier).pipe(
+      tap((response: TokenResponse) => {
+        const accessToken = response?.data?.accessToken;
+        const refreshToken = response?.data?.refreshToken;
 
         if (accessToken) {
-          localStorage.setItem(
-            'auth_token',
-            accessToken
-          );
+          sessionStorage.setItem('auth_token', accessToken);
         }
 
         if (refreshToken) {
-          localStorage.setItem(
-            'refresh_token',
-            refreshToken
-          );
+          sessionStorage.setItem('refresh_token', refreshToken);
         }
 
         this.loadCurrentUser();
-
         this.clearPkce();
-      })
+        this.clearSessionData();
+      }),
     );
-}
+  }
 
-/* =========================
-   FORGOT PASSWORD
-========================= */
+  verifyOtpAndLogin(otp: string): Observable<TokenResponse> {
+    return this.verifyOtp(otp).pipe(
+      switchMap((response) => {
+        const code = response?.data?.code;
 
-forgotPassword(
-  email: string
-): Observable<any> {
+        if (!code) {
+          throw new Error('Authorization code was not returned.');
+        }
 
-  return this.apiClient
-    .forgotPassword(email);
-}
+        return this.getToken(code);
+      }),
+    );
+  }
 
-/* =========================
-   RESEND OTP
-========================= */
+  forgotPassword(username: string): Observable<any> {
+    return this.apiClient.forgotPassword(username);
+  }
 
-resendOtp(
-  username: string
-): Observable<any> {
-
-  return this.apiClient
-    .resendOtp(username);
-}
+  resendOtp(username: string): Observable<any> {
+    return this.apiClient.resendOtp(username);
+  }
 
   getUsername(): string | null {
+    if (!this.username && typeof window !== 'undefined') {
+      this.username = sessionStorage.getItem(this.usernameKey);
+    }
     return this.username;
+  }
+
+  getCodeChallenge(): string | null {
+    return this.codeChallenge;
+  }
+
+  getRedirectUri(): string {
+    return this.redirectUri;
   }
 
   private clearPkce(): void {
@@ -171,29 +230,61 @@ resendOtp(
     this.codeVerifier = null;
   }
 
-  setToken(token: string): void {
-    localStorage.setItem(
-      'auth_token',
-      token
-    );
+  private savePkceVerifier(verifier: string): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(this.pkceVerifierKey, verifier);
+    }
+  }
 
+  private loadPkceVerifier(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const stored = sessionStorage.getItem(this.pkceVerifierKey);
+    if (stored) {
+      this.codeVerifier = stored;
+    }
+  }
+
+  private getStoredPkceVerifier(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    return sessionStorage.getItem(this.pkceVerifierKey);
+  }
+
+  private getStoredUsername(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    return sessionStorage.getItem(this.usernameKey);
+  }
+
+  private clearSessionData(): void {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(this.pkceVerifierKey);
+      sessionStorage.removeItem(this.usernameKey);
+      sessionStorage.removeItem(this.otpFlowKey);
+    }
+  }
+
+  setToken(token: string): void {
+    sessionStorage.setItem('auth_token', token);
     this.loadCurrentUser();
   }
 
   getStoredToken(): string | null {
-    return localStorage.getItem(
-      'auth_token'
-    );
+    return sessionStorage.getItem('auth_token');
   }
 
   logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('tenant_subdomain');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('tenant_subdomain');
 
     this.username = null;
-
     this.clearPkce();
+    this.clearSessionData();
 
     this.currentUserSubject.next(null);
   }
@@ -212,24 +303,29 @@ resendOtp(
 
     try {
       const payload = token.split('.')[1];
-
-      const decoded = JSON.parse(
-        atob(
-          payload
-            .replace(/-/g, '+')
-            .replace(/_/g, '/')
-        )
-      );
-
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
       this.currentUserSubject.next(decoded);
-
     } catch (error) {
-      console.error(
-        '[AuthService] Invalid token:',
-        error
-      );
-
+      console.error('[AuthService] Invalid token:', error);
       this.currentUserSubject.next(null);
     }
+  }
+
+  resetPassword(username: string, newPassword: string): Observable<any> {
+    const resetToken = this.getResetToken();
+
+    if (!resetToken) {
+      throw new Error('Reset token is missing. Please complete the OTP verification first.');
+    }
+
+    return this.apiClient.resetPassword(username, newPassword, resetToken);
+  }
+
+  getResetToken(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    return sessionStorage.getItem(this.resetTokenKey);
   }
 }

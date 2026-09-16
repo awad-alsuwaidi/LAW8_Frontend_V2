@@ -1,42 +1,49 @@
-import { Component, inject, PLATFORM_ID, OnInit } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
+
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { TranslationService, Language } from '../../../services/Translation.service';
 import { LanguageSwitcher } from '../../language-switcher/Language switcher.component';
 import { AuthService } from '../../../../../core/auth/services/auth.service';
 
-
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [FormsModule, LanguageSwitcher],
+  imports: [CommonModule, FormsModule, LanguageSwitcher],
   templateUrl: './login-page.html',
   styleUrl: './login-page.scss',
 })
-export class LoginPage implements OnInit {
+export class LoginPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly translationService = inject(TranslationService);
   private readonly authService = inject(AuthService);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   private readonly destroy$ = new Subject<void>();
 
   userName = '';
   password = '';
 
-  rememberMe = false;
   showPassword = false;
+  rememberMe = false;
 
   isLoading = false;
+
   errorMessage = '';
+  successMessage = '';
 
   currentLanguage: Language = 'en';
-
-  constructor() {
-    this.loadRememberedUser();
-  }
 
   ngOnInit(): void {
     this.initializeLanguage();
@@ -48,58 +55,61 @@ export class LoginPage implements OnInit {
     this.translationService
       .getLanguage$()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((lang) => {
+      .subscribe((lang: Language) => {
         this.currentLanguage = lang;
+        this.cdr.markForCheck();
       });
-  }
-
-  private loadRememberedUser(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    const rememberedUser = localStorage.getItem('rememberedUser');
-
-    if (!rememberedUser) {
-      return;
-    }
-
-    try {
-      const userData = JSON.parse(rememberedUser);
-
-      this.userName = userData.userName ?? '';
-
-      this.password = userData.password ?? '';
-
-      this.rememberMe = true;
-    } catch {
-      localStorage.removeItem('rememberedUser');
-    }
   }
 
   translate(key: string): string {
     return this.translationService.translate(key);
   }
 
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
   onSubmit(): void {
-    this.errorMessage = '';
-
-    if (!this.userName.trim() || !this.password.trim()) {
-      this.errorMessage = this.translate('login.errors.emptyFields');
-
+    if (this.isLoading) {
       return;
     }
 
+    this.errorMessage = '';
+    this.successMessage = '';
+    if (!this.userName.trim() || !this.password) {
+      this.errorMessage = this.translate('login.errors.required');
+
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const username = this.userName.trim();
+    const password = this.password;
+
+    console.log('[LoginPage] Login request:', {
+      username,
+      passwordLength: password.length,
+    });
+
     this.isLoading = true;
+    this.cdr.markForCheck();
 
     this.authService
-      .login(this.userName.trim(), this.password)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
+      .login(username, password)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
           this.isLoading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('[LoginPage] Login response:', response);
 
-          this.saveRememberedUser();
+          this.successMessage = response?.message ?? '';
+
+          this.authService.setOtpFlow('login');
 
           this.router.navigate(['/auth/verify-otp']);
         },
@@ -107,43 +117,23 @@ export class LoginPage implements OnInit {
         error: (error) => {
           console.error('[LoginPage] Login failed:', error);
 
-          this.isLoading = false;
+          console.error('[LoginPage] Error body:', error?.error);
+
+          console.error('[LoginPage] Error message:', error?.message);
 
           this.errorMessage =
-            error?.error?.data?.message ??
             error?.error?.message ??
-            this.translate('login.errors.loginFailed');
+            error?.error?.data?.message ??
+            error?.message ??
+            this.translate('login.errors.invalidCredentials');
+
+          this.cdr.markForCheck();
         },
       });
   }
 
-  private saveRememberedUser(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    if (this.rememberMe) {
-      localStorage.setItem(
-        'rememberedUser',
-        JSON.stringify({
-          userName: this.userName,
-
-          password: this.password,
-        }),
-      );
-
-      return;
-    }
-
-    localStorage.removeItem('rememberedUser');
-  }
-
   forgotPassword(): void {
     this.router.navigate(['/auth/forgot-password']);
-  }
-
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
   }
 
   ngOnDestroy(): void {
