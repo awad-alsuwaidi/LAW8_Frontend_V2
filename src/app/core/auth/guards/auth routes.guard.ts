@@ -1,5 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { CanActivate, CanActivateFn, Router, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
+import {
+  CanActivate,
+  CanActivateFn,
+  Router,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 
@@ -9,12 +16,12 @@ import { Observable } from 'rxjs';
 export class NoAuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    state: RouterStateSnapshot,
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.authService.isAuthenticated()) {
       console.warn('[NoAuthGuard] User is already authenticated. Redirecting to dashboard.');
@@ -24,7 +31,10 @@ export class NoAuthGuard implements CanActivate {
   }
 }
 
-export const noAuthGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const noAuthGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 

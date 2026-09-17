@@ -15,10 +15,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import {
-  TranslationService,
-  Language,
-} from '../../../services/Translation.service';
+import { TranslationService, Language } from '../../../services/Translation.service';
 import { LanguageSwitcher } from '../../language-switcher/Language switcher.component';
 import { AuthService } from '../../../../../core/auth/services/auth.service';
 
@@ -33,14 +30,11 @@ const RESEND_SECONDS = 297;
   styleUrl: './verify-otp-page.scss',
 })
 export class VerifyOtpPage implements OnInit, OnDestroy {
-
   readonly otpLength = OTP_LENGTH;
   readonly otp = signal<string[]>(Array(OTP_LENGTH).fill(''));
   readonly isLoading = signal(false);
   readonly remainingSeconds = signal(RESEND_SECONDS);
-  readonly isOtpComplete = computed(() =>
-    this.otp().every((digit) => digit !== '')
-  );
+  readonly isOtpComplete = computed(() => this.otp().every((digit) => digit !== ''));
 
   // ✅ أضف error و success messages
   readonly errorMessage = signal('');
@@ -117,10 +111,7 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     this.otp.set(next);
     this.cdr.markForCheck();
 
-    const focusIndex = Math.min(
-      startIndex + toFill.length,
-      this.otpLength - 1
-    );
+    const focusIndex = Math.min(startIndex + toFill.length, this.otpLength - 1);
 
     this.focusInput(focusIndex);
   }
@@ -257,16 +248,16 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     this.isLoading.set(true);
 
     this.authService
-      .verifyOtpAndLogin(otpValue) 
+      .verifyOtpAndLogin(otpValue)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          
+
           this.successMessage.set(this.translate('otp.success.verified'));
           this.cdr.markForCheck();
           setTimeout(() => {
-            this.router.navigate(['/dashboard']); 
+            this.router.navigate(['/dashboard']);
           }, 800);
         },
 
@@ -275,10 +266,10 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
           console.error('[VerifyOtpPage] OTP verification failed:', error);
           this.errorMessage.set(
             error?.error?.data?.message ??
-            error?.error?.message ??
-            this.translate('otp.errors.verificationFailed')
+              error?.error?.message ??
+              this.translate('otp.errors.verificationFailed'),
           );
-          
+
           this.cdr.markForCheck();
         },
       });
@@ -303,22 +294,20 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           console.log('[VerifyOtpPage] OTP resent successfully');
-                    this.successMessage.set(
-            this.translate('otp.success.resent')
-          );
-          
+          this.successMessage.set(this.translate('otp.success.resent'));
+
           this.startTimer();
           this.cdr.markForCheck();
         },
 
         error: (error) => {
           console.error('[VerifyOtpPage] Resend OTP failed:', error);
-                    this.errorMessage.set(
+          this.errorMessage.set(
             error?.error?.data?.message ??
-            error?.error?.message ??
-            this.translate('otp.errors.resendFailed')
+              error?.error?.message ??
+              this.translate('otp.errors.resendFailed'),
           );
-          
+
           this.cdr.markForCheck();
         },
       });
@@ -350,9 +339,7 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     const minutes = Math.floor(total / 60);
     const seconds = total % 60;
 
-    return `${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   private clearTimer(): void {

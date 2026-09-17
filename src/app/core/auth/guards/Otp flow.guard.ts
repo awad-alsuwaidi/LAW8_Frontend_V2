@@ -9,34 +9,27 @@ import {
 } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-
 @Injectable({
   providedIn: 'root',
 })
 export class OtpFlowGuard implements CanActivate {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): boolean | UrlTree {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const username = this.authService.getUsername();
     const codeChallenge = this.authService.getCodeChallenge();
 
     if (username && codeChallenge) {
       console.log('[OtpFlowGuard] Valid flow. User:', username);
-      return true;  
+      return true;
     }
-    console.warn(
-      '[OtpFlowGuard] Invalid OTP flow. Missing required data:',
-      {
-        username: !!username,
-        codeChallenge: !!codeChallenge,
-      }
-    );
+    console.warn('[OtpFlowGuard] Invalid OTP flow. Missing required data:', {
+      username: !!username,
+      codeChallenge: !!codeChallenge,
+    });
 
     return this.router.createUrlTree(['/auth/login']);
   }
@@ -44,7 +37,7 @@ export class OtpFlowGuard implements CanActivate {
 
 export const otpFlowGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  state: RouterStateSnapshot,
 ) => {
   const authService = inject(AuthService);
   const router = inject(Router);

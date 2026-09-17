@@ -76,33 +76,20 @@ export class ApiClientService {
     });
   }
 
-  
-login(username: string, password: string): Observable<any> {
-  return this.http.post<any>(
-    `${this.authUrl}${API_ENDPOINTS.auth.login}`,
-    {
+  login(username: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.authUrl}${API_ENDPOINTS.auth.login}`, {
       Username: username,
       Password: password,
-    }
-  );
-}
+    });
+  }
 
-
- resetPassword(
-  username: string,
-  newPassword: string,
-  resetToken: string
-): Observable<any> {
-  return this.http.post(
-    `${this.authUrl}${API_ENDPOINTS.auth.resetPassword}`,
-    {
+  resetPassword(username: string, newPassword: string, resetToken: string): Observable<any> {
+    return this.http.post(`${this.authUrl}${API_ENDPOINTS.auth.resetPassword}`, {
       username,
       token: resetToken,
       newPassword,
-    }
-  );
-}
-
+    });
+  }
 
   setResetToken(token: string): void {
     if (typeof window !== 'undefined') {

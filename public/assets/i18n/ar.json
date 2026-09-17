@@ -15,10 +15,10 @@
       "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة.",
       "networkError": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
       "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
-      "loginFailed":"خطأ في تسجيل الدخول"
+      "loginFailed": "خطأ في تسجيل الدخول"
     }
   },
-    "otp": {
+  "otp": {
     "title": "أدخل رمز التحقق",
     "verify": "تحقق",
     "sendAgain": "إرسال الرمز مرة أخرى",
@@ -46,30 +46,30 @@
     }
   },
   "changePassword": {
-  "title": "تغيير كلمة المرور",
-  "description": "قم بإنشاء كلمة مرور جديدة لتأمين حسابك.",
-  "newPassword": "كلمة المرور الجديدة",
-  "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
-  "confirmPassword": "تأكيد كلمة المرور",
-  "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور الجديدة",
-  "required": "*",
-  "requirements": "يجب أن تحتوي كلمة المرور على:",
-  "minLength": "12 أحرف على الأقل",
-  "hasUppercase": "حرف كبير واحد على الأقل",
-  "hasLowercase": "حرف صغير واحد على الأقل",
-  "hasNumber": "رقم واحد على الأقل",
-  "hasSpecial": "رمز خاص واحد على الأقل",
-  "changePassword": "تغيير كلمة المرور",
-  "backToForgotPassword": "العودة إلى نسيت كلمة المرور",
-  "success": "تم تغيير كلمة المرور بنجاح.",
-  "brandingTitle": "تأمين حسابك",
-  "brandingDescription": "أنشئ كلمة مرور قوية للحفاظ على أمان حسابك في LAW8.",
-  "errors": {
-    "emptyFields": "يرجى إدخال كلمة المرور الجديدة وتأكيدها.",
-    "weakPassword": "يرجى التأكد من أن كلمة المرور تستوفي جميع المتطلبات.",
-    "passwordMismatch": "كلمتا المرور غير متطابقتين.",
-    "missingUsername": "بيانات اسم المستخدم غير متوفرة.",
-    "failed": "فشل تغيير كلمة المرور. يرجى المحاولة مرة أخرى."
+    "title": "تغيير كلمة المرور",
+    "description": "قم بإنشاء كلمة مرور جديدة لتأمين حسابك.",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "أعد إدخال كلمة المرور الجديدة",
+    "required": "*",
+    "requirements": "يجب أن تحتوي كلمة المرور على:",
+    "minLength": "12 أحرف على الأقل",
+    "hasUppercase": "حرف كبير واحد على الأقل",
+    "hasLowercase": "حرف صغير واحد على الأقل",
+    "hasNumber": "رقم واحد على الأقل",
+    "hasSpecial": "رمز خاص واحد على الأقل",
+    "changePassword": "تغيير كلمة المرور",
+    "backToForgotPassword": "العودة إلى نسيت كلمة المرور",
+    "success": "تم تغيير كلمة المرور بنجاح.",
+    "brandingTitle": "تأمين حسابك",
+    "brandingDescription": "أنشئ كلمة مرور قوية للحفاظ على أمان حسابك في LAW8.",
+    "errors": {
+      "emptyFields": "يرجى إدخال كلمة المرور الجديدة وتأكيدها.",
+      "weakPassword": "يرجى التأكد من أن كلمة المرور تستوفي جميع المتطلبات.",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+      "missingUsername": "بيانات اسم المستخدم غير متوفرة.",
+      "failed": "فشل تغيير كلمة المرور. يرجى المحاولة مرة أخرى."
+    }
   }
-}
 }

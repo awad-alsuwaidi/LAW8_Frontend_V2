@@ -29,7 +29,6 @@ export class LoginPage implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly cdr = inject(ChangeDetectorRef);
-
   private readonly destroy$ = new Subject<void>();
 
   userName = '';
