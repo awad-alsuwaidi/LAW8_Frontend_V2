@@ -1,1 +1,107 @@
-<p>sidebar works!</p>
+@if (mobileOpen()) {
+  <div class="sidebar-backdrop" (click)="closeMobile()" aria-hidden="true"></div>
+}
+
+<aside class="sidebar" [class.collapsed]="!isExpanded()" [class.sidebar--open]="mobileOpen()">
+
+  <!-- Header: logo + toggle -->
+  <div class="sidebar-header">
+    <a class="logo-wrap" routerLink="/dashboard">
+      <span class="logo-mark">8</span>
+      <span class="logo-text">800IT</span>
+    </a>
+    <!-- Expand button: visible in collapsed mode (logo mark acts as expand) -->
+    <button class="toggle-btn toggle-btn--expand" (click)="toggle()" [title]="'Expand'">
+      <span class="logo-mark">8</span>
+    </button>
+    <!-- Collapse button: visible in expanded mode -->
+    <button class="toggle-btn" (click)="toggle()" [title]="'Collapse'">
+      <span class="icon-split-screen"></span>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    @for (group of menu; track group.group) {
+      <ul class="nav-group" [class.nav-group--spacer]="group.group === 'bottom'">
+        @for (item of group.items; track item.label) {
+          <li class="nav-item">
+
+            @if (item.children?.length) {
+              <!-- Parent with children -->
+              <button
+                class="nav-link nav-link--parent"
+                [class.open]="isItemExpanded(item.label)"
+                (click)="toggleItem(item.label)"
+              >
+                <span class="nav-icon {{ item.icon }}"></span>
+                <span class="nav-label">{{ label(item) }}</span>
+                <span
+                  class="nav-arrow icon-right-arrow"
+                  [class.rotated]="isItemExpanded(item.label)"
+                ></span>
+              </button>
+              @if (isItemExpanded(item.label) && isExpanded()) {
+                <ul class="sub-menu">
+                  @for (child of item.children; track child.label) {
+                    <li>
+                      <a
+                        class="sub-link"
+                        [routerLink]="child.route"
+                        routerLinkActive="sub-link--active"
+                      >
+                        @if (child.icon) {
+                          <span class="sub-icon {{ child.icon }}"></span>
+                        }
+                        {{ label(child) }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+              <!-- Collapsed flyout panel -->
+              <div class="flyout">
+                <span class="flyout-title">{{ label(item) }}</span>
+                <ul class="flyout-list">
+                  @for (child of item.children; track child.label) {
+                    <li>
+                      <a
+                        class="flyout-link"
+                        [routerLink]="child.route"
+                        routerLinkActive="flyout-link--active"
+                      >
+                        @if (child.icon) {
+                          <span class="flyout-item-icon {{ child.icon }}"></span>
+                        }
+                        {{ label(child) }}
+                      </a>
+                    </li>
+                  }
+                </ul>
+              </div>
+
+            } @else {
+              <!-- Leaf item -->
+              <a
+                class="nav-link"
+                [routerLink]="item.route ?? null"
+                [class.nav-link--no-route]="!item.route"
+                routerLinkActive="nav-link--active"
+                [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+              >
+                <span class="nav-icon {{ item.icon }}"></span>
+                <span class="nav-label">{{ label(item) }}</span>
+              </a>
+              <!-- Collapsed flyout: label only -->
+              <div class="flyout flyout--simple">
+                <span class="flyout-title">{{ label(item) }}</span>
+              </div>
+            }
+
+          </li>
+        }
+      </ul>
+    }
+  </nav>
+
+</aside>

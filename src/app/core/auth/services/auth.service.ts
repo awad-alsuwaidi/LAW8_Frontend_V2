@@ -1,8 +1,36 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
 
 import { ApiClientService } from '../../api/api-client.service';
-import { API_ENDPOINTS } from '../../api/api-endpoints';
+import { User } from '../../models/auth/user.model';
+import { clearTokens, getAccessToken, saveTokens, setRememberMe } from './token-storage';
+
+const CLAIM = {
+  email: ['email', 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+  id: ['sub', 'nameid', 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+  name: ['fullname', 'unique_name', 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+  role: ['role', 'RoleName', 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+};
+
+function claim(payload: Record<string, unknown>, keys: string[]): unknown {
+  for (const k of keys) { const v = payload[k]; if (v !== undefined && v !== null && v !== '') return v; }
+  return undefined;
+}
+
+/** Map raw JWT claims to the app's User shape; profile fields are enriched later from the API. */
+function userFromJwt(payload: Record<string, unknown>): User {
+  const roleClaim = claim(payload, CLAIM.role);
+  const roles = Array.isArray(roleClaim) ? roleClaim.map(String) : roleClaim ? [String(roleClaim)] : [];
+  return {
+    id: String(claim(payload, CLAIM.id) ?? ''),
+    email: String(claim(payload, CLAIM.email) ?? ''),
+    nameEn: String(claim(payload, CLAIM.name) ?? ''),
+    roles: [...new Set(roles)],
+    permissions: [],
+    active: true,
+    locked: false,
+  };
+}
 
 interface PkceResponse {
   codeChallenge: string;
@@ -10,23 +38,19 @@ interface PkceResponse {
 }
 
 interface VerifyOtpResponse {
-  data?: {
-    code?: string;
-  };
+  code?: string;
 }
 
 interface TokenResponse {
-  data?: {
-    accessToken?: string;
-    refreshToken?: string;
-  };
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<any>(null);
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
 
   public currentUser$ = this.currentUserSubject.asObservable();
   private codeChallenge: string | null = null;
@@ -46,9 +70,11 @@ export class AuthService {
     this.loadPkceVerifier();
   }
 
-login(username: string, password: string): Observable<any> {
+login(username: string, password: string, rememberMe = false): Observable<any> {
   this.username = username.trim();
   this.setUsername(this.username);
+  // Decided here, before the OTP step, so getToken() knows which store to use.
+  setRememberMe(rememberMe, this.username);
 
   return this.apiClient.generatePkce().pipe(
     tap((pkce: PkceResponse) => {
@@ -64,17 +90,6 @@ login(username: string, password: string): Observable<any> {
         password
       )
     ),
-
-    map((response) => {
-      if (response?.success === false) {
-        throw new Error(
-          response?.message ??
-          'Invalid credentials.'
-        );
-      }
-
-      return response;
-    }),
   );
 }
 
@@ -117,7 +132,7 @@ login(username: string, password: string): Observable<any> {
 
     return this.apiClient.verifyResetOtp(this.username, otp).pipe(
       tap((response) => {
-        const resetToken = response?.data?.resetToken;
+        const resetToken = response?.resetToken;
 
         if (!resetToken) {
           throw new Error('Reset token was not returned.');
@@ -170,16 +185,7 @@ login(username: string, password: string): Observable<any> {
 
     return this.apiClient.getToken(code, verifier).pipe(
       tap((response: TokenResponse) => {
-        const accessToken = response?.data?.accessToken;
-        const refreshToken = response?.data?.refreshToken;
-
-        if (accessToken) {
-          sessionStorage.setItem('auth_token', accessToken);
-        }
-
-        if (refreshToken) {
-          sessionStorage.setItem('refresh_token', refreshToken);
-        }
+        saveTokens(response?.accessToken, response?.refreshToken);
 
         this.loadCurrentUser();
         this.clearPkce();
@@ -191,7 +197,7 @@ login(username: string, password: string): Observable<any> {
   verifyOtpAndLogin(otp: string): Observable<TokenResponse> {
     return this.verifyOtp(otp).pipe(
       switchMap((response) => {
-        const code = response?.data?.code;
+        const code = response?.code;
 
         if (!code) {
           throw new Error('Authorization code was not returned.');
@@ -269,17 +275,18 @@ login(username: string, password: string): Observable<any> {
   }
 
   setToken(token: string): void {
-    sessionStorage.setItem('auth_token', token);
+    saveTokens(token, null);
     this.loadCurrentUser();
   }
 
   getStoredToken(): string | null {
-    return sessionStorage.getItem('auth_token');
+    return getAccessToken();
   }
 
   logout(): void {
-    sessionStorage.removeItem('auth_token');
-    sessionStorage.removeItem('refresh_token');
+    // Tokens go from both stores; the "remember me" preference and username stay
+    // so the next login form is prefilled.
+    clearTokens();
     sessionStorage.removeItem('tenant_subdomain');
 
     this.username = null;
@@ -303,12 +310,34 @@ login(username: string, password: string): Observable<any> {
 
     try {
       const payload = token.split('.')[1];
-      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      this.currentUserSubject.next(decoded);
-    } catch (error) {
-      console.error('[AuthService] Invalid token:', error);
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as Record<string, unknown>;
+      const user = userFromJwt(decoded);
+      this.currentUserSubject.next(user);
+      this.enrichCurrentUser(user.id);
+    } catch {
       this.currentUserSubject.next(null);
     }
+  }
+
+  /** Pull the full profile (Arabic name, status, roles) from the platform users API; JWT data stays if it fails. */
+  private enrichCurrentUser(id: string): void {
+    if (!id) return;
+    this.apiClient.get<Partial<User> & { active?: boolean; locked?: boolean }>(`/platform/users/${id}`).subscribe({
+      next: (u) => {
+        const base = this.currentUserSubject.value;
+        if (!base || !u) return;
+        this.currentUserSubject.next({
+          ...base,
+          nameEn: u.nameEn || base.nameEn,
+          nameAr: u.nameAr ?? base.nameAr,
+          email: u.email || base.email,
+          roles: u.roles?.length ? u.roles : base.roles,
+          active: u.active ?? base.active,
+          locked: u.locked ?? base.locked,
+        });
+      },
+      error: () => { /* keep JWT-derived user */ },
+    });
   }
 
   resetPassword(username: string, newPassword: string): Observable<any> {

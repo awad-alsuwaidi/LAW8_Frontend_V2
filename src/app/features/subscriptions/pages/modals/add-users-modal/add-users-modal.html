@@ -1,1 +1,64 @@
-<p>add-users-modal works!</p>
+<div class="ui-overlay" (click)="close()">
+  <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="ui-modal__head">
+      <span class="ui-modal__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+      </span>
+      <div class="ui-modal__text">
+        <h3 class="ui-modal__title">{{ t('subscriptions.addUsers.title') }}</h3>
+        <p class="ui-modal__subtitle">{{ subscription | productLabel }} · {{ subscription.organizationName }}</p>
+      </div>
+      <button class="ui-modal__close" type="button" (click)="close()" [attr.aria-label]="t('common.cancel')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form (ngSubmit)="submit()">
+      <div class="ui-modal__body">
+        @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+        <div class="summary">
+          <div class="summary__item">
+            <span class="summary__label">{{ t('tenants.overview.seatsModal.currentSeats') }}</span>
+            <b class="summary__value">{{ subscription.numberOfUsers }}</b>
+          </div>
+          <div class="summary__item">
+            <span class="summary__label">{{ t('tenants.overview.seatsModal.pricePerSeat') }}</span>
+            <b class="summary__value">
+              @if (subscription.pricePerAdditionalUser) { <app-money [value]="subscription.pricePerAdditionalUser" [ref]="subscription" /> } @else { — }
+            </b>
+          </div>
+        </div>
+
+        @if (!subscription.pricePerAdditionalUser) {
+          <div class="ui-alert ui-alert--warning">{{ t('tenants.overview.seatsModal.noPriceConfigured') }}</div>
+        } @else {
+        <div class="ui-field">
+          <label class="ui-label" for="add-count">{{ t('subscriptions.addUsers.countLabel') }} <span class="ui-req">*</span></label>
+          <input id="add-count" class="ui-input" type="number" min="1" appPositiveInteger
+                 [ngModel]="count" name="count" (ngModelChange)="onCountInput($event)" />
+          <span class="ui-hint">{{ t('tenants.overview.seatsModal.addOnlyHint') }}</span>
+        </div>
+
+        <div class="impact">
+          <div class="impact__row">
+            <span>{{ t('tenants.overview.seatsModal.newTotalSeats') }}</span>
+            <span>{{ subscription.numberOfUsers + (count || 0) }}</span>
+          </div>
+          <div class="impact__row impact__row--total">
+            <span>{{ t('tenants.overview.seatsModal.totalIncrease') }}</span>
+            <span>+<app-money [value]="priceImpact" [ref]="subscription" /></span>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="close()" [disabled]="isLoading">{{ t('common.cancel') }}</button>
+        <button class="ui-btn ui-btn--primary" type="submit" [disabled]="!canSubmit">
+          {{ isLoading ? t('subscriptions.addUsers.submitting') : t('subscriptions.addUsers.submit') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

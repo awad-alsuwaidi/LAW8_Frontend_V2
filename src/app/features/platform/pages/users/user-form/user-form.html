@@ -1,1 +1,205 @@
-<p>user-form works!</p>
+<div class="ui-page">
+
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('platformUsers.kicker') }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('common.loading') }}</p></div>
+  }
+
+  @if (!isLoading) {
+
+    <!-- Header -->
+    <header class="ui-page-header">
+      <div>
+        <h1 class="ui-title">
+          {{ isEdit ? (displayName || form.controls.email.value) : t('platformUsers.form.createTitle') }}
+          @if (isEdit) {
+            <span class="ui-badge ui-badge--info ui-badge--plain uf-mode">{{ t('platformUsers.form.editTitle') }}</span>
+          }
+        </h1>
+        <p class="ui-subtitle">{{ isEdit ? form.controls.email.value : t('platformUsers.subtitle') }}</p>
+      </div>
+      <div class="ui-actions">
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="back()">{{ t('common.cancel') }}</button>
+        <button type="button" class="ui-btn ui-btn--primary" [disabled]="isSaving || form.invalid" (click)="submit()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          {{ isSaving ? t('common.saving') : (isEdit ? t('platformUsers.form.save') : t('platformUsers.form.create')) }}
+        </button>
+      </div>
+    </header>
+
+    @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+    <form class="uf-layout" [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="uf-main">
+
+        <!-- Account -->
+        <section class="uf-card">
+          <h3 class="uf-card__title">{{ t('platformUsers.form.sectionAccount') }}</h3>
+          <div class="uf-card__body">
+            <div class="uf-grid">
+              <div class="ui-field" [class.uf-grid__full]="isEdit">
+                <label class="ui-label" for="email">{{ t('platformUsers.form.email') }} <span class="ui-req">*</span></label>
+                <input id="email" class="ui-input" [class.is-invalid]="isInvalid('email')" type="email" appEmailInput
+                       formControlName="email" placeholder="admin@example.com" autocomplete="off" />
+                @if (isInvalid('email')) { <span class="ui-error">{{ t('platformUsers.form.errorEmail') }}</span> }
+              </div>
+              @if (!isEdit) {
+                <div class="ui-field">
+                  <label class="ui-label" for="password">{{ t('platformUsers.form.password') }}</label>
+                  <div class="pwd-row">
+                    <div class="pwd-input">
+                      <input id="password" class="ui-input" [class.is-invalid]="isInvalid('password')" [type]="showPassword ? 'text' : 'password'"
+                             formControlName="password" [placeholder]="t('platformUsers.form.passwordPlaceholder')" autocomplete="new-password" />
+                      <button class="pwd-eye" type="button" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? t('platformUsers.form.hidePassword') : t('platformUsers.form.showPassword')">
+                        @if (showPassword) {
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        } @else {
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        }
+                      </button>
+                    </div>
+                    <button class="ui-btn ui-btn--ghost pwd-gen" type="button" (click)="generatePwd()">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                      {{ t('platformUsers.form.generate') }}
+                    </button>
+                  </div>
+                  @if (passwordValue) {
+                    <ul class="pwd-rules">
+                      <li [class.is-met]="pwdChecks.minLength"><span class="pwd-rules__dot"></span>{{ t('changePassword.minLength') }}</li>
+                      <li [class.is-met]="pwdChecks.hasUppercase"><span class="pwd-rules__dot"></span>{{ t('changePassword.hasUppercase') }}</li>
+                      <li [class.is-met]="pwdChecks.hasLowercase"><span class="pwd-rules__dot"></span>{{ t('changePassword.hasLowercase') }}</li>
+                      <li [class.is-met]="pwdChecks.hasNumber"><span class="pwd-rules__dot"></span>{{ t('changePassword.hasNumber') }}</li>
+                      <li [class.is-met]="pwdChecks.hasSpecial"><span class="pwd-rules__dot"></span>{{ t('changePassword.hasSpecial') }}</li>
+                    </ul>
+                  } @else {
+                    <span class="ui-hint">{{ t('platformUsers.form.passwordHint') }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- Profile -->
+        <section class="uf-card">
+          <h3 class="uf-card__title">{{ t('platformUsers.form.sectionProfile') }}</h3>
+          <div class="uf-card__body">
+            <div class="uf-grid">
+              <div class="ui-field">
+                <label class="ui-label" for="nameAr">{{ t('platformUsers.form.nameAr') }}</label>
+                <input id="nameAr" class="ui-input" [class.is-invalid]="isInvalid('nameAr')" type="text"
+                       formControlName="nameAr" placeholder="الاسم" dir="rtl" />
+                @if (isInvalid('nameAr')) { <span class="ui-error">{{ t('platformUsers.form.errorNameLength') }}</span> }
+              </div>
+              <div class="ui-field">
+                <label class="ui-label" for="nameEn">{{ t('platformUsers.form.nameEn') }}</label>
+                <input id="nameEn" class="ui-input" [class.is-invalid]="isInvalid('nameEn')" type="text"
+                       formControlName="nameEn" [placeholder]="t('platformUsers.form.namePlaceholder')" />
+                @if (isInvalid('nameEn')) { <span class="ui-error">{{ t('platformUsers.form.errorNameLength') }}</span> }
+              </div>
+              <div class="ui-field">
+                <label class="ui-label" for="phoneNumber">{{ t('platformUsers.form.phone') }}</label>
+                <input id="phoneNumber" class="ui-input" [class.is-invalid]="isInvalid('phoneNumber')" type="tel" appPhoneInput
+                       formControlName="phoneNumber" placeholder="+9665XXXXXXXX" />
+                @if (isInvalid('phoneNumber')) { <span class="ui-error">{{ t('platformUsers.form.errorPhone') }}</span> }
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Roles (create only) -->
+        @if (!isEdit && roles.length > 0) {
+          <section class="uf-card">
+            <h3 class="uf-card__title">{{ t('platformUsers.form.roles') }}</h3>
+            <div class="uf-card__body">
+              <div class="roles-grid">
+                @for (role of roles; track role.name) {
+                  <label class="role-check" [class.is-selected]="selectedRoles.has(role.name)">
+                    <input type="checkbox" [checked]="selectedRoles.has(role.name)" (change)="toggleRole(role.name)" />
+                    <span class="role-check__box">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="role-check__text">
+                      <span class="role-check__name">{{ role.name }}</span>
+                      <span class="role-check__count">{{ role.grantCount }} {{ t('platformUsers.form.permissionsUnit') }}</span>
+                    </span>
+                  </label>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        <div class="uf-actions">
+          <button type="button" class="ui-btn ui-btn--ghost" (click)="back()">{{ t('common.cancel') }}</button>
+          <button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSaving || form.invalid">
+            {{ isSaving ? t('common.saving') : (isEdit ? t('platformUsers.form.save') : t('platformUsers.form.create')) }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Side column -->
+      <aside class="uf-side">
+
+        @if (isEdit) {
+          <section class="uf-card">
+            <h3 class="uf-card__title">{{ t('platformUsers.form.status') }}</h3>
+            <div class="uf-card__body uf-toggles">
+              <label class="ui-switch">
+                <input type="checkbox" formControlName="active" />
+                <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+                <span class="ui-switch__text">
+                  <span class="ui-switch__label">{{ t('common.active') }}</span>
+                  <span class="ui-switch__hint">{{ t('platformUsers.form.activeHint') }}</span>
+                </span>
+              </label>
+              <label class="ui-switch ui-switch--danger">
+                <input type="checkbox" formControlName="locked" />
+                <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+                <span class="ui-switch__text">
+                  <span class="ui-switch__label">{{ t('platformUsers.form.locked') }}</span>
+                  <span class="ui-switch__hint">{{ t('platformUsers.form.lockedHint') }}</span>
+                </span>
+              </label>
+            </div>
+          </section>
+
+          <section class="uf-card">
+            <h3 class="uf-card__title">{{ t('platformUsers.form.roles') }}</h3>
+            <div class="uf-card__body">
+              @if (selectedRoles.size === 0) {
+                <p class="uf-muted">{{ t('platformUsers.noRoles') }}</p>
+              } @else {
+                <div class="uf-chips">
+                  @for (r of selectedRoles; track r) { <span class="ui-badge ui-badge--info ui-badge--plain">{{ r }}</span> }
+                </div>
+              }
+              <p class="uf-note">{{ t('platformUsers.form.rolesEditHint') }}</p>
+            </div>
+          </section>
+        }
+
+        <section class="uf-card">
+          <h3 class="uf-card__title">{{ t('platformUsers.form.sectionProfile') }}</h3>
+          <div class="uf-profile">
+            <span class="uf-avatar">{{ initials }}</span>
+            <div class="uf-profile__info">
+              <p class="uf-profile__name">{{ displayName }}</p>
+              <p class="uf-profile__email">{{ form.controls.email.value }}</p>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+    </form>
+  }
+</div>

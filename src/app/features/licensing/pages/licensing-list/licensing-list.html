@@ -1,0 +1,185 @@
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('licensing.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('licensing.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('licensing.subtitle') }}</p>
+    </div>
+    <div class="ui-actions">
+      <button class="ui-btn ui-btn--primary" (click)="openCreate()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ t('licensing.newKey') }}
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  @if (!isLoading && items.length) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ totalCount }}</b><span>{{ t('licensing.kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ availableCount }}</b><span>{{ t('licensing.statusAvailable') }}</span></div>
+      <div class="ui-kpi ui-kpi--info"><b>{{ activatedCount }}</b><span>{{ t('licensing.statusActivated') }}</span></div>
+      <div class="ui-kpi ui-kpi--warning"><b>{{ expiredCount }}</b><span>{{ t('licensing.statusExpired') }}</span></div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ cancelledCount }}</b><span>{{ t('licensing.statusCancelled') }}</span></div>
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="ui-toolbar">
+    <div class="ui-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="ui-input" type="text" [placeholder]="t('licensing.search')"
+             [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" />
+    </div>
+    <select class="ui-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()">
+      <option value="">{{ t('licensing.filterAll') }}</option>
+      <option value="Available">{{ t('licensing.statusAvailable') }}</option>
+      <option value="Activated">{{ t('licensing.statusActivated') }}</option>
+      <option value="Expired">{{ t('licensing.statusExpired') }}</option>
+      <option value="Cancelled">{{ t('licensing.statusCancelled') }}</option>
+    </select>
+  </div>
+
+  <!-- States -->
+  @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('licensing.loading') }}</p></div>
+  }
+
+  @if (!isLoading && filtered.length === 0 && !errorMessage) {
+    <div class="ui-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <p>{{ t('licensing.noData') }}</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading && filtered.length > 0) {
+    <div class="ui-table-wrap">
+      <table class="ui-table">
+        <thead>
+          <tr>
+            <th>{{ t('licensing.colKey') }}</th>
+            <th>{{ t('licensing.colTenant') }}</th>
+            <th>{{ t('licensing.colType') }}</th>
+            <th>{{ t('licensing.colStatus') }}</th>
+            <th>{{ t('licensing.colMachine') }}</th>
+            <th>{{ t('licensing.colExpires') }}</th>
+            <th>{{ t('licensing.colCreated') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (key of pagedRows; track key.id) {
+            <tr class="is-clickable" (click)="view(key.id)">
+              <td class="key-cell">
+                <code class="key-code" [title]="key.key">{{ truncateKey(key.key) }}</code>
+              </td>
+              <td class="ui-cell-primary">{{ key.tenantName || key.tenantId }}</td>
+              <td><span class="ui-badge ui-badge--neutral ui-badge--plain">{{ typeLabel(key.type) }}</span></td>
+              <td><span class="ui-badge" [ngClass]="statusClass(key.status)">{{ statusText(key.status) }}</span></td>
+              <td class="ui-cell-muted">{{ key.currentMachineHostname || '—' }}</td>
+              <td class="ui-cell-muted ui-cell-num">{{ key.currentExpiresAtUtc ? (key.currentExpiresAtUtc | date: 'd MMM yyyy') : '—' }}</td>
+              <td class="ui-cell-muted ui-cell-num">{{ key.createdAtUtc | date: 'd MMM yyyy' }}</td>
+              <td class="ui-cell-actions">
+                @if (key.status !== 'Cancelled') {
+                  <button class="ui-btn ui-btn--icon is-danger"
+                          (click)="confirmCancel(key.id, $event)"
+                          [title]="t('licensing.cancelKey')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+    </div>
+  }
+
+</div>
+
+<!-- ===== Create Modal ===== -->
+@if (showCreateModal) {
+  <div class="ui-overlay" (click)="closeCreate()">
+    <div class="ui-modal" (click)="$event.stopPropagation()">
+      <div class="ui-modal__head">
+        <span class="ui-modal__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        </span>
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ t('licensing.create.title') }}</h3>
+          <p class="ui-modal__subtitle">{{ t('licensing.create.subtitle') }}</p>
+        </div>
+        <button class="ui-modal__close" type="button" (click)="closeCreate()" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (createError) { <div class="ui-alert ui-alert--error">{{ createError }}</div> }
+        <div class="ui-field">
+          <label class="ui-label">{{ t('licensing.create.tenantId') }} <span class="ui-req">*</span></label>
+          <select class="ui-select ui-select--full" [(ngModel)]="createForm.tenantId" [disabled]="isLoadingOrgs">
+            <option value="">{{ isLoadingOrgs ? t('common.loading') : t('licensing.create.tenantPlaceholder') }}</option>
+            @for (o of onPremOrgs; track o.id) {
+              <option [value]="o.id">{{ o.nameEn }} — {{ o.subdomain }}</option>
+            }
+          </select>
+          @if (!isLoadingOrgs && onPremOrgs.length === 0) {
+            <span class="ui-hint">{{ t('licensing.create.noOnPrem') }}</span>
+          }
+        </div>
+        <div class="ui-field">
+          <label class="ui-label">{{ t('licensing.create.keyType') }}</label>
+          <select class="ui-select ui-select--full" [(ngModel)]="createForm.type">
+            <option value="Production">{{ t('licensing.typeProduction') }}</option>
+            <option value="Trial">{{ t('licensing.typeTrial') }}</option>
+            <option value="Development">{{ t('licensing.typeDevelopment') }}</option>
+          </select>
+        </div>
+        <div class="ui-field">
+          <label class="ui-label">{{ t('licensing.create.notes') }}</label>
+          <textarea class="ui-textarea" rows="3" [placeholder]="t('licensing.create.notesPlaceholder')"
+                    [(ngModel)]="createForm.notes"></textarea>
+        </div>
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" (click)="closeCreate()">{{ t('common.cancel') }}</button>
+        <button class="ui-btn ui-btn--primary" [disabled]="isCreating" (click)="submitCreate()">
+          {{ isCreating ? t('licensing.create.creating') : t('licensing.create.submit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Cancel Confirm ===== -->
+@if (cancelTargetId) {
+  <div class="ui-overlay" (click)="dismissCancel()">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('licensing.cancelModal.title') }}</h3>
+        <button class="ui-modal__close" (click)="dismissCancel()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (cancelError) { <div class="ui-alert ui-alert--error">{{ cancelError }}</div> }
+        <p>{{ t('licensing.cancelModal.body') }}</p>
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" (click)="dismissCancel()">{{ t('licensing.cancelModal.keep') }}</button>
+        <button class="ui-btn ui-btn--danger" [disabled]="isCancelling" (click)="doCancel()">
+          {{ isCancelling ? t('licensing.cancelModal.cancelling') : t('licensing.cancelModal.confirm') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

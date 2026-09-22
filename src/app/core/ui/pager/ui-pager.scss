@@ -1,0 +1,21 @@
+:host { display: block; }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pager__size { display: inline-flex; align-items: center; gap: 8px; }
+.pager__select { height: 32px; min-width: 70px; padding-inline-end: 28px; font-size: 13px; }
+.pager__count, .pager__page { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pager__nav { display: inline-flex; align-items: center; gap: 8px; }
+.pager__btn { width: 32px; padding: 0; }
+:host-context([dir='rtl']) .pager__btn svg { transform: scaleX(-1); }

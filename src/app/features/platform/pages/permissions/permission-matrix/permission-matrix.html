@@ -1,1 +1,160 @@
-<p>permission-matrix works!</p>
+<div class="ui-page">
+
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('kicker') }}</p>
+  </div>
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <h1 class="ui-title">
+        {{ t('title') }}
+        @if (roleName) {
+          <span class="ui-badge ui-badge--plain ui-badge--info role-chip">{{ roleDisplayName }}</span>
+        }
+      </h1>
+      <p class="ui-subtitle">{{ t('subtitle') }}</p>
+      <p class="ui-subtitle scope-note">{{ t('scopeNote') }}</p>
+    </div>
+    <div class="ui-actions">
+      @if (dirtyCount > 0) {
+        <span class="ui-badge ui-badge--warning">{{ dirtyHint }}</span>
+      }
+      <button class="ui-btn ui-btn--primary" type="button" [disabled]="isSaving || dirtyCount === 0" (click)="saveAll()">
+        {{ isSaving ? t('saving') : t('save') }}
+      </button>
+    </div>
+  </header>
+
+  @if (successMessage) {
+    <div class="ui-alert ui-alert--success">{{ successMessage }}</div>
+  }
+  @if (errorMessage && !isLoading) {
+    <div class="ui-alert ui-alert--error alert-inline">
+      <span>{{ errorMessage }}</span>
+      <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="load()">{{ t('retry') }}</button>
+    </div>
+  }
+
+  @if (!isLoading && rows.length > 0) {
+    <!-- KPI strip -->
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ rows.length }}</b><span>{{ t('kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ grantedCount }}</b><span>{{ t('kpiGranted') }}</span></div>
+      <div class="ui-kpi ui-kpi--warning"><b>{{ dirtyCount }}</b><span>{{ t('kpiUnsaved') }}</span></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="ui-toolbar">
+      <div class="ui-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          class="ui-input"
+          type="search"
+          [placeholder]="t('searchPlaceholder')"
+          [(ngModel)]="searchQuery"
+        />
+      </div>
+      <div class="filter-pills">
+        <button type="button" class="filter-pill" [class.is-active]="groupFilter === ''" (click)="setGroupFilter('')">{{ t('filterAll') }}</button>
+        @for (group of groups; track group) {
+          <button type="button" class="filter-pill" [class.is-active]="groupFilter === group" (click)="setGroupFilter(group)">{{ groupName(group) }}</button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- States -->
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('loading') }}</p></div>
+  }
+
+  @if (!isLoading && rows.length === 0 && !errorMessage) {
+    <div class="ui-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <p>{{ t('emptyTitle') }}</p>
+    </div>
+  }
+
+  @if (!isLoading && rows.length > 0 && filteredRows.length === 0) {
+    <div class="ui-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p>{{ t('emptyFiltered') }}</p>
+    </div>
+  }
+
+  <!-- Matrix -->
+  @if (!isLoading && filteredRows.length > 0) {
+    <div class="ui-table-wrap matrix-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th class="col-perm">{{ t('colPermission') }}</th>
+            @for (flag of flags; track flag) {
+              <th class="col-flag">
+                <div class="flag-header">
+                  <span>{{ flagLabel(flag) }}</span>
+                  <div class="flag-controls">
+                    <button class="ctrl-btn" type="button" [title]="t('colOn')" [attr.aria-label]="t('colOn')" (click)="setColumnAll(flag, true)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                    <button class="ctrl-btn ctrl-btn--off" type="button" [title]="t('colOff')" [attr.aria-label]="t('colOff')" (click)="setColumnAll(flag, false)">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </th>
+            }
+            <th class="col-actions">{{ t('colAll') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of groupedRows(); track group.group) {
+            <tr class="group-row">
+              <td [attr.colspan]="flags.length + 2">
+                <span class="group-label">{{ groupName(group.group) }}</span>
+                <span class="group-count">{{ group.rows.length }}</span>
+              </td>
+            </tr>
+            @for (row of group.rows; track row.permission.id) {
+              <tr [class.row-dirty]="row.dirty">
+                <td class="perm-cell">
+                  <span class="perm-name">{{ row.permission | localName }}</span>
+                  <span class="perm-route">{{ row.permission.routeName }}</span>
+                  <span class="grant-chip" [class.grant-chip--on]="rowGrantedCount(row) > 0">
+                    {{ rowGrantLabel(row) }}
+                  </span>
+                </td>
+                @for (flag of flags; track flag) {
+                  <td class="flag-cell">
+                    <label class="check">
+                      <input
+                        type="checkbox"
+                        [checked]="row.grant[flag]"
+                        (change)="toggle(row, flag)"
+                      />
+                      <span class="check-box"></span>
+                    </label>
+                  </td>
+                }
+                <td class="all-cell">
+                  <button class="ctrl-btn" type="button" [title]="t('rowOn')" [attr.aria-label]="t('rowOn')" (click)="setAllForRow(row, true)">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <button class="ctrl-btn ctrl-btn--off" type="button" [title]="t('rowOff')" [attr.aria-label]="t('rowOff')" (click)="setAllForRow(row, false)">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

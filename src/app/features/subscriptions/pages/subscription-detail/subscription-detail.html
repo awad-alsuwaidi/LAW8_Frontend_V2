@@ -1,1 +1,177 @@
-<p>subscription-detail works!</p>
+<div class="ui-page">
+
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('subscriptions.eyebrow') }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('subscriptions.detail.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && detail) {
+
+    <!-- Header -->
+    <header class="ui-page-header">
+      <div>
+        <h1 class="ui-title">
+          {{ detail | productLabel }}
+          <span class="ui-badge sd-status" [ngClass]="statusClass(detail.status)">{{ t('subscriptions.status' + detail.status) }}</span>
+        </h1>
+        <p class="ui-subtitle">
+          <a class="sd-org" [routerLink]="['/tenants', detail.organizationId]">{{ detail.organizationName }}</a>
+          <span class="sd-dot" aria-hidden="true"></span>
+          <span class="sd-mono">{{ detail.subdomain }}.law8.com</span>
+        </p>
+      </div>
+      <div class="ui-actions">
+        @if (detail.status === 'Active') {
+          <button class="ui-btn ui-btn--primary" type="button" (click)="activeModal = 'add-users'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+            {{ t('subscriptions.detail.addUsers') }}
+          </button>
+          <button class="ui-btn ui-btn--ghost is-warning" type="button" (click)="activeModal = 'suspend'">{{ t('subscriptions.detail.suspend') }}</button>
+          <button class="ui-btn ui-btn--ghost is-danger" type="button" (click)="activeModal = 'cancel'">{{ t('subscriptions.detail.cancel') }}</button>
+        }
+        @if (detail.status === 'Suspended') {
+          <button class="ui-btn ui-btn--primary" type="button" (click)="reactivate()" [disabled]="reactivating">
+            {{ reactivating ? t('subscriptions.detail.reactivating') : t('subscriptions.detail.reactivate') }}
+          </button>
+          <button class="ui-btn ui-btn--ghost is-danger" type="button" (click)="activeModal = 'cancel'">{{ t('subscriptions.detail.cancel') }}</button>
+        }
+      </div>
+    </header>
+
+    <!-- KPI strip -->
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ detail.numberOfUsers }}</b><span>{{ t('subscriptions.detail.numberOfUsers') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b><app-money [value]="detail.grandTotal" [ref]="detail" /></b><span>{{ t('subscriptions.detail.grandTotal') }}</span></div>
+      <div class="ui-kpi" [class.ui-kpi--danger]="detail.isExpired" [class.ui-kpi--warning]="!detail.isExpired && detail.remainingDays <= 30" [class.ui-kpi--neutral]="!detail.isExpired && detail.remainingDays > 30">
+        <b>{{ detail.isExpired ? '—' : detail.remainingDays }}</b>
+        <span>{{ detail.isExpired ? t('subscriptions.detail.expired') : t('subscriptions.detail.remainingDays') }}</span>
+      </div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ billingCycleLabel(detail.billingCycle) }}</b><span>{{ t('subscriptions.detail.billingCycle') }}</span></div>
+    </div>
+
+    <div class="sd-layout">
+
+      <!-- Main: history -->
+      <div class="sd-main">
+        <section class="sd-card">
+          <div class="sd-card__head">
+            <div>
+              <h3 class="sd-card__title">{{ t('subscriptions.detail.sectionHistory') }}</h3>
+              <p class="sd-card__note">{{ t('subscriptions.detail.historyNote') }}</p>
+            </div>
+            <span class="sd-card__hint">{{ history.length }}</span>
+          </div>
+          @if (history.length === 0) {
+            <div class="ui-state sd-empty"><p>{{ t('subscriptions.detail.noHistory') }}</p></div>
+          } @else {
+            <div class="sd-table-wrap">
+              <table class="ui-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('subscriptions.detail.colAction') }}</th>
+                    <th class="ui-cell-num">{{ t('subscriptions.detail.colUsers') }}</th>
+                    <th class="ui-cell-num">{{ t('subscriptions.detail.colPrice') }}</th>
+                    <th>{{ t('subscriptions.detail.colStart') }}</th>
+                    <th>{{ t('subscriptions.detail.colEnd') }}</th>
+                    <th>{{ t('subscriptions.detail.colReason') }}</th>
+                    <th>{{ t('subscriptions.detail.colDate') }}</th>
+                    <th>{{ t('subscriptions.detail.colBy') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (h of pagedHistory; track h.id) {
+                    <tr>
+                      <td><span class="ui-badge ui-badge--plain" [ngClass]="actionClass(h.action)">{{ actionLabel(h.action) }}</span></td>
+                      <td class="ui-cell-num">{{ h.numberOfUsersAtAction }}</td>
+                      <td class="ui-cell-num"><app-money [value]="h.priceAtAction" [ref]="detail" /></td>
+                      <td class="ui-cell-muted ui-cell-num">{{ formatDate(h.startDate) }}</td>
+                      <td class="ui-cell-muted ui-cell-num">{{ formatDate(h.endDate) }}</td>
+                      <td class="ui-cell-muted sd-reason" [title]="h.reason || ''">{{ h.reason || '—' }}</td>
+                      <td class="ui-cell-muted ui-cell-num">{{ formatDateTime(h.changedAt) }}</td>
+                      <td class="ui-cell-muted">{{ h.changedBy || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-ui-pager [total]="history.length" [(page)]="histPage" [(pageSize)]="histPageSize" />
+          }
+        </section>
+      </div>
+
+      <!-- Side: facts -->
+      <aside class="sd-side">
+
+        <section class="sd-card">
+          <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.detail.sectionSubscription') }}</h3>
+          <dl class="sd-facts">
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.product') }}</dt><dd>{{ detail | productLabel }} <span class="ui-cell-secondary sd-mono">{{ detail.productCode }}</span></dd></div>
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.billingCycle') }}</dt><dd>{{ billingCycleLabel(detail.billingCycle) }}@if (detail.billingCycle !== 'None' && detail.cycleCount) { <span class="ui-cell-muted">× {{ detail.cycleCount }}</span> }</dd></div>
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.numberOfUsers') }}</dt><dd class="ui-cell-num">{{ detail.numberOfUsers }}</dd></div>
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.pricePerUser') }}</dt><dd class="ui-cell-num"><app-money [value]="detail.pricePerAdditionalUser || null" [ref]="detail" /></dd></div>
+          </dl>
+        </section>
+
+        <section class="sd-card">
+          <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.detail.sectionPricing') }}</h3>
+          <dl class="sd-facts">
+            <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.detail.totalPrice') }}</dt><dd class="ui-cell-num"><app-money [value]="detail.totalPrice" [ref]="detail" /></dd></div>
+            <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.detail.discount') }}</dt><dd class="ui-cell-num">{{ discountLabel(detail.discountValue, detail.discountType) }}</dd></div>
+            @if (detail.taxRateApplied) {
+              <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.detail.tax') }} ({{ detail.taxRateApplied }}%)</dt><dd class="ui-cell-num"><app-money [value]="detail.taxAmount" [ref]="detail" /></dd></div>
+            }
+            @if (detail.lastProratedAdjustment !== undefined && detail.lastProratedAdjustment !== null) {
+              <div class="sd-fact sd-fact--row">
+                <dt>{{ t('subscriptions.detail.proratedAdj') }}</dt>
+                <dd class="ui-cell-num" [class.is-credit]="detail.lastProratedAdjustment < 0" [class.is-charge]="detail.lastProratedAdjustment > 0">
+                  {{ detail.lastProratedAdjustment > 0 ? '+' : '' }}<app-money [value]="detail.lastProratedAdjustment" [ref]="detail" />
+                </dd>
+              </div>
+            }
+            <div class="sd-fact sd-fact--row sd-fact--total"><dt>{{ t('subscriptions.detail.grandTotal') }}</dt><dd class="ui-cell-num"><app-money [value]="detail.grandTotal" [ref]="detail" /></dd></div>
+          </dl>
+        </section>
+
+        <section class="sd-card">
+          <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.detail.sectionDates') }}</h3>
+          <dl class="sd-facts">
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.startDate') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.startDate) }}</dd></div>
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.endDate') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.endDate) }}</dd></div>
+            @if (detail.suspendedAt) {
+              <div class="sd-fact"><dt>{{ t('subscriptions.detail.suspendedAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.suspendedAt) }}</dd></div>
+              @if (detail.suspensionReason) { <div class="sd-fact"><dt>{{ t('subscriptions.detail.suspensionReason') }}</dt><dd class="sd-reason-text">{{ detail.suspensionReason }}</dd></div> }
+            }
+            @if (detail.cancelledAt) {
+              <div class="sd-fact"><dt>{{ t('subscriptions.detail.cancelledAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.cancelledAt) }}</dd></div>
+              @if (detail.cancellationReason) { <div class="sd-fact"><dt>{{ t('subscriptions.detail.cancellationReason') }}</dt><dd class="sd-reason-text">{{ detail.cancellationReason }}</dd></div> }
+            }
+            <div class="sd-fact"><dt>{{ t('subscriptions.detail.created') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.createdAtUtc) }}</dd></div>
+          </dl>
+        </section>
+
+      </aside>
+    </div>
+  }
+</div>
+
+@if (detail && activeModal === 'add-users') {
+  <app-add-users-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'suspend') {
+  <app-suspend-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'cancel') {
+  <app-cancel-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}

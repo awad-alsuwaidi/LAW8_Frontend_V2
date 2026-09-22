@@ -1,0 +1,508 @@
+:host {
+  display: flex;
+  flex-shrink: 0;
+
+  @media (max-width: 767px) { width: 0; }
+}
+
+$sidebar-width: 260px;
+$sidebar-collapsed: 72px;
+
+// Flyout (light) palette
+$bg: #ffffff;
+$border: #eaecf0;
+$accent: #0e69d5;
+$accent-light: #eff6ff;
+$text: #344054;
+$muted: #667085;
+$hover-bg: #f9fafb;
+
+// Sidebar (brand-blue) palette
+$sb-top: #0a3d8f;
+$sb-bottom: #0b57b3;
+$sb-text: rgba(255, 255, 255, .78);
+$sb-text-strong: #ffffff;
+$sb-muted: rgba(255, 255, 255, .55);
+$sb-line: rgba(255, 255, 255, .12);
+$sb-hover: rgba(255, 255, 255, .09);
+$sb-active: rgba(255, 255, 255, .16);
+
+$radius: 8px;
+$transition: 0.25s ease;
+
+// -- Sidebar shell ----
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: $sidebar-width;
+  height: 100vh;
+  height: 100dvh;
+  color: $sb-text;
+  background:
+    radial-gradient(420px 260px at 0% 0%, rgba(255, 255, 255, .10), transparent 65%),
+    linear-gradient(180deg, $sb-top 0%, $sb-bottom 100%);
+  border-inline-end: 1px solid rgba(255, 255, 255, .06);
+  transition: width $transition;
+  // overflow: visible allows the collapsed flyout to escape
+  overflow: visible;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+
+  &.collapsed {
+    width: $sidebar-collapsed;
+
+    .sidebar-header {
+      justify-content: flex-start;
+      gap: 6px;
+      padding-inline-start: 10px;
+      padding-inline-end: 4px;
+    }
+
+    // Hide the full logo wrap (text + mark hidden via flex shrink)
+    .logo-wrap {
+      display: none;
+    }
+
+    // Show both the logo-mark expand button and the regular toggle icon
+    .toggle-btn--expand {
+      display: flex;
+    }
+
+    .toggle-btn:not(.toggle-btn--expand) {
+      display: flex;
+    }
+
+    .nav-link {
+      justify-content: center;
+      padding: 9px;
+      &--active::before { display: none; }
+    }
+
+    .nav-label,
+    .nav-arrow {
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+    }
+
+    .nav-group {
+      padding: 0 6px;
+    }
+
+    // Show flyout on hover in collapsed mode (also keep open when hovering the flyout itself)
+    .nav-item:hover > .flyout,
+    .flyout:hover {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+  }
+}
+
+// -- Header ----
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 64px;
+  border-bottom: 1px solid $sb-line;
+  flex-shrink: 0;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: $sb-top;
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, .35);
+  font-size: 16px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -1px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: $sb-text-strong;
+  white-space: nowrap;
+  letter-spacing: -0.3px;
+  transition: opacity $transition, max-width $transition;
+  max-width: 200px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: $radius;
+  color: $sb-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $sb-hover;
+    color: $sb-text-strong;
+  }
+
+  span[class^='icon-'] {
+    font-size: 18px;
+  }
+}
+
+// Expand trigger shown only in collapsed mode - hidden by default
+.toggle-btn--expand {
+  display: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  .logo-mark {
+    margin: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  &:hover .logo-mark {
+    opacity: 0.85;
+  }
+}
+
+// -- Nav ----
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 10px 0;
+  overflow: visible;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+// Only allow scroll when expanded (collapsed mode uses flyouts that need overflow: visible)
+.sidebar:not(.collapsed) .sidebar-nav {
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+.nav-group {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+
+  &--spacer {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid $sb-line;
+  }
+}
+
+.nav-item {
+  margin-bottom: 2px;
+  position: relative;
+}
+
+// -- Link base ----
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: $radius;
+  border: none;
+  background: transparent;
+  color: $sb-text;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  text-align: start;
+  font-family: inherit;
+  position: relative;
+
+  &:hover {
+    background: $sb-hover;
+    color: $sb-text-strong;
+
+    .nav-icon { color: $sb-text-strong; }
+  }
+
+  &--active {
+    background: $sb-active;
+    color: $sb-text-strong;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+
+    .nav-icon { color: $sb-text-strong; }
+
+    // Accent rail on the leading edge
+    &::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: -8px;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: #ffffff;
+    }
+  }
+
+  &--parent.open {
+    background: $sb-hover;
+    color: $sb-text-strong;
+
+    .nav-icon { color: $sb-text-strong; }
+  }
+
+  &--no-route {
+    cursor: default;
+
+    &:hover {
+      background: transparent;
+      color: $sb-text;
+
+      .nav-icon { color: $sb-muted; }
+    }
+  }
+}
+
+:host-context([dir='rtl']) .nav-link--active::before { border-radius: 3px 0 0 3px; }
+
+.nav-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: $sb-muted;
+  transition: color 0.15s;
+  width: 18px;
+  text-align: center;
+  display: inline-block;
+}
+
+.nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity $transition, max-width $transition;
+  max-width: 200px;
+}
+
+.nav-arrow {
+  font-size: 10px;
+  color: $sb-muted;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: transform 0.2s ease, opacity $transition, max-width $transition;
+  max-width: 20px;
+
+  &.rotated {
+    transform: rotate(90deg);
+  }
+}
+
+// -- Sub-menu ----
+.sub-menu {
+  list-style: none;
+  margin: 2px 0 6px;
+  padding: 0;
+  padding-inline-start: 22px;
+  position: relative;
+
+  // Thin guide line under the parent icon
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 18px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: $sb-line;
+  }
+
+  li { margin-bottom: 2px; }
+}
+
+.sub-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: $radius;
+  font-size: 13px;
+  font-weight: 500;
+  color: $sb-muted;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: $sb-hover; color: $sb-text-strong; }
+
+  &--active { color: $sb-text-strong; background: $sb-active; font-weight: 600; }
+}
+
+.sub-icon {
+  font-size: 14px;
+  color: currentColor;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+// -- Flyout panel (appears when sidebar is collapsed + item hovered) --
+.flyout {
+  position: absolute;
+  inset-inline-start: calc(100% + 6px);
+  top: 0;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  min-width: 180px;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition: opacity 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+
+:host-context([dir='rtl']) .flyout {
+  transform: translateX(6px);
+}
+
+// Invisible bridge between the nav-item icon and the flyout panel to prevent hover gap loss
+.flyout::before {
+  content: '';
+  position: absolute;
+  inset-inline-end: 100%;
+  top: 0;
+  width: 10px;
+  height: 100%;
+}
+
+.flyout-item-icon {
+  font-size: 14px;
+  color: $accent;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.flyout-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: $text;
+  padding: 4px 8px 8px;
+  border-bottom: 1px solid $border;
+  margin-bottom: 4px;
+}
+
+.flyout--simple {
+  .flyout-title { border-bottom: none; margin-bottom: 0; padding-bottom: 4px; }
+}
+
+.flyout-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li { margin-bottom: 2px; }
+}
+
+.flyout-link {
+  display: block;
+  padding: 6px 8px;
+  border-radius: $radius;
+  font-size: 13px;
+  font-weight: 500;
+  color: $muted;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: $hover-bg; color: $accent; }
+
+  &--active { color: $accent; background: $accent-light; }
+}
+
+// -- Responsive: off-canvas drawer ----
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    width: $sidebar-width;
+    z-index: 400;
+    box-shadow: 0 0 40px rgba(0, 0, 0, .35);
+    overflow: hidden;
+    // Parked just outside the leading edge (right in RTL, left in LTR)
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.2, .7, .2, 1);
+
+    &--open { transform: translateX(0); }
+  }
+
+  :host-context([dir='rtl']) .sidebar { transform: translateX(100%); }
+  :host-context([dir='rtl']) .sidebar--open { transform: translateX(0); }
+
+  // Drawer always renders the expanded menu - never the icon rail
+  .sidebar.collapsed { width: $sidebar-width; }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 390;
+    background: rgba(8, 24, 52, .55);
+    backdrop-filter: blur(2px);
+    animation: backdrop-in .2s ease;
+  }
+
+  // The collapse icon becomes a "close drawer" button
+  .toggle-btn:not(.toggle-btn--expand) { display: flex; }
+}
+
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
+  .sidebar-backdrop { animation: none; }
+}

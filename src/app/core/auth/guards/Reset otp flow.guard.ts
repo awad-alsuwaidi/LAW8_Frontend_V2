@@ -23,15 +23,9 @@ export class ResetOtpFlowGuard implements CanActivate {
     const otpFlow = this.authService.getOtpFlow();
 
     if (username && otpFlow === 'reset') {
-      console.log('[ResetOtpFlowGuard] Valid reset flow. User:', username);
       return true;
     }
 
-    console.warn('[ResetOtpFlowGuard] Invalid reset flow. Missing or incorrect data:', {
-      username: !!username,
-      otpFlow: otpFlow,
-      isResetFlow: otpFlow === 'reset',
-    });
 
     return this.router.createUrlTree(['/auth/forgot-password']);
   }
@@ -48,10 +42,8 @@ export const resetOtpFlowGuard: CanActivateFn = (
   const otpFlow = authService.getOtpFlow();
 
   if (username && otpFlow === 'reset') {
-    console.log('[resetOtpFlowGuard] Valid reset flow. User:', username);
     return true;
   }
 
-  console.warn('[resetOtpFlowGuard] Invalid reset flow. Redirecting to forgot-password.');
   return router.createUrlTree(['/auth/forgot-password']);
 };

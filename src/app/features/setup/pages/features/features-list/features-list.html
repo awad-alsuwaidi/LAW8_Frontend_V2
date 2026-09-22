@@ -1,1 +1,289 @@
-<p>features-list works!</p>
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('setup.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('setup.features.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ products.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('setup.features.subtitle') }}</p>
+    </div>
+    <div class="ui-actions">
+      <a class="ui-btn ui-btn--ghost" routerLink="/setup/products">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        {{ t('setup.features.manageProducts') }}
+      </a>
+    </div>
+  </header>
+
+  @if (errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('setup.features.loading') }}</p></div>
+  }
+
+  <!-- Product sections -->
+  @if (!isLoading) {
+    @for (product of products; track product.id; let i = $index) {
+      <section class="ui-table-wrap product">
+
+        <!-- Product header -->
+        <div class="product__head">
+          <div class="product__info">
+            <span class="product__icon" [style.background]="productColor(i)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                @if (i % 4 === 0) {
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                } @else if (i % 4 === 1) {
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                } @else if (i % 4 === 2) {
+                  <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
+                } @else {
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                }
+              </svg>
+            </span>
+            <div class="product__text">
+              <span class="product__name">{{ product | localName }}</span>
+              <span class="product__count">{{ featuresOf(product.id).length }}</span>
+            </div>
+          </div>
+          <button class="ui-btn ui-btn--soft ui-btn--sm" (click)="openAddFeature(product)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {{ t('setup.features.addNew') }}
+          </button>
+        </div>
+
+        <!-- Features table -->
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('setup.features.colNameEn') }}</th>
+              <th>{{ t('setup.features.colDesc') }}</th>
+              <th>{{ t('setup.features.colStatus') }}</th>
+              <th class="ui-cell-actions">{{ t('setup.features.colActions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (featuresOf(product.id).length === 0) {
+              <tr>
+                <td colspan="4" class="empty-row">{{ t('setup.features.noFeaturesInProduct') }}</td>
+              </tr>
+            }
+            @for (feat of featuresOf(product.id); track feat.id) {
+              <tr>
+                <td><span class="ui-cell-primary">{{ feat | localName }}</span></td>
+                <td class="ui-cell-muted cell-desc">{{ feat.description || '—' }}</td>
+                <td>
+                  <span class="ui-badge" [class.ui-badge--success]="feat.isActive" [class.ui-badge--neutral]="!feat.isActive">
+                    {{ feat.isActive ? t('common.active') : t('common.inactive') }}
+                  </span>
+                </td>
+                <td class="ui-cell-actions">
+                  <button class="ui-btn ui-btn--icon" (click)="openEditFeature(feat, product, $event)" [title]="t('common.edit')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="ui-btn ui-btn--icon is-danger" (click)="confirmDelete(feat, $event)" [title]="t('common.delete')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+      </section>
+    }
+
+    @if (products.length === 0) {
+      <div class="ui-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+        <p>{{ t('setup.features.noProducts') }}</p>
+        <button class="ui-btn ui-btn--primary" (click)="openAddProduct()">{{ t('setup.features.addProduct') }}</button>
+      </div>
+    }
+  }
+</div>
+
+<!-- Add / Edit Feature modal -->
+@if (showFeatureModal) {
+  <div class="ui-overlay" (click)="closeFeatureModal()">
+    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <span class="ui-modal__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </span>
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ editingFeature ? t('setup.features.modal.titleEdit') : t('setup.features.modal.titleCreate') }}</h3>
+          <p class="ui-modal__subtitle">{{ t('setup.features.modal.subtitle') }}</p>
+        </div>
+        <button type="button" class="ui-modal__close" (click)="closeFeatureModal()" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form [formGroup]="featureForm" (ngSubmit)="saveFeature()">
+        <div class="ui-modal__body">
+          @if (targetProduct) {
+            <div class="target-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div>
+                <p class="target-box__label">{{ t('setup.features.modal.targetProduct') }}</p>
+                <p class="target-box__name">{{ targetProduct | localName }}</p>
+              </div>
+            </div>
+          }
+
+          @if (errorMessage) {
+            <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+          }
+
+          <div class="ui-modal__grid">
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.features.modal.nameAr') }}</label>
+              <input class="ui-input" formControlName="nameAr" type="text" dir="rtl"
+                     [placeholder]="t('setup.features.modal.nameArPlaceholder')" />
+            </div>
+
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.features.modal.nameEn') }} <span class="ui-req">*</span></label>
+              <input class="ui-input" [class.is-invalid]="isFeatureInvalid('nameEn')"
+                     formControlName="nameEn" type="text"
+                     [placeholder]="t('setup.features.modal.namePlaceholder')" />
+              @if (isFeatureInvalid('nameEn')) {
+                <span class="ui-error">{{ t('setup.features.modal.errorNameRequired') }}</span>
+              }
+            </div>
+
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.features.modal.description') }}</label>
+              <textarea class="ui-textarea" formControlName="description" rows="3"
+                        [placeholder]="t('setup.features.modal.descPlaceholder')"></textarea>
+            </div>
+          </div>
+
+          <label class="ui-switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+            <span class="ui-switch__text">
+              <span class="ui-switch__label">{{ t('common.active') }}</span>
+              <span class="ui-switch__hint">{{ t('setup.features.modal.statusHint') }}</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="ui-modal__foot">
+          <span class="ui-modal__foot-note">{{ t('common.requiredNote') }}</span>
+          <button type="button" class="ui-btn ui-btn--ghost" (click)="closeFeatureModal()">{{ t('common.cancel') }}</button>
+          <button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSavingFeature">
+            {{ isSavingFeature ? t('common.saving') : (editingFeature ? t('setup.features.modal.save') : t('setup.features.modal.create')) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Add / Edit Product modal -->
+@if (showProductModal) {
+  <div class="ui-overlay" (click)="closeProductModal()">
+    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <span class="ui-modal__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </span>
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ editingProduct ? t('setup.products.modal.titleEdit') : t('setup.products.modal.titleCreate') }}</h3>
+          <p class="ui-modal__subtitle">{{ t('setup.products.modal.subtitle') }}</p>
+        </div>
+        <button type="button" class="ui-modal__close" (click)="closeProductModal()" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+        <div class="ui-modal__body">
+          @if (errorMessage) {
+            <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+          }
+
+          <div class="ui-modal__grid">
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.products.modal.nameEn') }} <span class="ui-req">*</span></label>
+              <input class="ui-input" [class.is-invalid]="productForm.get('nameEn')?.invalid && productForm.get('nameEn')?.touched"
+                     formControlName="nameEn" type="text" [placeholder]="t('setup.products.modal.namePlaceholder')" />
+              @if (productForm.get('nameEn')?.invalid && productForm.get('nameEn')?.touched) {
+                <span class="ui-error">{{ t('setup.products.modal.errorNameRequired') }}</span>
+              }
+            </div>
+
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.products.modal.description') }}</label>
+              <textarea class="ui-textarea" formControlName="description" rows="2"
+                        [placeholder]="t('setup.products.modal.descPlaceholder')"></textarea>
+            </div>
+          </div>
+
+          <label class="ui-switch">
+            <input type="checkbox" formControlName="isProvisionable" />
+            <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+            <span class="ui-switch__text">
+              <span class="ui-switch__label">{{ t('setup.products.modal.provisionable') }}</span>
+              <span class="ui-switch__hint">{{ t('setup.products.modal.provisionableHint') }}</span>
+            </span>
+          </label>
+
+          <label class="ui-switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+            <span class="ui-switch__text">
+              <span class="ui-switch__label">{{ t('common.active') }}</span>
+              <span class="ui-switch__hint">{{ t('common.statusHint') }}</span>
+            </span>
+          </label>
+        </div>
+
+        <div class="ui-modal__foot">
+          <span class="ui-modal__foot-note">{{ t('common.requiredNote') }}</span>
+          <button type="button" class="ui-btn ui-btn--ghost" (click)="closeProductModal()">{{ t('common.cancel') }}</button>
+          <button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSavingProduct">
+            {{ isSavingProduct ? t('common.saving') : (editingProduct ? t('setup.products.modal.save') : t('setup.products.modal.create')) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Delete confirmation -->
+@if (deleteTarget) {
+  <div class="ui-overlay" (click)="cancelDelete()">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <span class="ui-modal__icon ui-modal__icon--danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </span>
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ t('setup.features.deleteTitle') }}</h3>
+          <p class="ui-modal__subtitle">{{ t('setup.features.deleteSubtitle') }}</p>
+        </div>
+        <button type="button" class="ui-modal__close" (click)="cancelDelete()" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        <p>{{ t('setup.features.deleteConfirmPrefix') }} <strong>{{ deleteTarget | localName }}</strong>{{ t('setup.features.deleteConfirmSuffix') }}</p>
+      </div>
+      <div class="ui-modal__foot">
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="cancelDelete()">{{ t('common.cancel') }}</button>
+        <button type="button" class="ui-btn ui-btn--danger" [disabled]="isDeleting" (click)="doDelete()">
+          {{ isDeleting ? t('common.deleting') : t('common.delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

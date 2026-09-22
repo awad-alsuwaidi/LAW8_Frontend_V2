@@ -1,0 +1,83 @@
+:host { display: block; min-width: 200px; }
+
+.ac {
+  cursor: default;
+  &--has-changes { cursor: help; }
+
+  &__summary { display: block; font-size: 13px; color: var(--text); }
+
+  &__chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+
+    &--more {
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+  }
+}
+
+.ac-pop {
+  position: fixed;
+  z-index: 1000;
+  width: 380px;
+  max-width: calc(100vw - 16px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+  padding: 10px 12px 12px;
+  pointer-events: none;
+  animation: ac-pop-in 120ms ease-out;
+
+  &__head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  &__title { font-weight: 600; font-size: 13px; color: var(--ink); }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+
+    th {
+      text-align: start;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--faint);
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 6px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+  }
+
+  &__field { font-weight: 600; color: var(--text); white-space: nowrap; }
+  &__old { color: var(--danger, #dc2626); text-decoration: line-through; opacity: 0.85; }
+  &__arrow { color: var(--faint); white-space: nowrap; padding-inline: 2px; }
+  &__new { color: var(--success, #059669); font-weight: 600; }
+}
+
+:host-context([dir='rtl']) .ac-pop__arrow { display: inline-block; transform: scaleX(-1); }
+
+@keyframes ac-pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}

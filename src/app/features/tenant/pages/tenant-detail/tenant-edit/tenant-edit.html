@@ -1,1 +1,190 @@
-<p>tenant-edit works!</p>
+<div class="ui-page">
+
+  <!-- Back nav (same as overview) -->
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="cancel()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('tenants.eyebrow') }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('common.loading') }}</p></div>
+  }
+
+  @if (!isLoading) {
+
+    <!-- Page header -->
+    <header class="ui-page-header">
+      <div>
+        <h1 class="ui-title">
+          {{ orgName || t('tenants.detail.editTitle') }}
+          <span class="ui-badge ui-badge--info ui-badge--plain te-mode">{{ t('tenants.detail.editTitle') }}</span>
+        </h1>
+        @if (subdomain) {
+          <p class="ui-subtitle te-subdomain">{{ subdomain }}.law8.com</p>
+        }
+      </div>
+      <div class="ui-actions">
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="cancel()">{{ t('common.cancel') }}</button>
+        <button type="button" class="ui-btn ui-btn--primary" [disabled]="isSaving" (click)="save()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          {{ isSaving ? t('common.saving') : t('common.save') }}
+        </button>
+      </div>
+    </header>
+
+    @if (errorMessage)   { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+    @if (successMessage) { <div class="ui-alert ui-alert--success">{{ successMessage }}</div> }
+
+    <form class="te-layout" [formGroup]="form" (ngSubmit)="save()">
+
+      <div class="te-main">
+
+      <!-- Organization details card -->
+      <section class="te-card">
+        <h3 class="te-card__title">{{ t('tenants.overview.orgDetails') }}</h3>
+        <div class="te-card__body">
+          <div class="te-grid">
+            <div class="ui-field te-grid__full">
+              <label class="ui-label" for="nameEn">{{ t('tenants.detail.nameEn') }} <span class="ui-req">*</span></label>
+              <input id="nameEn" class="ui-input" formControlName="nameEn" type="text"
+                     [class.is-invalid]="f['nameEn'].invalid && f['nameEn'].touched" />
+              @if (f['nameEn'].invalid && f['nameEn'].touched) {
+                <span class="ui-error">
+                  @if (f['nameEn'].errors?.['required']) { {{ t('tenants.register.errorNameRequired') }} }
+                  @else if (f['nameEn'].errors?.['minlength']) { {{ t('tenants.register.errorMin2') }} }
+                  @else if (f['nameEn'].errors?.['maxlength']) { {{ t('tenants.register.errorMax100') }} }
+                </span>
+              }
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label" for="countryId">{{ t('tenants.detail.country') }}</label>
+              <select id="countryId" class="ui-select te-select" formControlName="countryId">
+                <option [ngValue]="null">—</option>
+                @for (c of countries; track c.id) { <option [ngValue]="c.id">{{ c | localName }}</option> }
+              </select>
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label" for="orgTypeId">{{ t('tenants.detail.orgType') }}</label>
+              <select id="orgTypeId" class="ui-select te-select" formControlName="organizationTypeId">
+                <option [ngValue]="null">—</option>
+                @for (ot of orgTypes; track ot.id) { <option [ngValue]="ot.id">{{ ot | localName }}</option> }
+              </select>
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label" for="currencyId">{{ t('tenants.detail.currency') }}</label>
+              <select id="currencyId" class="ui-select te-select" formControlName="currencyId">
+                <option [ngValue]="null">—</option>
+                @for (c of currencies; track c.id) { <option [ngValue]="c.id">{{ c.code }} — {{ c | localName }}</option> }
+              </select>
+              @if (currencyLocked) {
+                <span class="ui-hint">{{ t('tenants.detail.currencyLockedHint') }}</span>
+              }
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label" for="phoneNumber">{{ t('tenants.detail.phone') }}</label>
+              <input id="phoneNumber" class="ui-input" formControlName="phoneNumber" type="tel" appPhoneInput
+                     [class.is-invalid]="f['phoneNumber'].invalid && f['phoneNumber'].touched" />
+              @if (f['phoneNumber'].invalid && f['phoneNumber'].touched) {
+                <span class="ui-error">{{ t('platformUsers.form.errorPhone') }}</span>
+              }
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label" for="address">{{ t('tenants.detail.address') }}</label>
+              <input id="address" class="ui-input" formControlName="address" type="text" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Primary administrator card -->
+      <section class="te-card">
+        <h3 class="te-card__title">{{ t('tenants.overview.primaryAdmin') }}</h3>
+        <div class="te-card__body">
+          <div class="te-grid">
+            <div class="ui-field">
+              <label class="ui-label" for="adminName">{{ t('tenants.register.adminName') }}</label>
+              <input id="adminName" class="ui-input" formControlName="adminName" type="text" />
+            </div>
+            <div class="ui-field">
+              <label class="ui-label">{{ t('tenants.detail.adminEmail') }}</label>
+              <input class="ui-input" [value]="adminEmail" type="email" readonly dir="ltr" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="te-actions">
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="cancel()">{{ t('common.cancel') }}</button>
+        <button type="submit" class="ui-btn ui-btn--primary" [disabled]="isSaving">
+          {{ isSaving ? t('common.saving') : t('common.save') }}
+        </button>
+      </div>
+
+      </div>
+
+      <!-- Side column: read-only system facts -->
+      <aside class="te-side">
+        <section class="te-card">
+          <h3 class="te-card__title">{{ t('tenants.detail.readOnly') }}</h3>
+          <dl class="te-facts">
+            <div class="te-fact">
+              <dt>{{ t('tenants.overview.subdomain') }}</dt>
+              <dd><a class="te-link" [href]="'https://' + subdomain + '.law8.com'" target="_blank" rel="noopener">{{ subdomain }}.law8.com</a></dd>
+            </div>
+            <div class="te-fact">
+              <dt>{{ t('tenants.overview.tenantId') }}</dt>
+              <dd class="te-mono">{{ orgId }}</dd>
+            </div>
+            @if (tenantCode) {
+              <div class="te-fact">
+                <dt>{{ t('tenants.detail.tenantCode') }}</dt>
+                <dd class="te-mono">{{ tenantCode }}</dd>
+              </div>
+            }
+            @if (createdAt) {
+              <div class="te-fact">
+                <dt>{{ t('tenants.overview.created') }}</dt>
+                <dd>{{ createdAt | date: 'd MMM yyyy' }}</dd>
+              </div>
+            }
+            @if (currencyCode) {
+              <div class="te-fact">
+                <dt>{{ t('tenants.detail.currency') }}</dt>
+                <dd>{{ currencyCode }}@if (currencySymbol) { <small>(<app-currency-symbol [ref]="{ currencyCode: currencyCode, currencySymbol: currencySymbol }" />)</small> }</dd>
+              </div>
+            }
+            <div class="te-fact">
+              <dt>{{ t('tenants.overview.deployment') }}</dt>
+              <dd>
+                <span class="ui-badge ui-badge--plain" [class.ui-badge--info]="deploymentType === 'Cloud'" [class.ui-badge--violet]="deploymentType !== 'Cloud'">
+                  {{ deploymentType === 'Cloud' ? t('tenants.deployCloud') : t('tenants.deployOnPrem') }}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="te-card">
+          <h3 class="te-card__title">{{ t('tenants.overview.primaryAdmin') }}</h3>
+          <div class="te-admin">
+            <span class="te-admin__avatar">{{ adminInitials }}</span>
+            <div class="te-admin__info">
+              <p class="te-admin__name">{{ f['adminName'].value || '—' }}</p>
+              <p class="te-admin__email">{{ adminEmail }}</p>
+            </div>
+          </div>
+          <p class="te-note">{{ t('tenants.detail.adminEmailHint') }}</p>
+        </section>
+      </aside>
+    </form>
+  }
+</div>

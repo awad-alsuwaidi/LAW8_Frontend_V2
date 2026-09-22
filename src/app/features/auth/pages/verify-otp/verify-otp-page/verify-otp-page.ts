@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -29,14 +30,14 @@ const RESEND_SECONDS = 297;
   templateUrl: './verify-otp-page.html',
   styleUrl: './verify-otp-page.scss',
 })
-export class VerifyOtpPage implements OnInit, OnDestroy {
+export class VerifyOtpPage implements OnInit, AfterViewInit, OnDestroy {
   readonly otpLength = OTP_LENGTH;
   readonly otp = signal<string[]>(Array(OTP_LENGTH).fill(''));
   readonly isLoading = signal(false);
   readonly remainingSeconds = signal(RESEND_SECONDS);
   readonly isOtpComplete = computed(() => this.otp().every((digit) => digit !== ''));
 
-  // ✅ أضف error و success messages
+  // Inline feedback shown under the OTP inputs
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
 
@@ -114,6 +115,22 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     const focusIndex = Math.min(startIndex + toFill.length, this.otpLength - 1);
 
     this.focusInput(focusIndex);
+
+    this.autoSubmitIfComplete();
+  }
+
+  private autoSubmitIfComplete(): void {
+    if (this.isOtpComplete() && !this.isLoading()) {
+      setTimeout(() => this.verifyOtp(), 50);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // `autofocus` only fires on a full page load; after SPA navigation we
+    // have to focus the first cell ourselves.
+    if (isPlatformBrowser(this.platformId)) {
+      this.focusInput(0);
+    }
   }
 
   private focusInput(index: number): void {
@@ -153,6 +170,8 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
     if (index < this.otpLength - 1) {
       this.focusInput(index + 1);
+    } else {
+      this.autoSubmitIfComplete();
     }
   }
 
@@ -215,6 +234,8 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
 
       if (index < this.otpLength - 1) {
         this.focusInput(index + 1);
+      } else {
+        this.autoSubmitIfComplete();
       }
       return;
     }
@@ -231,7 +252,7 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
     this.applyDigits(pastedText, 0);
   }
 
-  // ✅ تحديث كامل: استخدم verifyOtpAndLogin + navigation
+  // Verifies the code, exchanges it for tokens, then navigates into the app
   verifyOtp(): void {
     if (this.isLoading()) {
       return;
@@ -293,7 +314,6 @@ export class VerifyOtpPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('[VerifyOtpPage] OTP resent successfully');
           this.successMessage.set(this.translate('otp.success.resent'));
 
           this.startTimer();

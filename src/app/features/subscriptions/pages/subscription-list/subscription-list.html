@@ -1,0 +1,116 @@
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('subscriptions.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('subscriptions.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('subscriptions.subtitle') }}</p>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  @if (!isLoading && items.length) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ items.length }}</b><span>{{ t('subscriptions.kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ activeCount }}</b><span>{{ t('subscriptions.kpiActive') }}</span></div>
+      <div class="ui-kpi ui-kpi--warning"><b>{{ suspendedCount }}</b><span>{{ t('subscriptions.kpiSuspended') }}</span></div>
+      <div class="ui-kpi ui-kpi--danger"><b>{{ cancelledCount }}</b><span>{{ t('subscriptions.kpiCancelled') }}</span></div>
+      @if (pendingCount > 0) {
+        <div class="ui-kpi ui-kpi--neutral"><b>{{ pendingCount }}</b><span>{{ t('subscriptions.kpiPending') }}</span></div>
+      }
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="ui-toolbar">
+    <div class="ui-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="ui-input" type="text" [placeholder]="t('subscriptions.search')"
+             [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" />
+    </div>
+    <select class="ui-select" [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()">
+      <option value="">{{ t('subscriptions.filterAll') }}</option>
+      <option value="Active">{{ t('subscriptions.statusActive') }}</option>
+      <option value="Suspended">{{ t('subscriptions.statusSuspended') }}</option>
+      <option value="Cancelled">{{ t('subscriptions.statusCancelled') }}</option>
+      <option value="Pending">{{ t('subscriptions.statusPending') }}</option>
+    </select>
+  </div>
+
+  <!-- States -->
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('subscriptions.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+    @if (filtered.length === 0) {
+      <div class="ui-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+        <p>{{ t('subscriptions.noData') }}</p>
+      </div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('subscriptions.colOrg') }}</th>
+              <th>{{ t('subscriptions.colProduct') }}</th>
+              <th class="ui-cell-num">{{ t('subscriptions.colUsers') }}</th>
+              <th>{{ t('subscriptions.colCycle') }}</th>
+              <th class="ui-cell-num">{{ t('subscriptions.colAmount') }}</th>
+              <th>{{ t('subscriptions.colStart') }}</th>
+              <th>{{ t('subscriptions.colExpiry') }}</th>
+              <th>{{ t('subscriptions.colDaysLeft') }}</th>
+              <th>{{ t('subscriptions.colStatus') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sub of pagedRows; track sub.id) {
+              <tr class="is-clickable" (click)="view(sub.id)">
+                <td><span class="ui-cell-primary">{{ sub.organizationName }}</span></td>
+                <td>
+                  <span class="ui-cell-primary">{{ sub | productLabel }}</span>
+                  <span class="ui-cell-secondary ui-cell-mono">{{ sub.productCode }}</span>
+                </td>
+                <td class="ui-cell-num">{{ sub.numberOfUsers }}</td>
+                <td class="ui-cell-muted">{{ cycleLabel(sub.billingCycle) }}</td>
+                <td class="ui-cell-num">
+                  <span class="ui-cell-primary"><app-money [value]="sub.grandTotal" [ref]="sub" /></span>
+                  @if (sub.taxAmount) { <span class="ui-cell-secondary">{{ t('subscriptions.inclTax') }} <app-money [value]="sub.taxAmount" [ref]="sub" /></span> }
+                </td>
+                <td class="ui-cell-muted ui-cell-num">{{ formatDate(sub.startDate) }}</td>
+                <td class="ui-cell-muted ui-cell-num">{{ formatDate(sub.endDate) }}</td>
+                <td>
+                  @if (sub.isExpired) {
+                    <span class="ui-badge ui-badge--danger ui-badge--plain">{{ t('subscriptions.expired') }}</span>
+                  } @else {
+                    <span class="ui-badge ui-badge--plain" [class.ui-badge--warning]="sub.remainingDays <= 30" [class.ui-badge--info]="sub.remainingDays > 30">{{ sub.remainingDays }} {{ t('subscriptions.daysShort') }}</span>
+                  }
+                </td>
+                <td>
+                  <span class="ui-badge" [ngClass]="statusClass(sub.status)">{{ t('subscriptions.status' + sub.status) }}</span>
+                </td>
+                <td class="ui-cell-actions">
+                  <button class="ui-btn ui-btn--soft ui-btn--sm" (click)="$event.stopPropagation(); view(sub.id)">
+                    {{ t('subscriptions.viewDetails') }}
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+      </div>
+    }
+  }
+</div>

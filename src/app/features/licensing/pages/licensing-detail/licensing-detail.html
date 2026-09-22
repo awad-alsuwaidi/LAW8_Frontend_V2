@@ -1,0 +1,234 @@
+<div class="ui-page">
+
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('licensing.eyebrow') }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('licensing.loading') }}</p></div>
+  }
+
+  @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+  @if (!isLoading && key) {
+
+    <!-- Header -->
+    <header class="ui-page-header">
+      <div>
+        <h1 class="ui-title">
+          {{ key.tenantName || t('licensing.detail.title') }}
+          <span class="ui-badge ld-status" [ngClass]="statusClass(key.status)">{{ statusText(key.status) }}</span>
+        </h1>
+        <p class="ui-subtitle ld-keyline">
+          <code class="ld-key">{{ key.key }}</code>
+          <button class="ui-btn ui-btn--icon" type="button" (click)="copyKey()" [title]="t('common.copy')">
+            @if (copied) {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else {
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            }
+          </button>
+        </p>
+      </div>
+      <div class="ui-actions">
+        <a class="ui-btn ui-btn--ghost" [routerLink]="['/tenants', key.tenantId]">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+          {{ t('licensing.detail.openTenant') }}
+        </a>
+        @if (key.status !== 'Cancelled') {
+          <button class="ui-btn ui-btn--danger" type="button" (click)="openCancel()">{{ t('licensing.cancelKey') }}</button>
+        }
+      </div>
+    </header>
+
+    <div class="ld-layout">
+
+      <!-- Main: activations -->
+      <div class="ld-main">
+        <section class="ld-card">
+          <div class="ld-card__head">
+            <h3 class="ld-card__title">{{ t('licensing.detail.activations') }}</h3>
+            <span class="ld-card__hint">{{ key.activations.length }}</span>
+          </div>
+
+          @if (key.activations.length === 0) {
+            <div class="ui-state ld-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <p>{{ t('licensing.detail.noActivations') }}</p>
+            </div>
+          } @else {
+            <div class="ld-table-wrap">
+              <table class="ui-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('licensing.detail.colHostname') }}</th>
+                    <th>{{ t('licensing.colStatus') }}</th>
+                    <th>{{ t('licensing.detail.colActivated') }}</th>
+                    <th>{{ t('licensing.colExpires') }}</th>
+                    <th>{{ t('licensing.detail.colVersion') }}</th>
+                    <th>{{ t('licensing.detail.colReleased') }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (a of pagedActivations; track a.id) {
+                    <tr>
+                      <td>
+                        <span class="ui-cell-primary">{{ a.hostname }}</span>
+                        @if (a.machineFingerprintPrefix) { <span class="ui-cell-secondary ui-cell-mono">{{ a.machineFingerprintPrefix }}…</span> }
+                      </td>
+                      <td><span class="ui-badge" [ngClass]="activationClass(a.status)">{{ activationStatusText(a.status) }}</span></td>
+                      <td class="ui-cell-muted ui-cell-num">{{ a.activatedAtUtc | date: 'd MMM yyyy' }}</td>
+                      <td class="ui-cell-muted ui-cell-num">{{ a.expiresAtUtc ? (a.expiresAtUtc | date: 'd MMM yyyy') : '—' }}</td>
+                      <td class="ui-cell-muted">{{ a.softwareVersion || '—' }}</td>
+                      <td class="ui-cell-muted ui-cell-num">{{ a.releasedAtUtc ? (a.releasedAtUtc | date: 'd MMM yyyy') : '—' }}</td>
+                      <td class="ui-cell-actions">
+                        @if (a.status === 'Active') {
+                          <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="openRelease(a)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64A9 9 0 1 1 5.64 19.36"/><polyline points="18 2 22 6 18 10"/><line x1="6" y1="6" x2="22" y2="6"/></svg>
+                            {{ t('licensing.release.action') }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-ui-pager [total]="key.activations.length" [(page)]="actPage" [(pageSize)]="actPageSize" />
+          }
+        </section>
+
+        <!-- Renewals -->
+        <section class="ld-card">
+          <div class="ld-card__head">
+            <h3 class="ld-card__title">{{ t('licensing.detail.renewals') }}</h3>
+            <span class="ld-card__hint">{{ key.renewals.length }}</span>
+          </div>
+          @if (key.renewals.length === 0) {
+            <div class="ui-state ld-empty"><p>{{ t('licensing.detail.noRenewals') }}</p></div>
+          } @else {
+            <div class="ld-table-wrap">
+              <table class="ui-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('licensing.detail.colRenewedAt') }}</th>
+                    <th>{{ t('licensing.detail.colPrevExpiry') }}</th>
+                    <th>{{ t('licensing.detail.colNewExpiry') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of pagedRenewals; track r.renewedAtUtc) {
+                    <tr>
+                      <td class="ui-cell-num">{{ r.renewedAtUtc | date: 'd MMM yyyy HH:mm' }}</td>
+                      <td class="ui-cell-muted ui-cell-num">{{ r.previousExpiresAtUtc ? (r.previousExpiresAtUtc | date: 'd MMM yyyy') : '—' }}</td>
+                      <td class="ui-cell-num"><span class="ui-cell-primary">{{ r.newExpiresAtUtc ? (r.newExpiresAtUtc | date: 'd MMM yyyy') : '—' }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-ui-pager [total]="key.renewals.length" [(page)]="renPage" [(pageSize)]="renPageSize" [pageSizes]="[5, 10, 25]" />
+          }
+        </section>
+      </div>
+
+      <!-- Side: key facts -->
+      <aside class="ld-side">
+        <section class="ld-card">
+          <h3 class="ld-card__title ld-card__title--bar">{{ t('licensing.detail.keyDetails') }}</h3>
+          <dl class="ld-facts">
+            <div class="ld-fact">
+              <dt>{{ t('licensing.colTenant') }}</dt>
+              <dd><a class="ld-link" [routerLink]="['/tenants', key.tenantId]">{{ key.tenantName || key.tenantId }}</a></dd>
+            </div>
+            <div class="ld-fact">
+              <dt>{{ t('licensing.colType') }}</dt>
+              <dd><span class="ui-badge ui-badge--neutral ui-badge--plain">{{ typeText(key.type) }}</span></dd>
+            </div>
+            <div class="ld-fact">
+              <dt>{{ t('licensing.colStatus') }}</dt>
+              <dd><span class="ui-badge" [ngClass]="statusClass(key.status)">{{ statusText(key.status) }}</span></dd>
+            </div>
+            <div class="ld-fact">
+              <dt>{{ t('licensing.colCreated') }}</dt>
+              <dd class="ui-cell-num">{{ key.createdAtUtc | date: 'd MMM yyyy' }}</dd>
+            </div>
+            <div class="ld-fact">
+              <dt>{{ t('licensing.colExpires') }}</dt>
+              <dd class="ui-cell-num">{{ key.currentExpiresAtUtc ? (key.currentExpiresAtUtc | date: 'd MMM yyyy') : '—' }}</dd>
+            </div>
+            <div class="ld-fact">
+              <dt>{{ t('licensing.detail.activeMachine') }}</dt>
+              <dd>{{ key.currentMachineHostname || '—' }}</dd>
+            </div>
+            @if (key.notes) {
+              <div class="ld-fact">
+                <dt>{{ t('licensing.create.notes') }}</dt>
+                <dd>{{ key.notes }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+      </aside>
+
+    </div>
+  }
+
+</div>
+
+<!-- ===== Cancel Confirm ===== -->
+@if (showCancelConfirm) {
+  <div class="ui-overlay" (click)="closeCancel()">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('licensing.cancelModal.title') }}</h3>
+        <button class="ui-modal__close" type="button" (click)="closeCancel()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (cancelError) { <div class="ui-alert ui-alert--error">{{ cancelError }}</div> }
+        <p>{{ t('licensing.cancelModal.body') }}</p>
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="closeCancel()">{{ t('licensing.cancelModal.keep') }}</button>
+        <button class="ui-btn ui-btn--danger" type="button" [disabled]="isCancelling" (click)="doCancel()">
+          {{ isCancelling ? t('licensing.cancelModal.cancelling') : t('licensing.cancelModal.confirm') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Release Activation Modal ===== -->
+@if (releaseTarget) {
+  <div class="ui-overlay" (click)="closeRelease()">
+    <div class="ui-modal" (click)="$event.stopPropagation()">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('licensing.release.title') }} — {{ releaseTarget.hostname }}</h3>
+        <button class="ui-modal__close" type="button" (click)="closeRelease()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (releaseError) { <div class="ui-alert ui-alert--error">{{ releaseError }}</div> }
+        <div class="ui-field">
+          <label class="ui-label">{{ t('licensing.release.reasonLabel') }} <span class="ui-req">*</span></label>
+          <textarea class="ui-textarea" rows="3" [placeholder]="t('licensing.release.reasonPlaceholder')" [(ngModel)]="releaseReason"></textarea>
+        </div>
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="closeRelease()">{{ t('common.cancel') }}</button>
+        <button class="ui-btn ui-btn--primary" type="button" [disabled]="isReleasing" (click)="doRelease()">
+          {{ isReleasing ? t('licensing.release.releasing') : t('licensing.release.submit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

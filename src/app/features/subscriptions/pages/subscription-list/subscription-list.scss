@@ -1,0 +1,3 @@
+:host { display: block; }
+
+:host-context([dir='rtl']) .ui-cell-actions svg { transform: scaleX(-1); }

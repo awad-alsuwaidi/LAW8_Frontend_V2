@@ -1,1 +1,90 @@
-<p>audit-logs works!</p>
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('audit.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('audit.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('audit.subtitle') }}</p>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  @if (!isLoading && items.length) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ items.length }}</b><span>{{ t('tenants.kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ countBy('Created') }}</b><span>{{ t('audit.actionCreated') }}</span></div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ countBy('Updated') }}</b><span>{{ t('audit.actionUpdated') }}</span></div>
+      <div class="ui-kpi ui-kpi--danger"><b>{{ countBy('Deleted') }}</b><span>{{ t('audit.actionDeleted') }}</span></div>
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="ui-toolbar">
+    <div class="ui-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        class="ui-input"
+        type="text"
+        [placeholder]="t('audit.search')"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applySearch()"
+      />
+    </div>
+    <select class="ui-select" [(ngModel)]="entityFilter" (ngModelChange)="onEntityFilterChange()">
+      <option value="">{{ t('audit.filterAll') }}</option>
+      @for (name of entityNames; track name) {
+        <option [value]="name">{{ entityLabel(name) }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- States -->
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('audit.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+    @if (filtered.length === 0) {
+      <div class="ui-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <p>{{ t('audit.noData') }}</p>
+      </div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('audit.colAction') }}</th>
+              <th>{{ t('audit.colEntity') }}</th>
+              <th>{{ t('audit.colChanges') }}</th>
+              <th>{{ t('audit.colChangedBy') }}</th>
+              <th>{{ t('audit.colTimestamp') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of pagedRows; track log.id) {
+              <tr>
+                <td>
+                  <span class="ui-badge" [ngClass]="actionClass(log.action)">{{ t('audit.action' + log.action) }}</span>
+                </td>
+                <td><span class="ui-cell-primary entity-name">{{ entityLabel(log.entityName) }}</span></td>
+                <td><app-audit-changes [log]="log" /></td>
+                <td class="ui-cell-muted">{{ log.changedBy || '—' }}</td>
+                <td class="ui-cell-muted ui-cell-num text-date">{{ formatDateTime(log.changedAtUtc) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+      </div>
+    }
+  }
+</div>

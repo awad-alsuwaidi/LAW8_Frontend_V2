@@ -1,0 +1,34 @@
+<div class="ac" [class.ac--has-changes]="changes.length > 0" (mouseenter)="show($event)" (mouseleave)="hide()">
+  <span class="ac__summary">{{ summary }}</span>
+  @if (changes.length > 0) {
+    <span class="ac__chips">
+      @for (f of chipFields; track f) { <span class="ac__chip">{{ f }}</span> }
+      @if (extraCount > 0) { <span class="ac__chip ac__chip--more">+{{ extraCount }}</span> }
+    </span>
+  }
+</div>
+
+<!-- Popover: fixed so the table's overflow never clips it -->
+@if (open) {
+  <div class="ac-pop" [style.top.px]="popTop" [style.left.px]="popLeft" role="tooltip">
+    <div class="ac-pop__head">
+      <span class="ui-badge" [ngClass]="actionClass(log.action)">{{ t('audit.action' + log.action) }}</span>
+      <span class="ac-pop__title">{{ entityLabel }}</span>
+    </div>
+    <table class="ac-pop__table">
+      <thead>
+        <tr><th>{{ t('audit.popField') }}</th><th>{{ t('audit.popOld') }}</th><th></th><th>{{ t('audit.popNew') }}</th></tr>
+      </thead>
+      <tbody>
+        @for (c of changes; track c.field) {
+          <tr>
+            <td class="ac-pop__field">{{ c.label }}</td>
+            <td class="ac-pop__old">{{ c.oldValue }}</td>
+            <td class="ac-pop__arrow" aria-hidden="true">→</td>
+            <td class="ac-pop__new">{{ c.newValue }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

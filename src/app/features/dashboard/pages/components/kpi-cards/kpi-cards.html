@@ -1,1 +1,85 @@
-<p>kpi-cards works!</p>
+<div class="kpi-grid">
+
+  <!-- Organizations -->
+  <div class="kpi kpi--blue">
+    <div class="kpi__top">
+      <p class="kpi__label">{{ t('dashboard.kpi.organizations') }}</p>
+      <span class="kpi__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/></svg>
+      </span>
+    </div>
+    <p class="kpi__value">{{ totalOrganizations | number }}</p>
+    <p class="kpi__meta">
+      @if (newOrganizations > 0) {
+        <span class="kpi__chip kpi__chip--up">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+          {{ newOrganizations }}
+        </span>
+      }
+      {{ t('dashboard.kpi.last30Days') }}
+    </p>
+  </div>
+
+  <!-- Active subscriptions -->
+  <div class="kpi kpi--green">
+    <div class="kpi__top">
+      <p class="kpi__label">{{ t('dashboard.kpi.activeSubscriptions') }}</p>
+      <span class="kpi__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      </span>
+    </div>
+    <p class="kpi__value">{{ activeSubscriptions | number }}</p>
+    <p class="kpi__meta">{{ t('dashboard.kpi.acrossAllProducts') }}</p>
+  </div>
+
+  <!-- Revenue -->
+  <div class="kpi kpi--violet">
+    <div class="kpi__top">
+      <p class="kpi__label">{{ t('dashboard.kpi.monthlyRevenue') }}</p>
+      <span class="kpi__icon kpi__icon--currency">
+        @if (primaryRevenue; as primary) {
+          <app-currency-symbol [ref]="primary" />
+        } @else {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        }
+      </span>
+    </div>
+    @if (primaryRevenue; as primary) {
+      <p class="kpi__value kpi__value--money"><app-money [value]="primary.amount" [ref]="primary" /></p>
+      @if (otherRevenues.length) {
+        <div class="kpi__currencies">
+          @for (r of otherRevenues; track r.currencyCode) {
+            <span class="kpi__currency"><app-money [value]="r.amount" [ref]="r" /></span>
+          }
+        </div>
+      }
+      <p class="kpi__meta">
+        <b><app-money [value]="primary.amount * 12" [ref]="primary" /></b> {{ t('dashboard.kpi.projectedAnnual') }}
+      </p>
+    } @else {
+      <p class="kpi__value">—</p>
+      <p class="kpi__meta">{{ t('dashboard.kpi.projectedAnnual') }}</p>
+    }
+  </div>
+
+  <!-- At risk -->
+  <div class="kpi" [class.kpi--red]="atRiskCount > 0" [class.kpi--gray]="atRiskCount === 0">
+    <div class="kpi__top">
+      <p class="kpi__label">{{ t('dashboard.kpi.atRisk') }}</p>
+      <span class="kpi__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </span>
+    </div>
+    <p class="kpi__value" [class.kpi__value--alert]="atRiskCount > 0">{{ atRiskCount | number }}</p>
+    <p class="kpi__meta">
+      @if (atRiskCount === 0) {
+        <span class="kpi__chip kpi__chip--ok">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ t('dashboard.kpi.healthy') }}
+        </span>
+      }
+      {{ t('dashboard.kpi.expiringSoon') }}
+    </p>
+  </div>
+
+</div>

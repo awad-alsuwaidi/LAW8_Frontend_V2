@@ -24,7 +24,6 @@ export class NoAuthGuard implements CanActivate {
     state: RouterStateSnapshot,
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.authService.isAuthenticated()) {
-      console.warn('[NoAuthGuard] User is already authenticated. Redirecting to dashboard.');
       return this.router.createUrlTree(['/dashboard']);
     }
     return true;
@@ -39,7 +38,6 @@ export const noAuthGuard: CanActivateFn = (
   const router = inject(Router);
 
   if (authService.isAuthenticated()) {
-    console.warn('[noAuthGuard] User is already authenticated. Redirecting to dashboard.');
     return router.createUrlTree(['/dashboard']);
   }
 

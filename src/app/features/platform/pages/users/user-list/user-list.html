@@ -1,1 +1,152 @@
-<p>user-list works!</p>
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('platformRoles.kicker') }}</p>
+      <h1 class="ui-title">
+        {{ t('platformUsers.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('platformUsers.subtitle') }}</p>
+    </div>
+    <div class="ui-actions">
+      <button class="ui-btn ui-btn--primary" (click)="addUser()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ t('platformUsers.addNew') }}
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  @if (!isLoading && users.length) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ users.length }}</b><span>{{ t('tenants.kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ countActive() }}</b><span>{{ t('platformUsers.statusActive') }}</span></div>
+      <div class="ui-kpi ui-kpi--danger"><b>{{ countLocked() }}</b><span>{{ t('platformUsers.statusLocked') }}</span></div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ countInactive() }}</b><span>{{ t('platformUsers.statusInactive') }}</span></div>
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="ui-toolbar">
+    <div class="ui-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        class="ui-input"
+        type="text"
+        [placeholder]="t('platformUsers.search')"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="applyFilters()"
+      />
+    </div>
+    <select class="ui-select" [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()">
+      <option value="">{{ t('platformUsers.filterAllRoles') }}</option>
+      @for (r of roles; track r.name) {
+        <option [value]="r.name">{{ r.name }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- States -->
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('platformUsers.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+    @if (filtered.length === 0) {
+      <div class="ui-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p>{{ t('platformUsers.noData') }}</p>
+        @if (!searchQuery && !roleFilter) {
+          <button class="ui-btn ui-btn--primary" (click)="addUser()">{{ t('platformUsers.addNew') }}</button>
+        }
+      </div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('platformUsers.colName') }}</th>
+              <th>{{ t('platformUsers.colEmail') }}</th>
+              <th>{{ t('platformUsers.colPhone') }}</th>
+              <th>{{ t('platformUsers.colRoles') }}</th>
+              <th>{{ t('platformUsers.colStatus') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of pagedRows; track user.id) {
+              <tr>
+                <td>
+                  <span class="ui-cell-primary">{{ (user | localName) || '—' }}</span>
+                  @if (user.nameAr && user.nameEn && user.nameAr !== user.nameEn) {
+                    <span class="ui-cell-secondary">{{ isAr ? user.nameEn : user.nameAr }}</span>
+                  }
+                </td>
+                <td class="ui-cell-muted">{{ user.email }}</td>
+                <td class="ui-cell-muted ui-cell-num">{{ user.phoneNumber || '—' }}</td>
+                <td>
+                  <div class="roles-wrap">
+                    @if (user.roles.length === 0) {
+                      <span class="roles-none">{{ t('platformUsers.noRoles') }}</span>
+                    }
+                    @for (role of user.roles; track role) {
+                      <span class="ui-badge ui-badge--info ui-badge--plain">{{ role }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="ui-badge" [ngClass]="statusClass(user)">{{ statusLabel(user) }}</span>
+                </td>
+                <td class="ui-cell-actions">
+                  <div class="row-actions">
+                    <button class="ui-btn ui-btn--soft ui-btn--sm" (click)="editUser(user.id)">{{ t('common.edit') }}</button>
+                    <button class="ui-btn ui-btn--ghost ui-btn--sm" (click)="openResetPassword(user)" [title]="t('platformUsers.resetModal.confirmHint')">{{ t('platformUsers.resetPassword') }}</button>
+                    <button class="ui-btn ui-btn--icon is-danger" (click)="confirmDelete(user.id)" [title]="t('common.delete')" [attr.aria-label]="t('common.delete')">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+      </div>
+    }
+  }
+</div>
+
+@if (resetTarget) {
+  <app-reset-password-modal [user]="resetTarget" (closed)="closeResetModal()" />
+}
+
+@if (deleteConfirmId) {
+  <div class="ui-overlay" (click)="cancelDelete()">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('platformUsers.deleteTitle') }}</h3>
+        <button class="ui-modal__close" (click)="cancelDelete()" [attr.aria-label]="t('common.cancel')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        <p>{{ t('platformUsers.deleteBody') }}</p>
+        @if (deleteError) {
+          <div class="ui-alert ui-alert--error">{{ deleteError }}</div>
+        }
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" (click)="cancelDelete()" [disabled]="deleteLoading">{{ t('common.cancel') }}</button>
+        <button class="ui-btn ui-btn--danger" (click)="doDelete()" [disabled]="deleteLoading">
+          {{ deleteLoading ? t('common.deleting') : t('common.delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

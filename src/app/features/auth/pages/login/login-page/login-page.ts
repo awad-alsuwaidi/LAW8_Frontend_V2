@@ -3,11 +3,10 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  PLATFORM_ID,
   inject,
 } from '@angular/core';
 
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -15,6 +14,7 @@ import { finalize, takeUntil } from 'rxjs/operators';
 import { TranslationService, Language } from '../../../services/Translation.service';
 import { LanguageSwitcher } from '../../language-switcher/Language switcher.component';
 import { AuthService } from '../../../../../core/auth/services/auth.service';
+import { getRememberedUsername } from '../../../../../core/auth/services/token-storage';
 
 @Component({
   selector: 'app-login-page',
@@ -27,7 +27,6 @@ export class LoginPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly translationService = inject(TranslationService);
   private readonly authService = inject(AuthService);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
@@ -46,6 +45,12 @@ export class LoginPage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeLanguage();
+    // Prefill from the last "remember me" login.
+    const remembered = getRememberedUsername();
+    if (remembered) {
+      this.userName = remembered;
+      this.rememberMe = true;
+    }
   }
 
   private initializeLanguage(): void {
@@ -85,16 +90,12 @@ export class LoginPage implements OnInit, OnDestroy {
     const username = this.userName.trim();
     const password = this.password;
 
-    console.log('[LoginPage] Login request:', {
-      username,
-      passwordLength: password.length,
-    });
 
     this.isLoading = true;
     this.cdr.markForCheck();
 
     this.authService
-      .login(username, password)
+      .login(username, password, this.rememberMe)
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -104,7 +105,6 @@ export class LoginPage implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response) => {
-          console.log('[LoginPage] Login response:', response);
 
           this.successMessage = response?.message ?? '';
 

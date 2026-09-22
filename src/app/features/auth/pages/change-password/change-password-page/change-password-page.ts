@@ -81,7 +81,6 @@ export class ChangePasswordPage implements OnInit, OnDestroy {
     const otpFlow = this.authService.getOtpFlow();
 
     if (!username || otpFlow !== 'reset') {
-      console.warn('[ChangePasswordPage] Invalid reset flow');
 
       this.router.navigate(['/auth/forgot-password']);
     }
@@ -178,16 +177,10 @@ export class ChangePasswordPage implements OnInit, OnDestroy {
       .resetPassword(username, this.newPassword)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: {
-          data?: {
-            message?: string;
-          };
-          message?: string;
-        }) => {
+        next: (response: { message?: string }) => {
           this.isLoading = false;
 
           this.successMessage =
-            response?.data?.message ??
             response?.message ??
             this.translate('changePassword.success');
 
@@ -196,21 +189,12 @@ export class ChangePasswordPage implements OnInit, OnDestroy {
           this.redirectToLogin();
         },
 
-        error: (error: {
-          error?: {
-            data?: {
-              message?: string;
-            };
-            message?: string;
-          };
-          message?: string;
-        }) => {
+        error: (error: { error?: { message?: string }; message?: string }) => {
           console.error('[ChangePasswordPage] Reset password failed:', error);
 
           this.isLoading = false;
 
           this.errorMessage =
-            error?.error?.data?.message ??
             error?.error?.message ??
             error?.message ??
             this.translate('changePassword.errors.failed');

@@ -1,0 +1,18 @@
+:host { display: block; }
+
+.key-cell { min-width: 180px; }
+
+.key-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--text);
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* Full-width select inside modal forms */
+.ui-select--full { width: 100%; }

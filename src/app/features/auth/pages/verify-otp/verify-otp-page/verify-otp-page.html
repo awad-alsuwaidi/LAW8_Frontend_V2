@@ -1,9 +1,21 @@
-<div class="otp-page">
-  <section class="otp-section">
-    <div class="logo-wrapper"></div>
+<div class="otp-page" [class.is-rtl]="currentLanguage === 'ar'">
 
-    <div class="otp-card">
-      <h1 class="otp-header">{{ translate('otp.title') }}</h1>
+  <!-- LEFT SIDE -->
+  <section class="otp-section" [attr.dir]="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
+    <div class="otp-content">
+
+      <div class="otp-intro">
+        <p class="otp-eyebrow">{{ translate('otp.loginEyebrow') }}</p>
+        <h1>{{ translate('otp.loginTitle') }}</h1>
+        <p class="otp-subtitle">{{ translate('otp.loginSubtitle') }}</p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-message" role="alert">{{ errorMessage() }}</div>
+      }
+      @if (successMessage()) {
+        <div class="success-message" role="status">{{ successMessage() }}</div>
+      }
 
       <div class="otp-inputs">
         @for (digit of otp(); track $index; let i = $index) {
@@ -33,15 +45,14 @@
         (click)="verifyOtp()"
       >
         @if (isLoading()) {
-          <span class="button-loader"></span>
+          <span class="button-loader" aria-hidden="true"></span>
+          <span class="sr-only">{{ translate('otp.verify') }}</span>
         } @else {
           <span>{{ translate('otp.verify') }}</span>
         }
       </button>
 
-      <div class="otp-timer">
-        {{ formattedTime }}
-      </div>
+      <div class="otp-timer">{{ formattedTime }}</div>
 
       <button
         type="button"
@@ -52,24 +63,27 @@
         {{ translate('otp.sendAgain') }}
       </button>
 
-      <div class="powered-by">
-        {{ translate('otp.poweredBy') }}
-      </div>
+      <p class="powered-by">{{ translate('otp.poweredBy') }}</p>
     </div>
   </section>
 
-  <section class="branding-section">
+  <!-- RIGHT SIDE -->
+  <section class="branding-section" [attr.dir]="currentLanguage === 'ar' ? 'rtl' : 'ltr'">
     <div class="branding-header">
-      <button type="button" class="help-button">
-        {{ translate('login.help') }}
-      </button>
-
+      <button type="button" class="help-button">{{ translate('login.help') }}</button>
       <app-language-switcher></app-language-switcher>
     </div>
 
     <div class="branding-content">
-      <h2>{{ translate('otp.heading') }}</h2>
-      <p>{{ translate('otp.description') }}</p>
+      <p class="branding-logo">800IT</p>
+      <h2>{{ translate('otp.loginBrandingTitle') }}</h2>
+      <p class="branding-copy">{{ translate('otp.loginBrandingDescription') }}</p>
+      <ul class="branding-points">
+        <li>{{ translate('otp.loginBrandingPoint1') }}</li>
+        <li>{{ translate('otp.loginBrandingPoint2') }}</li>
+        <li>{{ translate('otp.loginBrandingPoint3') }}</li>
+      </ul>
     </div>
   </section>
+
 </div>

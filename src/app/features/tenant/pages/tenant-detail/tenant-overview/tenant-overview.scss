@@ -1,0 +1,315 @@
+:host { display: block; }
+
+/* ---- Back link ---- */
+
+
+/* ---- Header extras ---- */
+.to-status { font-size: 11.5px; align-self: center; }
+
+.to-subdomain {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+/* ---- Tabs ---- */
+
+
+/* ---- Overview two-column layout ---- */
+.to-overview {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.to-col-left  { display: flex; flex-direction: column; gap: 20px; }
+.to-col-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Sub card (details / admin) ---- */
+.to-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.to-card__title {
+  margin: 0;
+  padding: 12px 18px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--faint);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- Org detail rows ---- */
+.to-details { padding: 4px 0; margin: 0; }
+
+.to-detail {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+
+  dd { margin: 0; font-size: 14px; color: var(--text); }
+}
+
+.to-detail--grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  > div { padding-inline-end: 8px; }
+  > div + div { padding-inline-end: 0; padding-inline-start: 12px; border-inline-start: 1px solid var(--border); }
+}
+
+.to-detail__label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.to-link { color: var(--accent); text-decoration: none; font-size: 14px; &:hover { text-decoration: underline; } }
+
+.to-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  word-break: break-all;
+}
+
+/* ---- Admin card ---- */
+.to-admin {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.to-admin__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.to-admin__info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.to-admin__name  { margin: 0; font-size: 15px; font-weight: 600; color: var(--ink); }
+.to-admin__email { margin: 0; font-size: 13px; color: var(--muted); word-break: break-all; }
+
+.to-admin__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.to-admin__link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+.to-admin__sep { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
+
+.to-pwd {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--success-soft);
+  border: 1px solid var(--success);
+  border-radius: var(--radius-sm);
+}
+
+.to-pwd__label { display: block; margin-bottom: 3px; font-size: 11px; color: var(--success-ink); }
+.to-pwd__value { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: var(--success-ink); word-break: break-all; }
+
+/* ---- Subscriptions ---- */
+.to-subs-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.to-state--sm { padding: 32px 24px; }
+
+.to-sub-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.to-sub-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.to-sub-card__product { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+
+.to-sub-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.to-sub-card__name { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: var(--ink); }
+
+.to-sub-card__price-block { text-align: end; flex-shrink: 0; }
+.to-sub-card__price { margin: 0 0 2px; font-size: 18px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.to-sub-card__renew { margin: 0; font-size: 12px; color: var(--muted); }
+
+.to-sub-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.to-sub-card__billing { color: var(--muted); }
+
+.to-sub-card__resource {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.to-sub-card__resource-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+
+  span:last-child { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+}
+
+.to-sub-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+}
+
+.to-sub-card__cancel {
+  margin-inline-start: auto;
+  color: var(--danger);
+  &:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); }
+}
+
+.to-full-subs { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Audit table extras ---- */
+
+/* ---- Add seats modal ---- */
+.seats-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.seats-summary__item {
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seats-summary__label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.seats-summary__value { font-size: 20px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.seats-impact {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.seats-impact__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+
+  &:last-child { border-bottom: none; }
+
+  &--total {
+    background: var(--accent-soft);
+    font-weight: 700;
+    color: var(--accent);
+  }
+}
+
+/* ---- Small screens ---- */
+@media (max-width: 640px) {
+
+  .to-detail--grid2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    > div + div { padding-inline-start: 0; border-inline-start: none; padding-top: 10px; border-top: 1px solid var(--border); }
+  }
+
+  .to-sub-card__head { flex-direction: column; }
+  .to-sub-card__price-block { text-align: start; }
+  .to-sub-card__foot { flex-wrap: wrap; }
+  .to-sub-card__cancel { margin-inline-start: 0; }
+
+  .seats-summary { grid-template-columns: 1fr; }
+  }
+
+/* ---- License key row ---- */
+.to-key { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.to-key__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: .04em;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  direction: ltr;
+  unicode-bidi: isolate;
+  user-select: all;
+}

@@ -1,0 +1,4 @@
+:host { display: block; }
+
+/* Select inside a modal field spans the full column */
+.ui-modal__grid .ui-select { width: 100%; }

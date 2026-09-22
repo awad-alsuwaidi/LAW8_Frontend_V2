@@ -26,7 +26,6 @@ export class TranslationService {
   initialize(): Observable<void> {
     const initialLanguage = this.getInitialLanguage();
 
-    console.log('[TranslationService] Initializing:', initialLanguage);
 
     return this.loadTranslations(initialLanguage).pipe(
       tap(() => {
@@ -36,7 +35,6 @@ export class TranslationService {
 
         this.translationsReady$.next(true);
 
-        console.log('[TranslationService] Ready:', initialLanguage);
       }),
 
       map(() => void 0),
@@ -46,6 +44,11 @@ export class TranslationService {
 
   getLanguage$(): Observable<Language> {
     return this.currentLanguage$.asObservable();
+  }
+
+  /** BCP-47 tag for Intl formatting; Arabic keeps Latin digits to match the rest of the UI. */
+  getLocale(): string {
+    return this.getCurrentLanguage() === 'ar' ? 'ar-u-nu-latn' : 'en-US';
   }
 
   getCurrentLanguage(): Language {
@@ -93,11 +96,9 @@ export class TranslationService {
 
     const url = `/assets/i18n/${lang}.json`;
 
-    console.log('[TranslationService] Loading:', url);
 
     return this.http.get<TranslationObject>(url).pipe(
       tap((translations) => {
-        console.log(`[TranslationService] ${lang}.json loaded`);
 
         this.translations[lang] = translations;
       }),

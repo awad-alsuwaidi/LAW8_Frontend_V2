@@ -1,1 +1,25 @@
-<p>subscriptions-chart works!</p>
+@if (total === 0) {
+  <div class="sc-empty">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d0d5dd" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10h-10z"/></svg>
+    <p>{{ t('dashboard.insights.noSubscriptions') }}</p>
+  </div>
+} @else {
+  <div class="sc">
+    <div class="sc__donut">
+      <canvas baseChart [data]="chartData" [options]="chartOptions" type="doughnut"></canvas>
+      <div class="sc__center">
+        <span class="sc__total">{{ total | number }}</span>
+        <span class="sc__caption">{{ t('dashboard.insights.total') }}</span>
+      </div>
+    </div>
+    <ul class="sc__legend">
+      @for (item of legendItems; track item.key) {
+        <li class="sc__item">
+          <i class="sc__dot" [style.background]="item.color"></i>
+          <span class="sc__label">{{ item.label }}</span>
+          <span class="sc__val">{{ item.value | number }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+}

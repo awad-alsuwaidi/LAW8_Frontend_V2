@@ -1,1 +1,143 @@
-<p>tenant-list works!</p>
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('tenants.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('tenants.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('tenants.subtitle') }}</p>
+    </div>
+    <div class="ui-actions">
+      <button class="ui-btn ui-btn--ghost" [disabled]="isExporting" (click)="exportCsv()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        {{ isExporting ? t('tenants.exporting') : t('tenants.exportCsv') }}
+      </button>
+      <button class="ui-btn ui-btn--primary" (click)="registerNew()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ t('tenants.addNew') }}
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI strip -->
+  @if (!isLoading && organizations.length) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--info"><b>{{ organizations.length }}</b><span>{{ t('tenants.kpiTotal') }}</span></div>
+      <div class="ui-kpi ui-kpi--success"><b>{{ readyCount }}</b><span>{{ t('tenants.kpiReady') }}</span></div>
+      <div class="ui-kpi ui-kpi--warning"><b>{{ pendingSetupCount }}</b><span>{{ t('tenants.kpiPendingSetup') }}</span></div>
+      <div class="ui-kpi ui-kpi--info"><b>{{ countByDeployment('Cloud') }}</b><span>{{ t('tenants.deployCloud') }}</span></div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ countByDeployment('OnPrem') }}</b><span>{{ t('tenants.deployOnPrem') }}</span></div>
+    </div>
+  }
+
+  <!-- Toolbar -->
+  <div class="ui-toolbar">
+    <div class="ui-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="ui-input" type="text" [placeholder]="t('tenants.search')"
+             [(ngModel)]="searchQuery" (ngModelChange)="applySearch()" />
+    </div>
+    <select class="ui-select" [(ngModel)]="deploymentFilter" (ngModelChange)="applySearch()">
+      <option value="">{{ t('tenants.filterAllDeployments') }}</option>
+      <option value="Cloud">{{ t('tenants.deployCloud') }}</option>
+      <option value="OnPrem">{{ t('tenants.deployOnPrem') }}</option>
+    </select>
+  </div>
+
+  <!-- States -->
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+    @if (filtered.length === 0) {
+      <div class="ui-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+        <p>{{ t('tenants.noData') }}</p>
+        @if (!searchQuery && !deploymentFilter) {
+          <button class="ui-btn ui-btn--primary" (click)="registerNew()">{{ t('tenants.registerFirst') }}</button>
+        }
+      </div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('tenants.colName') }}</th>
+              <th>{{ t('tenants.colSubdomain') }}</th>
+              <th>{{ t('tenants.colDeployment') }}</th>
+              <th>{{ t('tenants.colSetup') }}</th>
+              <th>{{ t('tenants.colSubscriptions') }}</th>
+              <th class="ui-cell-num">{{ t('tenants.colMonthly') }}</th>
+              <th>{{ t('tenants.colCreated') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (org of pagedRows; track org.id) {
+              <tr class="is-clickable" (click)="navigateTo(org.id)">
+                <td>
+                  <div class="org">
+                    <span class="org__avatar" [style.background]="avatarColor(org.nameEn)">{{ initials(org.nameEn) }}</span>
+                    <div class="org__text">
+                      <span class="ui-cell-primary">{{ org.nameEn }}</span>
+                      <span class="ui-cell-secondary">{{ org.tenantCode }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="ui-cell-mono">{{ org.subdomain }}</td>
+                <td>
+                  <span class="ui-badge ui-badge--plain" [class.ui-badge--info]="org.deploymentType === 'Cloud'" [class.ui-badge--violet]="org.deploymentType === 'OnPrem'">
+                    {{ org.deploymentType === 'Cloud' ? t('tenants.deployCloud') : t('tenants.deployOnPrem') }}
+                  </span>
+                </td>
+                <td>
+                  @if (org.deploymentType === 'OnPrem') {
+                    <span class="ui-badge ui-badge--violet ui-badge--plain">{{ t('tenants.setupOnSite') }}</span>
+                  } @else if (org.identityProvisioned) {
+                    <span class="ui-badge ui-badge--success">{{ t('tenants.setupReady') }}</span>
+                  } @else {
+                    <span class="ui-badge ui-badge--warning">{{ t('tenants.setupPending') }}</span>
+                  }
+                </td>
+                <td>
+                  @if (org.subscriptions.length === 0) {
+                    <span class="ui-cell-muted">—</span>
+                  } @else {
+                    <div class="subs">
+                      @for (s of org.subscriptions; track s.id) {
+                        <span class="subs__chip" [class.subs__chip--off]="s.status !== 'Active'" [title]="t('subscriptions.status' + s.status)">
+                          {{ s | productLabel }} <small>× {{ s.numberOfUsers }}</small>
+                        </span>
+                      }
+                    </div>
+                  }
+                </td>
+                <td class="ui-cell-num">
+                  @if (org.totalActiveGrandTotal > 0) {
+                    <span class="ui-cell-primary"><app-money [value]="org.totalActiveGrandTotal" [ref]="org" /></span>
+                  } @else { <span class="ui-cell-muted">—</span> }
+                </td>
+                <td class="ui-cell-muted ui-cell-num">{{ org.createdAt | date: 'dd MMM yyyy' }}</td>
+                <td class="ui-cell-actions">
+                  <button class="ui-btn ui-btn--soft ui-btn--sm" (click)="$event.stopPropagation(); navigateTo(org.id)">
+                    {{ t('tenants.viewDetails') }}
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+      </div>
+    }
+  }
+</div>

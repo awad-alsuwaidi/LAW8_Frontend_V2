@@ -1,1 +1,125 @@
-<p>dashboard-main works!</p>
+<div class="ui-page dash">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="hero__glow hero__glow--a" aria-hidden="true"></div>
+    <div class="hero__glow hero__glow--b" aria-hidden="true"></div>
+    <div class="hero__body">
+      <p class="hero__date">{{ todayLabel }}</p>
+      <h1 class="hero__title">{{ greeting }}@if (firstName) {<span>{{ t('dashboard.hero.comma') }} {{ firstName }}</span>} 👋</h1>
+      <p class="hero__subtitle">{{ t('dashboard.subtitle') }}</p>
+    </div>
+    <div class="hero__actions">
+      <button class="hero__btn hero__btn--ghost" [disabled]="exporting()" (click)="exportReport()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        {{ exporting() ? t('dashboard.exporting') : t('dashboard.exportReport') }}
+      </button>
+      <button class="hero__btn hero__btn--solid" (click)="newTenant()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        {{ t('dashboard.newTenant') }}
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== States ===== -->
+  @if (loading()) {
+    <div class="dash-skeleton">
+      <div class="dash-skeleton__row dash-skeleton__row--kpi">
+        @for (i of [1,2,3,4]; track i) { <div class="sk sk--kpi"></div> }
+      </div>
+      <div class="dash-skeleton__row dash-skeleton__row--insights">
+        @for (i of [1,2,3]; track i) { <div class="sk sk--panel"></div> }
+      </div>
+    </div>
+  } @else if (error() && !summary()) {
+    <div class="dash-error">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p>{{ error() }}</p>
+      <button class="ui-btn ui-btn--ghost" (click)="load()">{{ t('dashboard.retry') }}</button>
+    </div>
+  } @else {
+
+    @if (error()) { <div class="ui-alert ui-alert--error">{{ error() }}</div> }
+
+    <!-- ===== KPI strip (overlaps the hero) ===== -->
+    <div class="dash-kpis reveal" style="--i: 0">
+      <app-kpi-cards [summary]="summary()" />
+    </div>
+
+    <!-- ===== Insights ===== -->
+    <section class="dash-insights">
+
+      <div class="dash-panel reveal" style="--i: 1">
+        <div class="dash-panel__head">
+          <div class="dash-panel__heading">
+            <span class="dash-panel__icon dash-panel__icon--green">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10h-10z"/></svg>
+            </span>
+            <h3 class="dash-panel__title">{{ t('dashboard.insights.byStatus') }}</h3>
+          </div>
+        </div>
+        <app-subscriptions-chart [items]="byStatus()" />
+      </div>
+
+      <div class="dash-panel reveal" style="--i: 2">
+        <div class="dash-panel__head">
+          <div class="dash-panel__heading">
+            <span class="dash-panel__icon dash-panel__icon--blue">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </span>
+            <h3 class="dash-panel__title">{{ t('dashboard.insights.byProduct') }}</h3>
+          </div>
+          <span class="dash-panel__hint">{{ t('dashboard.insights.activeOnly') }}</span>
+        </div>
+        <app-breakdown-list [items]="byProduct()" [emptyText]="t('dashboard.insights.noProducts')" />
+      </div>
+
+      <div class="dash-panel reveal" style="--i: 3">
+        <div class="dash-panel__head">
+          <div class="dash-panel__heading">
+            <span class="dash-panel__icon dash-panel__icon--violet">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+            </span>
+            <h3 class="dash-panel__title">{{ t('dashboard.insights.organizations') }}</h3>
+          </div>
+          <span class="dash-panel__hint">{{ totalOrgs() }} {{ t('dashboard.insights.total') }}</span>
+        </div>
+
+        <!-- Deployment split as two tiles -->
+        <div class="deploy">
+          <div class="deploy__tile deploy__tile--cloud">
+            <span class="deploy__icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            </span>
+            <span class="deploy__label">{{ t('dashboard.insights.cloud') }}</span>
+            <span class="deploy__value">{{ deploymentCount('Cloud') }}</span>
+            <span class="deploy__pct">{{ deploymentPct('Cloud') }}%</span>
+          </div>
+          <div class="deploy__tile deploy__tile--onprem">
+            <span class="deploy__icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </span>
+            <span class="deploy__label">{{ t('dashboard.insights.onPrem') }}</span>
+            <span class="deploy__value">{{ deploymentCount('OnPrem') }}</span>
+            <span class="deploy__pct">{{ deploymentPct('OnPrem') }}%</span>
+          </div>
+        </div>
+        <div class="deploy__bar" aria-hidden="true">
+          <span class="deploy__seg deploy__seg--cloud" [style.width.%]="deploymentPct('Cloud')"></span>
+          <span class="deploy__seg deploy__seg--onprem" [style.width.%]="deploymentPct('OnPrem')"></span>
+        </div>
+
+        <p class="dash-panel__sublabel">{{ t('dashboard.insights.byOrgType') }}</p>
+        <app-breakdown-list [items]="byOrgType()" [compact]="true" [emptyText]="t('dashboard.insights.noOrgTypes')" />
+      </div>
+
+    </section>
+
+    <!-- ===== Attention + Activity ===== -->
+    <section class="dash-bottom">
+      <div class="reveal" style="--i: 4"><app-at-risk-subscriptions [items]="summary()?.atRiskSubscriptions ?? []" /></div>
+      <div class="reveal" style="--i: 5"><app-activity-feed [items]="summary()?.recentActivity ?? []" /></div>
+    </section>
+
+  }
+</div>

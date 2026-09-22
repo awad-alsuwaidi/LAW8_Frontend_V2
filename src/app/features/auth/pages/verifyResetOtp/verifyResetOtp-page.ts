@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -30,7 +31,7 @@ const RESEND_SECONDS = 297;
   templateUrl: './verifyResetOtp-page.html',
   styleUrl: './verifyResetOtp-page.scss',
 })
-export class verifyResetOtp implements OnInit, OnDestroy {
+export class verifyResetOtp implements OnInit, AfterViewInit, OnDestroy {
   readonly otpLength = OTP_LENGTH;
 
   readonly otp = signal<string[]>(Array(OTP_LENGTH).fill(''));
@@ -146,6 +147,22 @@ export class verifyResetOtp implements OnInit, OnDestroy {
     const focusIndex = Math.min(startIndex + toFill.length, this.otpLength - 1);
 
     this.focusInput(focusIndex);
+
+    this.autoSubmitIfComplete();
+  }
+
+  private autoSubmitIfComplete(): void {
+    if (this.isOtpComplete() && !this.isLoading()) {
+      setTimeout(() => this.verifyOtp(), 50);
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // `autofocus` only fires on a full page load; after SPA navigation we
+    // have to focus the first cell ourselves.
+    if (isPlatformBrowser(this.platformId)) {
+      this.focusInput(0);
+    }
   }
 
   private focusInput(index: number): void {
@@ -198,6 +215,8 @@ export class verifyResetOtp implements OnInit, OnDestroy {
 
     if (index < this.otpLength - 1) {
       this.focusInput(index + 1);
+    } else {
+      this.autoSubmitIfComplete();
     }
   }
 
@@ -275,6 +294,8 @@ export class verifyResetOtp implements OnInit, OnDestroy {
 
       if (index < this.otpLength - 1) {
         this.focusInput(index + 1);
+      } else {
+        this.autoSubmitIfComplete();
       }
 
       return;
@@ -320,7 +341,6 @@ export class verifyResetOtp implements OnInit, OnDestroy {
         next: (response) => {
           this.isLoading.set(false);
 
-          console.log('[VerifyResetOtpPage] Reset OTP verified successfully:', response);
 
           const resetToken = response?.data?.token || response?.token;
           if (resetToken) {
@@ -368,7 +388,6 @@ export class verifyResetOtp implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('[VerifyResetOtpPage] OTP resent successfully.');
 
           this.startTimer();
         },

@@ -1,0 +1,131 @@
+:host { display: block; }
+
+.uf-mode { font-size: 11.5px; align-self: center; }
+
+/* ---- Layout (mirrors tenant edit) ---- */
+.uf-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+  align-items: start;
+  @media (max-width: 1000px) { grid-template-columns: 1fr; }
+}
+
+.uf-main, .uf-side { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+/* ---- Cards ---- */
+.uf-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.uf-card__title {
+  margin: 0;
+  padding: 12px 18px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--faint);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.uf-card__body { padding: 18px; }
+
+.uf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+  &__full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.uf-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ---- Roles picker ---- */
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.role-check {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+
+  input { position: absolute; opacity: 0; width: 0; height: 0; }
+  &:hover { border-color: var(--accent); background: var(--surface-2); }
+  &.is-selected { border-color: var(--accent); background: var(--accent-soft); }
+  input:focus-visible ~ .role-check__box { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.role-check__box {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+  border: 2px solid var(--border-strong); background: var(--surface);
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  svg { opacity: 0; }
+  .is-selected & { background: var(--accent); border-color: var(--accent); svg { opacity: 1; } }
+}
+
+.role-check__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.role-check__name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.role-check__count { font-size: 11.5px; color: var(--faint); }
+
+.uf-toggles { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---- Side: roles chips, profile ---- */
+.uf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.uf-muted { margin: 0; font-size: 13.5px; color: var(--faint); }
+.uf-note { margin: 12px 0 0; font-size: 12.5px; color: var(--faint); line-height: 1.5; }
+
+.uf-profile { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
+
+.uf-avatar {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.uf-profile__info { min-width: 0; }
+.uf-profile__name  { margin: 0; font-size: 15px; font-weight: 600; color: var(--ink); }
+.uf-profile__email { margin: 2px 0 0; font-size: 13px; color: var(--muted); word-break: break-all; direction: ltr; unicode-bidi: isolate; text-align: start; }
+
+/* ---- Password field ---- */
+.pwd-row { display: flex; gap: 8px; align-items: flex-start; }
+.pwd-input { position: relative; flex: 1; min-width: 0; .ui-input { padding-right: 38px; padding-left: 12px; direction: ltr; text-align: left; } }
+
+.pwd-eye {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border: none; background: transparent; border-radius: 6px;
+  color: var(--faint); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  &:hover { background: var(--surface-2); color: var(--text); }
+}
+
+.pwd-gen { flex-shrink: 0; }
+
+.pwd-rules {
+  list-style: none; margin: 4px 0 0; padding: 10px 12px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 12.5px; color: var(--muted);
+
+  li { display: flex; align-items: center; gap: 7px; transition: color .15s; }
+  li.is-met { color: var(--success-ink); }
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.pwd-rules__dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0;
+  .is-met & { background: var(--success); }
+}

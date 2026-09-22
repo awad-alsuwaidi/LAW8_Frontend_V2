@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   CanActivate,
   CanActivateFn,
@@ -27,7 +27,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    console.warn('[AuthGuard] User is not authenticated. Redirecting to login.');
     return this.router.createUrlTree(['/auth/login'], {
       queryParams: { returnUrl: state.url },
     });
@@ -45,10 +44,8 @@ export const authGuard: CanActivateFn = (
     return true;
   }
 
-  console.warn('[authGuard] User is not authenticated. Redirecting to login.');
   return router.createUrlTree(['/auth/login'], {
     queryParams: { returnUrl: state.url },
   });
 };
 
-import { inject } from '@angular/core';

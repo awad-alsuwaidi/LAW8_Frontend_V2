@@ -1,1 +1,66 @@
-<p>attachment-upload works!</p>
+<div class="ui-page upload-page">
+
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="cancel()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('tenants.eyebrow') }}</p>
+  </div>
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <h1 class="ui-title">{{ t('tenants.attachments.uploadTitle') }}</h1>
+      <p class="ui-subtitle">{{ t('tenants.attachments.uploadSubtitle') }}</p>
+    </div>
+  </header>
+
+  @if (errorMessage)   { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+  @if (successMessage) { <div class="ui-alert ui-alert--success">{{ successMessage }}</div> }
+
+  <form class="ui-card form-card" [formGroup]="form" (ngSubmit)="upload()">
+
+    <!-- File picker -->
+    <div class="ui-field">
+      <div class="drop-zone" [class.is-invalid]="!!fileError" [class.has-file]="!!selectedFile" (click)="fileInput.click()" role="button" tabindex="0" (keydown.enter)="fileInput.click()">
+        @if (!selectedFile) {
+          <svg class="drop-zone__icon" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p class="drop-zone__text">{{ t('tenants.attachments.dropText') }}</p>
+          <p class="drop-zone__hint">{{ t('tenants.attachments.dropHint') }}</p>
+        } @else {
+          <svg class="drop-zone__icon" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p class="drop-zone__text drop-zone__file">{{ selectedFile.name }}</p>
+          <p class="drop-zone__hint">{{ formatSize(selectedFile.size) }}</p>
+          <button type="button" class="ui-btn ui-btn--ghost ui-btn--sm"
+            (click)="$event.stopPropagation(); clearFile()">{{ t('tenants.attachments.remove') }}</button>
+        }
+      </div>
+      @if (fileError) { <span class="ui-error">{{ fileError }}</span> }
+      <input #fileInput type="file" class="hidden-input" (change)="onFileChange($event)" />
+    </div>
+
+    <!-- Document type -->
+    <div class="ui-field">
+      <label class="ui-label" for="docType">{{ t('tenants.attachments.docType') }} <span class="ui-req">*</span></label>
+      <select id="docType" class="ui-select doc-type-select" formControlName="documentType"
+              [class.is-invalid]="f['documentType'].invalid && f['documentType'].touched">
+        @for (dt of documentTypes; track dt) {
+          <option [value]="dt">{{ t('tenants.attachments.docTypes.' + dt) }}</option>
+        }
+      </select>
+      @if (f['documentType'].errors?.['required'] && f['documentType'].touched) {
+        <span class="ui-error">{{ t('tenants.attachments.docTypeRequired') }}</span>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="ui-btn ui-btn--ghost" (click)="cancel()">{{ t('common.cancel') }}</button>
+      <button type="submit" class="ui-btn ui-btn--primary" [disabled]="isUploading">
+        @if (isUploading) { <span class="btn-spinner"></span> {{ t('tenants.attachments.uploading') }} } @else { {{ t('tenants.attachments.upload') }} }
+      </button>
+    </div>
+
+  </form>
+</div>

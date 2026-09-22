@@ -1,1 +1,126 @@
-<p>my-org works!</p>
+<div class="ui-page">
+
+  <!-- Header -->
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('selfService.eyebrow') }}</p>
+      <h1 class="ui-title">{{ t('selfService.title') }}</h1>
+      <p class="ui-subtitle">{{ t('selfService.subtitle') }}</p>
+    </div>
+  </header>
+
+  @if (!currentUser) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('common.loading') }}</p></div>
+  } @else {
+
+    <!-- Identity banner -->
+    <section class="me-hero">
+      <span class="me-hero__avatar">{{ initials }}</span>
+      <div class="me-hero__info">
+        <h2 class="me-hero__name">{{ displayName }}</h2>
+        <p class="me-hero__email">{{ currentUser.email }}</p>
+        <div class="me-hero__meta">
+          @if (currentUser.locked) {
+            <span class="ui-badge ui-badge--danger">{{ t('selfService.statusLocked') }}</span>
+          } @else if (currentUser.active) {
+            <span class="ui-badge ui-badge--success">{{ t('selfService.statusActive') }}</span>
+          } @else {
+            <span class="ui-badge ui-badge--neutral">{{ t('selfService.statusInactive') }}</span>
+          }
+          @for (role of currentUser.roles; track role) {
+            <span class="ui-badge ui-badge--info ui-badge--plain">{{ role }}</span>
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="me-layout">
+
+      <!-- Main -->
+      <div class="me-main">
+
+        <section class="me-card">
+          <h3 class="me-card__title">{{ t('selfService.sectionProfile') }}</h3>
+          <dl class="me-facts">
+            <div class="me-fact">
+              <dt>{{ t('selfService.labelNameAr') }}</dt>
+              <dd>{{ currentUser.nameAr || '—' }}</dd>
+            </div>
+            <div class="me-fact">
+              <dt>{{ t('selfService.labelName') }}</dt>
+              <dd>{{ currentUser.nameEn || '—' }}</dd>
+            </div>
+            <div class="me-fact">
+              <dt>{{ t('selfService.labelEmail') }}</dt>
+              <dd class="me-ltr">{{ currentUser.email }}</dd>
+            </div>
+            <div class="me-fact">
+              <dt>{{ t('selfService.labelStatus') }}</dt>
+              <dd>
+                @if (currentUser.locked) {
+                  <span class="ui-badge ui-badge--danger">{{ t('selfService.statusLocked') }}</span>
+                } @else if (currentUser.active) {
+                  <span class="ui-badge ui-badge--success">{{ t('selfService.statusActive') }}</span>
+                } @else {
+                  <span class="ui-badge ui-badge--neutral">{{ t('selfService.statusInactive') }}</span>
+                }
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="me-card">
+          <div class="me-card__head">
+            <h3 class="me-card__title me-card__title--inline">{{ t('selfService.sectionRoles') }}</h3>
+            <span class="me-card__hint">{{ currentUser.roles.length }}</span>
+          </div>
+          <div class="me-card__body">
+            @if (!currentUser.roles.length) {
+              <p class="me-muted">{{ t('selfService.noRoles') }}</p>
+            } @else {
+              <div class="me-roles">
+                @for (role of currentUser.roles; track role) {
+                  <div class="me-role">
+                    <span class="me-role__icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </span>
+                    <span class="me-role__name">{{ role }}</span>
+                  </div>
+                }
+              </div>
+            }
+            <p class="me-note">{{ t('selfService.rolesNote') }}</p>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Side -->
+      <aside class="me-side">
+        <section class="me-card">
+          <h3 class="me-card__title">{{ t('selfService.sectionPassword') }}</h3>
+          <div class="me-card__body">
+            <div class="me-security">
+              <span class="me-security__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <p class="me-security__text">
+                {{ t('selfService.passwordDesc') }}
+                <b class="me-ltr">{{ currentUser.email }}</b>
+              </p>
+            </div>
+
+            @if (resetSent) { <div class="ui-alert ui-alert--success">{{ t('selfService.resetSent') }}</div> }
+            @if (resetError) { <div class="ui-alert ui-alert--error">{{ resetError }}</div> }
+
+            <button class="ui-btn ui-btn--primary me-security__btn" type="button" [disabled]="isSendingReset" (click)="sendPasswordReset()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              {{ isSendingReset ? t('selfService.sending') : t('selfService.sendReset') }}
+            </button>
+          </div>
+        </section>
+      </aside>
+
+    </div>
+  }
+</div>

@@ -7,6 +7,8 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { EmailInputDirective } from '../../../../../core/validators/email-input.directive';
+import { isValidEmail } from '../../../../../core/validators/common.validators';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { Subject, timer } from 'rxjs';
@@ -18,7 +20,7 @@ import { AuthService } from '../../../../../core/auth/services/auth.service';
 @Component({
   selector: 'app-forgot-password-page',
   standalone: true,
-  imports: [FormsModule, LanguageSwitcher],
+  imports: [FormsModule, LanguageSwitcher, EmailInputDirective],
   templateUrl: './forgot-password-page.html',
   styleUrl: './forgot-password-page.scss',
 })
@@ -124,7 +126,7 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
   }
 
   private isValidEmail(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    return isValidEmail(email);
   }
 
   backToLogin(): void {

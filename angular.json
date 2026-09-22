@@ -31,7 +31,7 @@
               },
               "src/staticwebapp.config.json"
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/styles.scss", "public/assets/icons/style.css"]
           },
           "configurations": {
             "production": {

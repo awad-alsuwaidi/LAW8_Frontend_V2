@@ -1,1 +1,479 @@
-<p>tenant-overview works!</p>
+<div class="ui-page">
+
+  <!-- Back nav -->
+  <div class="ui-crumb">
+    <button class="ui-back" type="button" (click)="back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      {{ t('common.back') }}
+    </button>
+    <span class="ui-crumb__sep" aria-hidden="true"></span>
+    <p class="ui-eyebrow">{{ t('tenants.eyebrow') }}</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.overview.loading') }}</p></div>
+  }
+
+  @if (!isLoading && errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (!isLoading && org) {
+
+    <!-- Page header -->
+    <header class="ui-page-header">
+      <div>
+        <h1 class="ui-title">
+          {{ org.nameEn }}
+          <span class="ui-badge to-status" [ngClass]="statusClass(org.status)">{{ statusLabel(org.status) }}</span>
+        </h1>
+        <a class="ui-subtitle to-subdomain" [href]="'https://' + org.subdomain + '.law8.com'" target="_blank" rel="noopener">
+          {{ org.subdomain }}.law8.com
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+      <div class="ui-actions">
+        @if (org.deploymentType !== 'OnPrem') {
+        <button class="ui-btn ui-btn--ghost" type="button" [disabled]="actionLoading || provisioningHealthy" (click)="retryProvisioning()" [title]="provisioningHealthy ? t('tenants.overview.provisioning.healthyHint') : t('tenants.overview.retryProvisioningHint')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          {{ t('tenants.overview.retryProvisioning') }}
+        </button>
+        }
+        <button class="ui-btn ui-btn--primary" type="button" (click)="edit()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          {{ t('tenants.overview.editTenant') }}
+        </button>
+      </div>
+    </header>
+
+    @if (provisioning && !provisioningHealthy && org.deploymentType !== 'OnPrem') {
+      <div class="ui-alert ui-alert--warning">{{ t('tenants.overview.provisioning.incomplete') }}</div>
+    }
+    @if (actionMessage) { <div class="ui-alert ui-alert--success">{{ actionMessage }}</div> }
+    @if (actionError)   { <div class="ui-alert ui-alert--error">{{ actionError }}</div> }
+
+    <!-- Tabs -->
+    <div class="ui-tabs" role="tablist">
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'overview'" [class.is-active]="tab === 'overview'" (click)="setTab('overview')">{{ t('tenants.overview.tabOverview') }}</button>
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'subscriptions'" [class.is-active]="tab === 'subscriptions'" (click)="setTab('subscriptions')">{{ t('tenants.overview.tabSubscriptions') }} <span class="ui-tab__count">{{ subscriptions.length }}</span></button>
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'auditlogs'" [class.is-active]="tab === 'auditlogs'" (click)="setTab('auditlogs')">{{ t('tenants.overview.tabAuditLogs') }}</button>
+      <a class="ui-tab" role="tab" [routerLink]="['/tenants', orgId, 'attachments']">{{ t('tenants.overview.tabAttachments') }} @if (attachmentCount !== null) { <span class="ui-tab__count">{{ attachmentCount }}</span> }</a>
+    </div>
+
+    <!-- ========== OVERVIEW TAB ========== -->
+    @if (tab === 'overview') {
+      <div class="to-overview">
+
+        <!-- Left column -->
+        <div class="to-col-left">
+
+          <!-- Organization Details card -->
+          <section class="to-card">
+            <h3 class="to-card__title">{{ t('tenants.overview.orgDetails') }}</h3>
+            <dl class="to-details">
+
+              <div class="to-detail">
+                <dt class="to-detail__label">{{ t('tenants.overview.subdomain') }}</dt>
+                <dd>
+                  <a class="to-link" [href]="'https://' + org.subdomain + '.law8.com'" target="_blank" rel="noopener">
+                    {{ org.subdomain }}.law8.com
+                  </a>
+                </dd>
+              </div>
+
+              <div class="to-detail to-detail--grid2">
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.region') }}</dt>
+                  <dd>{{ pick(org.regionName, org.regionNameAr) || '—' }}</dd>
+                </div>
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.country') }}</dt>
+                  <dd>{{ pick(org.countryName, org.countryNameAr) || '—' }}</dd>
+                </div>
+              </div>
+
+              <div class="to-detail to-detail--grid2">
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.deployment') }}</dt>
+                  <dd>
+                    <span class="ui-badge ui-badge--plain" [class.ui-badge--info]="org.deploymentType === 'Cloud'" [class.ui-badge--violet]="org.deploymentType !== 'Cloud'">
+                      {{ deployLabel(org.deploymentType) }}
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.orgType') }}</dt>
+                  <dd>{{ pick(org.organizationTypeName, org.organizationTypeNameAr) || '—' }}</dd>
+                </div>
+              </div>
+
+              <div class="to-detail to-detail--grid2">
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.phone') }}</dt>
+                  <dd dir="ltr" class="ui-cell-num">{{ org.phoneNumber || '—' }}</dd>
+                </div>
+                <div>
+                  <dt class="to-detail__label">{{ t('tenants.overview.address') }}</dt>
+                  <dd>{{ org.address || '—' }}</dd>
+                </div>
+              </div>
+
+              <div class="to-detail">
+                <dt class="to-detail__label">{{ t('tenants.overview.currency') }}</dt>
+                <dd>
+                  @if (org.currencyCode) {
+                    {{ org.currencyCode }}@if (org.currencySymbol) { <span class="ui-cell-muted">(<app-currency-symbol [ref]="org" />)</span> }
+                  } @else { — }
+                </dd>
+              </div>
+
+              <div class="to-detail">
+                <dt class="to-detail__label">{{ t('tenants.overview.tenantId') }}</dt>
+                <dd class="to-mono">{{ org.id }}</dd>
+              </div>
+
+              @if (org.deploymentType === 'OnPrem') {
+                <div class="to-detail to-detail--key">
+                  <dt class="to-detail__label">{{ t('tenants.overview.licenseKey') }}</dt>
+                  <dd>
+                    @if (org.licenseKey) {
+                      <div class="to-key">
+                        <code class="to-key__code">{{ org.licenseKey }}</code>
+                        <button class="ui-btn ui-btn--icon" type="button" (click)="copyLicenseKey()" [title]="t('common.copy')">
+                          @if (keyCopied) {
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          } @else {
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          }
+                        </button>
+                        <a class="ui-btn ui-btn--soft ui-btn--sm" [routerLink]="['/licensing']" [queryParams]="{ q: org.licenseKey }">{{ t('tenants.overview.viewLicense') }}</a>
+                      </div>
+                    } @else {
+                      <span class="ui-cell-muted">{{ t('tenants.overview.noLicenseKey') }}</span>
+                    }
+                  </dd>
+                </div>
+              }
+
+              @if (org.createdAt) {
+                <div class="to-detail">
+                  <dt class="to-detail__label">{{ t('tenants.overview.created') }}</dt>
+                  <dd>{{ org.createdAt | date: 'd MMM yyyy' }}</dd>
+                </div>
+              }
+
+            </dl>
+          </section>
+
+          <!-- Primary Administrator card -->
+          <section class="to-card">
+            <h3 class="to-card__title">{{ t('tenants.overview.primaryAdmin') }}</h3>
+            <div class="to-admin">
+              <div class="to-admin__avatar">{{ getInitials(org.adminName) }}</div>
+              <div class="to-admin__info">
+                @if (org.adminName) {
+                  <p class="to-admin__name">{{ org.adminName }}</p>
+                }
+                <p class="to-admin__email">{{ org.adminEmail }}</p>
+                <div class="to-admin__actions">
+                  <a class="to-admin__link" [href]="'mailto:' + org.adminEmail">{{ t('tenants.overview.email') }}</a>
+                  <span class="to-admin__sep" aria-hidden="true"></span>
+                  <button class="to-admin__link" type="button" (click)="doResetAdminPassword()" [disabled]="actionLoading">
+                    {{ t('tenants.overview.resetPassword') }}
+                  </button>
+                </div>
+                @if (showResetPassword && resetPassword) {
+                  <div class="to-pwd">
+                    <span class="to-pwd__label">{{ t('tenants.overview.newPasswordLabel') }}</span>
+                    <code class="to-pwd__value">{{ resetPassword }}</code>
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right column: Active Subscriptions -->
+        <div class="to-col-right">
+          <h3 class="to-subs-title">{{ t('tenants.overview.activeSubscriptions') }}</h3>
+
+          @if (isLoadingSubs) {
+            <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.overview.loadingSubs') }}</p></div>
+          }
+
+          @if (!isLoadingSubs && subsError) {
+            <div class="ui-alert ui-alert--error">{{ subsError }}</div>
+          }
+
+          @if (!isLoadingSubs && activeSubscriptions().length === 0 && !subsError) {
+            <div class="ui-state to-state--sm">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <p>{{ t('tenants.overview.noActiveSubs') }}</p>
+            </div>
+          }
+
+          @for (sub of activeSubscriptions(); track sub.id; let i = $index) {
+            <div class="to-sub-card">
+              <div class="to-sub-card__head">
+                <div class="to-sub-card__product">
+                  <div class="to-sub-card__icon" [style.background]="subColor(i)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                      @if (i % 3 === 0) {
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                      } @else if (i % 3 === 1) {
+                        <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                      } @else {
+                        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                      }
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="to-sub-card__name">{{ sub | productLabel }}</p>
+                    <span class="ui-badge ui-badge--success">{{ t('tenants.overview.active') }}</span>
+                  </div>
+                </div>
+                <div class="to-sub-card__price-block">
+                  <p class="to-sub-card__price">@if (sub.totalPrice) { <app-money [value]="sub.totalPrice" [ref]="sub" />{{ cycleSuffix(sub) }} }</p>
+                  @if (sub.endDate) {
+                    <p class="to-sub-card__renew">{{ t('tenants.overview.expires') }} {{ sub.endDate | date: 'd MMM yyyy' }}</p>
+                  }
+                </div>
+              </div>
+
+              <div class="to-sub-card__meta">
+                <span class="to-sub-card__billing">{{ billingLabel(sub.billingCycle) }}</span>
+                @if (sub.remainingDays >= 0) {
+                  <span class="ui-badge ui-badge--plain" [ngClass]="sub.remainingDays <= 30 ? 'ui-badge--warning' : 'ui-badge--neutral'">
+                    {{ sub.remainingDays }}{{ t('tenants.overview.daysRemaining') }}
+                  </span>
+                }
+              </div>
+
+              <div class="to-sub-card__resource">
+                <div class="to-sub-card__resource-head">
+                  <span>{{ t('tenants.overview.licensedUsers') }}</span>
+                  <span>{{ sub.numberOfUsers }} {{ t('tenants.overview.seats') }}</span>
+                </div>
+              </div>
+
+              <div class="to-sub-card__foot">
+                <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="openManageSeats(sub, $event)">{{ t('tenants.overview.addSeats') }}</button>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+    <!-- ========== SUBSCRIPTIONS TAB ========== -->
+    @if (tab === 'subscriptions') {
+      <div class="to-full-subs">
+        @if (isLoadingSubs) {
+          <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.overview.loading') }}</p></div>
+        }
+        @if (!isLoadingSubs && subscriptions.length === 0) {
+          <div class="ui-state">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <p>{{ t('tenants.overview.noSubs') }}</p>
+          </div>
+        }
+        @for (sub of subscriptions; track sub.id; let i = $index) {
+          <div class="to-sub-card to-sub-card--full">
+            <div class="to-sub-card__head">
+              <div class="to-sub-card__product">
+                <div class="to-sub-card__icon" [style.background]="subColor(i)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="to-sub-card__name">{{ sub | productLabel }}</p>
+                  <span class="ui-badge" [ngClass]="statusClass(sub.status)">{{ statusLabel(sub.status) }}</span>
+                </div>
+              </div>
+              <div class="to-sub-card__price-block">
+                <p class="to-sub-card__price">@if (sub.totalPrice) { <app-money [value]="sub.totalPrice" [ref]="sub" />{{ cycleSuffix(sub) }} }</p>
+                @if (sub.endDate) {
+                  <p class="to-sub-card__renew">{{ sub.endDate | date: 'd MMM yyyy' }}</p>
+                }
+              </div>
+            </div>
+            <div class="to-sub-card__meta">
+              <span class="to-sub-card__billing">{{ billingLabel(sub.billingCycle) }}</span>
+              @if (sub.remainingDays >= 0) {
+                <span class="ui-badge ui-badge--plain" [ngClass]="sub.remainingDays <= 30 ? 'ui-badge--warning' : 'ui-badge--neutral'">
+                  {{ sub.remainingDays }}{{ t('tenants.overview.daysRemaining') }}
+                </span>
+              }
+            </div>
+            <div class="to-sub-card__resource">
+              <div class="to-sub-card__resource-head">
+                <span>{{ t('tenants.overview.users') }}</span>
+                <span>{{ sub.numberOfUsers }} {{ t('tenants.overview.seats') }}</span>
+              </div>
+            </div>
+            @if (sub.grandTotal) {
+              <div class="to-sub-card__resource">
+                <div class="to-sub-card__resource-head">
+                  <span>{{ t('tenants.overview.grandTotal') }}</span>
+                  <span><app-money [value]="sub.grandTotal" [ref]="sub" /></span>
+                </div>
+              </div>
+            }
+            <div class="to-sub-card__foot">
+              <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="openManageSeats(sub, $event)">{{ t('tenants.overview.addSeats') }}</button>
+              @if (sub.status === 'Active') {
+                <button class="ui-btn ui-btn--ghost ui-btn--sm to-sub-card__cancel" type="button" (click)="openSuspend(sub, $event)">{{ t('tenants.overview.suspend') }}</button>
+              }
+              @if (sub.status === 'Suspended') {
+                <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="doReactivate(sub, $event)">{{ t('tenants.overview.reactivate') }}</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ========== AUDIT LOGS TAB ========== -->
+    @if (tab === 'auditlogs') {
+      <div class="to-full-subs">
+        @if (isLoadingAudit) {
+          <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.overview.loadingAudit') }}</p></div>
+        }
+        @if (!isLoadingAudit && auditError) {
+          <div class="ui-alert ui-alert--error">{{ auditError }}</div>
+        }
+        @if (!isLoadingAudit && auditLogs.length === 0 && !auditError) {
+          <div class="ui-state">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <p>{{ t('tenants.overview.noAudit') }}</p>
+          </div>
+        }
+        @if (!isLoadingAudit && auditLogs.length > 0) {
+          <div class="ui-table-wrap">
+            <table class="ui-table">
+              <thead>
+                <tr>
+                  <th>{{ t('audit.colAction') }}</th>
+                  <th>{{ t('audit.colEntity') }}</th>
+                  <th>{{ t('audit.colChanges') }}</th>
+                  <th>{{ t('audit.colChangedBy') }}</th>
+                  <th>{{ t('audit.colTimestamp') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (log of pagedAuditLogs; track log.id) {
+                  <tr>
+                    <td><span class="ui-badge ui-badge--plain" [ngClass]="auditClass(log.action)">{{ t('audit.action' + log.action) }}</span></td>
+                    <td class="ui-cell-primary">{{ auditEntityLabel(log.entityName) }}</td>
+                    <td><app-audit-changes [log]="log" /></td>
+                    <td class="ui-cell-muted">{{ log.changedBy || t('tenants.overview.system') }}</td>
+                    <td class="ui-cell-muted ui-cell-num">{{ log.changedAtUtc | date: 'd MMM yyyy HH:mm' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <app-ui-pager [total]="auditLogs.length" [(page)]="auditPage" [(pageSize)]="auditPageSize" />
+          </div>
+        }
+      </div>
+    }
+
+  }
+</div>
+
+<!-- ===== Add Seats Modal ===== -->
+@if (showSeatsModal && seatsTarget) {
+  <div class="ui-overlay" (click)="closeSeatsModal()">
+    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('tenants.overview.seatsModal.title') }} — {{ seatsTarget | productLabel }}</h3>
+        <button class="ui-modal__close" type="button" (click)="closeSeatsModal()" [attr.aria-label]="t('common.cancel')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="ui-modal__body">
+        @if (seatsError) { <div class="ui-alert ui-alert--error">{{ seatsError }}</div> }
+
+        <div class="seats-summary">
+          <div class="seats-summary__item">
+            <span class="seats-summary__label">{{ t('tenants.overview.seatsModal.currentSeats') }}</span>
+            <b class="seats-summary__value">{{ seatsTarget.numberOfUsers }}</b>
+          </div>
+          <div class="seats-summary__item">
+            <span class="seats-summary__label">{{ t('tenants.overview.seatsModal.pricePerSeat') }}</span>
+            <b class="seats-summary__value">
+              @if (seatsTarget.pricePerAdditionalUser) { <app-money [value]="seatsTarget.pricePerAdditionalUser" [ref]="seatsTarget" /> } @else { — }
+            </b>
+          </div>
+        </div>
+
+        @if (!seatsTarget.pricePerAdditionalUser) {
+          <div class="ui-alert ui-alert--warning">{{ t('tenants.overview.seatsModal.noPriceConfigured') }}</div>
+        } @else {
+          <div class="ui-field">
+            <label class="ui-label" for="seatsToAdd">{{ t('tenants.overview.seatsModal.seatsToAdd') }}</label>
+            <input id="seatsToAdd" class="ui-input" type="number" min="1" appPositiveInteger
+                   [ngModel]="seatsToAdd" (ngModelChange)="onSeatsInput($event)" />
+            <span class="ui-hint">{{ t('tenants.overview.seatsModal.addOnlyHint') }}</span>
+          </div>
+
+          <div class="seats-impact">
+            <div class="seats-impact__row">
+              <span>{{ t('tenants.overview.seatsModal.additionalSeats') }}</span>
+              <span>+{{ seatsToAdd || 0 }}</span>
+            </div>
+            <div class="seats-impact__row">
+              <span>{{ t('tenants.overview.seatsModal.newTotalSeats') }}</span>
+              <span>{{ seatsTarget.numberOfUsers + (seatsToAdd || 0) }}</span>
+            </div>
+            <div class="seats-impact__row seats-impact__row--total">
+              <span>{{ t('tenants.overview.seatsModal.totalIncrease') }}</span>
+              <span>+<app-money [value]="priceImpact" [ref]="seatsTarget" /></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="closeSeatsModal()">{{ t('common.cancel') }}</button>
+        <button class="ui-btn ui-btn--primary" type="button"
+                [disabled]="isSavingSeats || !seatsTarget.pricePerAdditionalUser || !(seatsToAdd >= 1)"
+                (click)="saveSeats()">
+          {{ isSavingSeats ? t('common.saving') : t('tenants.overview.seatsModal.submit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== Suspend Subscription Modal ===== -->
+@if (suspendTarget) {
+  <div class="ui-overlay" (click)="closeSuspend()">
+    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <h3 class="ui-modal__title">{{ t('tenants.overview.suspendModal.title') }} — {{ suspendTarget | productLabel }}</h3>
+        <button class="ui-modal__close" type="button" (click)="closeSuspend()" [attr.aria-label]="t('tenants.overview.suspendModal.cancel')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (suspendError) { <div class="ui-alert ui-alert--error">{{ suspendError }}</div> }
+        <div class="ui-field">
+          <label class="ui-label" for="suspendReason">{{ t('tenants.overview.suspendModal.reasonLabel') }}</label>
+          <textarea id="suspendReason" class="ui-textarea" rows="3"
+                    [placeholder]="t('tenants.overview.suspendModal.reasonPlaceholder')" [(ngModel)]="suspendReason"></textarea>
+        </div>
+      </div>
+      <div class="ui-modal__foot">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="closeSuspend()">{{ t('tenants.overview.suspendModal.cancel') }}</button>
+        <button class="ui-btn ui-btn--danger" type="button" [disabled]="isSuspending" (click)="doSuspend()">
+          {{ isSuspending ? t('tenants.overview.suspendModal.suspending') : t('tenants.overview.suspendModal.submit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

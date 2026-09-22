@@ -1,1 +1,541 @@
-<p>register-wizard works!</p>
+<div class="ui-page wiz-page">
+
+  <!-- Back nav (same as overview / edit) -->
+  @if (step !== 'provisioning') {
+    <div class="ui-crumb">
+      <button class="ui-back" type="button" (click)="goToList()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        {{ t('common.back') }}
+      </button>
+      <span class="ui-crumb__sep" aria-hidden="true"></span>
+      <p class="ui-eyebrow">{{ t('tenants.eyebrow') }}</p>
+    </div>
+  }
+
+  <!-- Page header -->
+  <header class="ui-page-header">
+    <div>
+      <h1 class="ui-title">
+        {{ t('tenants.register.title') }}
+        <span class="ui-badge ui-badge--info ui-badge--plain wiz-mode">{{ stepLabel }}</span>
+      </h1>
+      <p class="ui-subtitle">{{ t('tenants.register.subtitle') }}</p>
+    </div>
+    @if (step === 'org-admin' && !isLoadingData) {
+      <div class="ui-actions">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="back()">{{ t('tenants.register.cancel') }}</button>
+        <button class="ui-btn ui-btn--primary" type="button" (click)="next()">
+          {{ t('tenants.register.continueToSubscriptions') }}
+          <svg class="wiz-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    }
+    @if (step === 'subscriptions') {
+      <div class="ui-actions">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="back()">{{ t('tenants.register.backToDetails') }}</button>
+        <button class="ui-btn ui-btn--primary" type="button" [disabled]="isSubmitting || !hasAnySubscription || !allSubFormsValid" (click)="submit()">
+          @if (isSubmitting) { <span class="btn-spinner"></span> {{ t('tenants.register.registering') }} }
+          @else { {{ t('tenants.register.completeRegistration') }} }
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (errorMessage) {
+    <div class="ui-alert ui-alert--error">{{ errorMessage }}</div>
+  }
+
+  @if (isLoadingData && step === 'org-admin') {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('tenants.register.loading') }}</p></div>
+  }
+
+  @if (step !== 'provisioning') {
+  <div class="wiz-layout">
+  <div class="wiz-main">
+
+  <!-- ===================== STEP 1: ORG & ADMIN ===================== -->
+  @if (step === 'org-admin' && !isLoadingData) {
+    <form class="wiz-form" [formGroup]="orgAdminForm">
+
+      <!-- Card 1: Organization Details -->
+      <section class="wiz-card">
+        <div class="wiz-card__head">
+          <h2 class="wiz-card__title">{{ t('tenants.register.sectionDetails') }}</h2>
+          <p class="wiz-card__sub">{{ t('tenants.register.sectionDetailsSub') }}</p>
+        </div>
+        <div class="wiz-card__body">
+
+        <div class="ui-field">
+          <label class="ui-label" for="nameEn">{{ t('tenants.register.orgName') }} <span class="ui-req">*</span></label>
+          <input id="nameEn" class="ui-input" [class.is-invalid]="f['nameEn'].invalid && f['nameEn'].touched"
+                 formControlName="nameEn" type="text" [placeholder]="t('tenants.register.orgNamePlaceholder')" />
+          @if (f['nameEn'].invalid && f['nameEn'].touched) {
+            <span class="ui-error">
+              @if (f['nameEn'].errors?.['required']) { {{ t('tenants.register.errorNameRequired') }} }
+              @else if (f['nameEn'].errors?.['minlength']) { {{ t('tenants.register.errorMin2') }} }
+              @else if (f['nameEn'].errors?.['maxlength']) { {{ t('tenants.register.errorMax100') }} }
+            </span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="subdomain">{{ t('tenants.register.subdomainIdentifier') }} <span class="ui-req">*</span></label>
+          <div class="wiz-affix" [class.is-invalid]="f['subdomain'].invalid && f['subdomain'].touched">
+            <span class="wiz-affix__side">https://</span>
+            <input id="subdomain" class="wiz-affix__input" formControlName="subdomain" type="text" [placeholder]="t('tenants.register.subdomainPlaceholder')" />
+            <span class="wiz-affix__side">.law8.com</span>
+          </div>
+          <span class="ui-hint wiz-hint">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            {{ t('tenants.register.subdomainRules') }}
+          </span>
+          @if (f['subdomain'].invalid && f['subdomain'].touched) {
+            <span class="ui-error">
+              @if (f['subdomain'].errors?.['required']) { {{ t('tenants.register.errorSubdomainRequired') }} }
+              @else if (f['subdomain'].errors?.['minlength']) { {{ t('tenants.register.errorMin3') }} }
+              @else if (f['subdomain'].errors?.['subdomain']) { {{ t('tenants.register.errorSubdomainFormat') }} }
+            </span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="countryId">{{ t('tenants.register.operatingRegion') }} <span class="ui-req">*</span></label>
+          <select id="countryId" class="ui-select wiz-select" formControlName="countryId"
+                  [class.is-invalid]="f['countryId'].invalid && f['countryId'].touched">
+            <option [ngValue]="null" disabled>{{ t('tenants.register.selectCountry') }}</option>
+            @for (c of countries; track c.id) {
+              <option [ngValue]="c.id">{{ c | localName }}</option>
+            }
+          </select>
+          @if (f['countryId'].invalid && f['countryId'].touched) {
+            <span class="ui-error">{{ t('tenants.register.errorRegionRequired') }}</span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <span class="ui-label">{{ t('tenants.register.deploymentType') }} <span class="ui-req">*</span></span>
+          <div class="wiz-deploy-row">
+            <button type="button" class="wiz-deploy-card" [class.is-active]="f['deploymentType'].value === 'Cloud'"
+                    (click)="setDeployment('Cloud')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+              {{ t('tenants.register.deployCloudBased') }}
+            </button>
+            <button type="button" class="wiz-deploy-card" [class.is-active]="f['deploymentType'].value === 'OnPrem'"
+                    (click)="setDeployment('OnPrem')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              {{ t('tenants.register.deployOnPremShort') }}
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="currencyId">{{ t('tenants.register.currency') }} <span class="ui-req">*</span></label>
+          <select id="currencyId" class="ui-select wiz-select" formControlName="currencyId"
+                  [class.is-invalid]="f['currencyId'].invalid && f['currencyId'].touched">
+            <option [ngValue]="null" disabled>{{ t('tenants.register.selectCurrency') }}</option>
+            @for (c of currencies; track c.id) {
+              <option [ngValue]="c.id">{{ c.code }} — {{ c | localName }}</option>
+            }
+          </select>
+          @if (f['currencyId'].invalid && f['currencyId'].touched) {
+            <span class="ui-error">{{ t('tenants.register.errorCurrencyRequired') }}</span>
+          }
+        </div>
+
+        <div class="ui-field">
+          <label class="ui-label" for="organizationTypeId">{{ t('tenants.register.orgType') }} <span class="ui-req">*</span></label>
+          <select id="organizationTypeId" class="ui-select wiz-select" formControlName="organizationTypeId"
+                  [class.is-invalid]="f['organizationTypeId'].invalid && f['organizationTypeId'].touched">
+            <option [ngValue]="null" disabled>{{ t('tenants.register.selectOrgType') }}</option>
+            @for (ot of orgTypes; track ot.id) {
+              <option [ngValue]="ot.id">{{ ot | localName }}</option>
+            }
+          </select>
+          @if (f['organizationTypeId'].invalid && f['organizationTypeId'].touched) {
+            <span class="ui-error">{{ t('tenants.register.errorOrgTypeRequired') }}</span>
+          }
+        </div>
+
+        <div class="wiz-info-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <div>
+            <p class="wiz-info-box__title">{{ t('tenants.register.dataResidencyTitle') }}</p>
+            <p class="wiz-info-box__desc">{{ t('tenants.register.dataResidencyDesc') }}</p>
+          </div>
+        </div>
+        </div>
+      </section>
+
+      <!-- Card 2: Tenant Administrator -->
+      <section class="wiz-card">
+        <div class="wiz-card__head">
+          <h2 class="wiz-card__title">{{ t('tenants.register.adminSectionTitle') }}</h2>
+          <p class="wiz-card__sub">{{ t('tenants.register.adminSectionSub') }}</p>
+        </div>
+        <div class="wiz-card__body">
+        <div class="wiz-row">
+          <div class="ui-field">
+            <label class="ui-label" for="adminName">{{ t('tenants.register.fullName') }} <span class="ui-req">*</span></label>
+            <input id="adminName" class="ui-input" [class.is-invalid]="f['adminName'].invalid && f['adminName'].touched"
+                   formControlName="adminName" type="text" [placeholder]="t('tenants.register.fullNamePlaceholder')" />
+            @if (f['adminName'].invalid && f['adminName'].touched) {
+              <span class="ui-error">
+                @if (f['adminName'].errors?.['required']) { {{ t('tenants.register.errorNameRequired') }} }
+                @else if (f['adminName'].errors?.['minlength']) { {{ t('tenants.register.errorMin2') }} }
+              </span>
+            }
+          </div>
+          <div class="ui-field">
+            <label class="ui-label" for="adminEmail">{{ t('tenants.register.emailAddress') }} <span class="ui-req">*</span></label>
+            <div class="wiz-icon-input">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input id="adminEmail" class="ui-input" [class.is-invalid]="f['adminEmail'].invalid && f['adminEmail'].touched"
+                     formControlName="adminEmail" type="email" appEmailInput [placeholder]="t('tenants.register.emailPlaceholder')" />
+            </div>
+            @if (f['adminEmail'].invalid && f['adminEmail'].touched) {
+              <span class="ui-error">
+                @if (f['adminEmail'].errors?.['required']) { {{ t('tenants.register.errorEmailRequired') }} }
+                @else if (f['adminEmail'].errors?.['email']) { {{ t('tenants.register.errorEmailInvalid') }} }
+              </span>
+            }
+          </div>
+        </div>
+        </div>
+      </section>
+
+    </form>
+
+    <div class="wiz-footer">
+      <button class="ui-btn ui-btn--ghost" type="button" (click)="back()">{{ t('tenants.register.cancel') }}</button>
+      <button class="ui-btn ui-btn--primary" type="button" (click)="next()">
+        {{ t('tenants.register.continueToSubscriptions') }}
+        <svg class="wiz-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  }
+
+  <!-- ===================== STEP 2: SUBSCRIPTIONS ===================== -->
+  @if (step === 'subscriptions') {
+    <section class="wiz-card">
+      <div class="wiz-card__head">
+        <h2 class="wiz-card__title">{{ t('tenants.register.subscriptionsTitle') }}</h2>
+        <p class="wiz-card__sub">{{ t('tenants.register.subscriptionsSub') }} <span class="wiz-card__sub--warn">{{ t('tenants.register.subscriptionsWarn') }}</span></p>
+      </div>
+      <div class="wiz-card__body">
+      <div class="sub-list">
+        @for (product of products; track product.id) {
+          <div class="sub-card" [class.is-active]="subForms[product.id]?.enabled">
+            <div class="sub-card__header" (click)="subForms[product.id].enabled = !subForms[product.id].enabled">
+              <label class="sub-checkbox" (click)="$event.stopPropagation()">
+                <input type="checkbox" [(ngModel)]="subForms[product.id].enabled" />
+                <span class="sub-checkbox__box"></span>
+              </label>
+              <span class="sub-card__name">{{ product | localName }}</span>
+              @if (subForms[product.id]?.enabled) {
+                <span class="ui-badge ui-badge--success sub-card__state">{{ t('common.active') }}</span>
+              }
+            </div>
+
+            @if (subForms[product.id]?.enabled) {
+              <div class="sub-body">
+
+                @if (featuresOf(product.id).length > 0) {
+                  <div class="sub-section">
+                    <p class="sub-section__label">{{ t('tenants.register.modulesFeatures') }}</p>
+                    <div class="feat-grid">
+                      @for (feat of featuresOf(product.id); track feat.id) {
+                        <label class="feat-item">
+                          <input type="checkbox"
+                                 [checked]="isFeatureSelected(product.id, feat.id)"
+                                 (change)="toggleFeature(product.id, feat.id)" />
+                          <span>{{ feat | localName }}</span>
+                        </label>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <div class="sub-fields">
+                  <div class="wiz-row">
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.licensedUsers') }} <span class="ui-req">*</span></label>
+                      <input class="ui-input" type="number" min="1"
+                             [(ngModel)]="subForms[product.id].numberOfUsers" />
+                    </div>
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.subscriptionModel') }} <span class="ui-req">*</span></label>
+                      <div class="cycle-row">
+                        <select class="ui-select" [(ngModel)]="subForms[product.id].billingCycle">
+                          @for (c of billingCycles; track c) {
+                            <option [value]="c">{{ cycleLabel(c) }}</option>
+                          }
+                        </select>
+                        @if (subForms[product.id].billingCycle !== 'None') {
+                          <div class="cycle-count">
+                            <input class="ui-input" type="number" min="1" step="1" appPositiveInteger
+                                   [attr.aria-label]="cycleCountLabel(subForms[product.id].billingCycle)"
+                                   [ngModel]="subForms[product.id].cycleCount"
+                                   (ngModelChange)="onCycleCountInput(subForms[product.id], $event)" />
+                            <span class="cycle-count__unit">{{ cycleCountLabel(subForms[product.id].billingCycle) }}</span>
+                          </div>
+                        }
+                      </div>
+                      @if (subForms[product.id].billingCycle === 'None') {
+                        <span class="ui-hint">{{ t('tenants.register.cycleNoneHint') }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="wiz-row">
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.startDate') }} <span class="ui-req">*</span></label>
+                      <input class="ui-input" type="date" [(ngModel)]="subForms[product.id].startDate" />
+                    </div>
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.endDate') }} <span class="ui-req">*</span></label>
+                      @if (subForms[product.id].billingCycle === 'None') {
+                        <input class="ui-input" type="date"
+                               [min]="subForms[product.id].startDate"
+                               [class.is-invalid]="subForms[product.id].endDate && subForms[product.id].endDate <= subForms[product.id].startDate"
+                               [(ngModel)]="subForms[product.id].endDate" />
+                        @if (subForms[product.id].endDate && subForms[product.id].endDate <= subForms[product.id].startDate) {
+                          <span class="ui-error">{{ t('tenants.register.endDateAfterStart') }}</span>
+                        }
+                      } @else {
+                        <input class="ui-input is-computed" type="date" readonly tabindex="-1"
+                               [value]="computedEndDate(subForms[product.id])" />
+                        <span class="ui-hint">{{ t('tenants.register.endDateComputed') }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="wiz-row">
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.originalAmount') }} <span class="ui-req">*</span></label>
+                      <div class="wiz-affix">
+                        <span class="wiz-affix__side"><app-currency-symbol [ref]="currencyRef" /></span>
+                        <input class="wiz-affix__input" type="number" min="0" step="0.01"
+                               [(ngModel)]="subForms[product.id].totalPrice" placeholder="0.00" />
+                      </div>
+                    </div>
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('tenants.register.discount') }}</label>
+                      <div class="wiz-affix">
+                        <input class="wiz-affix__input" type="number" min="0" max="100"
+                               [(ngModel)]="subForms[product.id].discountValue" placeholder="0" />
+                        <span class="wiz-affix__side">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="sub-total">
+                    <span>{{ t('tenants.register.totalAfterDiscount') }}</span>
+                    <strong class="sub-total__val"><app-money [value]="totalAfterDiscount(product.id)" [ref]="currencyRef" /></strong>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      </div>
+    </section>
+
+    <div class="wiz-footer">
+      <button class="ui-btn ui-btn--ghost" type="button" (click)="back()">{{ t('tenants.register.backToDetails') }}</button>
+      <button class="ui-btn ui-btn--primary" type="button" [disabled]="isSubmitting || !hasAnySubscription || !allSubFormsValid" (click)="submit()">
+        @if (isSubmitting) { <span class="btn-spinner"></span> {{ t('tenants.register.registering') }} }
+        @else {
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          {{ t('tenants.register.completeRegistration') }}
+        }
+      </button>
+    </div>
+  }
+
+
+  </div>
+
+  <!-- ===================== SIDE: stepper + live summary ===================== -->
+  <aside class="wiz-side">
+
+    <section class="wiz-card">
+      <div class="wiz-card__head"><h2 class="wiz-card__title">{{ t('tenants.register.stepsTitle') }}</h2></div>
+      <ol class="wiz-steps">
+        <li class="wiz-steps__item" [class.is-active]="step === 'org-admin'" [class.is-done]="stepIndex > 0">
+          <span class="wiz-steps__circle">
+            @if (stepIndex > 0) {
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            } @else { 1 }
+          </span>
+          <span class="wiz-steps__text">
+            <b>{{ t('tenants.register.stepOrgAdmin') }}</b>
+            <small>{{ t('tenants.register.sectionDetailsSub') }}</small>
+          </span>
+        </li>
+        <li class="wiz-steps__item" [class.is-active]="step === 'subscriptions'" [class.is-done]="stepIndex > 1">
+          <span class="wiz-steps__circle">2</span>
+          <span class="wiz-steps__text">
+            <b>{{ t('tenants.register.stepSubscriptions') }}</b>
+            <small>{{ t('tenants.register.subscriptionsSub') }}</small>
+          </span>
+        </li>
+      </ol>
+    </section>
+
+    <section class="wiz-card">
+      <div class="wiz-card__head"><h2 class="wiz-card__title">{{ t('tenants.register.summaryTitle') }}</h2></div>
+      <dl class="wiz-facts">
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.orgName') }}</dt>
+          <dd>{{ f['nameEn'].value || '—' }}</dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.subdomain') }}</dt>
+          <dd [class.wiz-mono]="!!f['subdomain'].value">{{ f['subdomain'].value ? f['subdomain'].value + '.law8.com' : '—' }}</dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.deploymentType') }}</dt>
+          <dd>
+            <span class="ui-badge ui-badge--plain" [class.ui-badge--info]="f['deploymentType'].value === 'Cloud'" [class.ui-badge--violet]="f['deploymentType'].value !== 'Cloud'">
+              {{ f['deploymentType'].value === 'Cloud' ? t('tenants.deployCloud') : t('tenants.deployOnPrem') }}
+            </span>
+          </dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.operatingRegion') }}</dt>
+          <dd>{{ selectedCountryName || '—' }}</dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.currency') }}</dt>
+          <dd>
+            @if (selectedCurrency) {
+              <span class="wiz-currency"><app-currency-symbol [ref]="currencyRef" /> {{ selectedCurrency.code }} — {{ selectedCurrency | localName }}</span>
+            } @else { — }
+          </dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.orgType') }}</dt>
+          <dd>{{ selectedOrgTypeName || '—' }}</dd>
+        </div>
+        <div class="wiz-fact">
+          <dt>{{ t('tenants.register.adminSectionTitle') }}</dt>
+          <dd>
+            {{ f['adminName'].value || '—' }}
+            @if (f['adminEmail'].value) { <small class="wiz-fact__sub">{{ f['adminEmail'].value }}</small> }
+          </dd>
+        </div>
+      </dl>
+
+      @if (step === 'subscriptions') {
+        <div class="wiz-summary-subs">
+          <p class="wiz-summary-subs__label">{{ t('tenants.register.stepSubscriptions') }}</p>
+          @if (!hasAnySubscription) {
+            <p class="wiz-summary-subs__empty">{{ t('tenants.register.subscriptionsWarn') }}</p>
+          }
+          @for (p of enabledProducts; track p.id) {
+            <div class="wiz-summary-subs__row">
+              <span>{{ p | localName }} <small>× {{ subForms[p.id].numberOfUsers }}</small></span>
+              <b><app-money [value]="totalAfterDiscount(p.id)" [ref]="currencyRef" /></b>
+            </div>
+          }
+          @if (hasAnySubscription) {
+            <div class="wiz-summary-subs__total">
+              <span>{{ t('tenants.register.grandTotal') }}</span>
+              <b><app-money [value]="grandTotal" [ref]="currencyRef" /></b>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+  </aside>
+  </div>
+  }
+
+  <!-- ===================== STEP 3: PROVISIONING ===================== -->
+  @if (step === 'provisioning') {
+    <section class="ui-card wiz-provision">
+      @if (createdIsOnPrem) {
+        <div class="prov-icon prov-icon--ok">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>{{ t('tenants.register.onPremReadyTitle') }}</h2>
+        <p>{{ t('tenants.register.onPremReadyDesc') }}</p>
+        @if (createdOrg?.licenseKey) {
+          <div class="wiz-key">
+            <code class="wiz-key__value">{{ createdOrg?.licenseKey }}</code>
+            <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="copyLicenseKey()">
+              {{ keyCopied ? t('common.copied') : t('common.copy') }}
+            </button>
+          </div>
+        }
+        <div class="wiz-footer wiz-footer--center">
+          <button class="ui-btn ui-btn--ghost" type="button" (click)="goToList()">{{ t('tenants.register.backToList') }}</button>
+          <button class="ui-btn ui-btn--primary" type="button" (click)="viewOrg()">{{ t('tenants.register.viewOrganization') }}</button>
+        </div>
+      } @else if (createdOrg) {
+        <div class="prov-icon prov-icon--ok">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>{{ t('tenants.register.cloudQueuedTitle') }}</h2>
+        <p>{{ t('tenants.register.cloudQueuedDesc') }}</p>
+        <div class="wiz-footer wiz-footer--center">
+          <button class="ui-btn ui-btn--ghost" type="button" (click)="goToList()">{{ t('tenants.register.backToList') }}</button>
+          <button class="ui-btn ui-btn--primary" type="button" (click)="viewOrg()">{{ t('tenants.register.viewOrganization') }}</button>
+        </div>
+      } @else if (provisioningComplete) {
+        <div class="prov-icon prov-icon--ok">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>{{ t('tenants.register.provReadyTitle') }}</h2>
+        <p>{{ t('tenants.register.provReadyDesc') }}</p>
+        <div class="wiz-footer wiz-footer--center">
+          <button class="ui-btn ui-btn--ghost" type="button" (click)="goToList()">{{ t('tenants.register.backToList') }}</button>
+          <button class="ui-btn ui-btn--primary" type="button" (click)="viewOrg()">{{ t('tenants.register.viewOrganization') }}</button>
+        </div>
+      } @else if (provisioningFailed) {
+        <div class="prov-icon prov-icon--fail">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <h2>{{ t('tenants.register.provFailedTitle') }}</h2>
+        <p>{{ provisioningErrorMessage }}</p>
+        <div class="wiz-footer wiz-footer--center">
+          <button class="ui-btn ui-btn--ghost" type="button" (click)="goToList()">{{ t('tenants.register.backToList') }}</button>
+          <button class="ui-btn ui-btn--primary" type="button" (click)="viewOrg()">{{ t('tenants.register.viewDetails') }}</button>
+        </div>
+      } @else {
+        <span class="ui-spinner prov-spinner"></span>
+        <h2>{{ t('tenants.register.provInProgress') }}</h2>
+        @if (provisioningData) {
+          <ul class="prov-list">
+            <li>
+              <span>{{ t('tenants.register.identity') }}</span>
+              <span class="ui-badge" [ngClass]="provisioningData.identityProvisioned ? 'ui-badge--success' : 'ui-badge--neutral'">
+                {{ provisioningData.identityProvisioned ? t('tenants.register.statusReady') : t('tenants.register.statusPending') }}
+              </span>
+            </li>
+            @for (p of provisioningData.products; track p.subscriptionId) {
+              <li>
+                <span>{{ p.productCode }}</span>
+                <span class="ui-badge" [ngClass]="p.databaseProvisioned ? 'ui-badge--success' : 'ui-badge--neutral'">
+                  {{ p.databaseProvisioned ? t('tenants.register.statusReady') : t('tenants.register.statusPending') }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
+        <p class="prov-hint">{{ t('tenants.register.provHint') }}</p>
+        <div class="wiz-footer wiz-footer--center">
+          <button class="ui-btn ui-btn--ghost" type="button" (click)="goToList()">{{ t('tenants.register.goToList') }}</button>
+        </div>
+      }
+    </section>
+  }
+
+</div>

@@ -1,0 +1,9 @@
+:host { display: block; }
+
+/* Long descriptions are truncated inside the table */
+.cell-desc {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

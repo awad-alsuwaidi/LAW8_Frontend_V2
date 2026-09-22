@@ -1,0 +1,20 @@
+@if (visible.length === 0) {
+  <p class="bl-empty">{{ emptyText }}</p>
+} @else {
+  <ul class="bl" [class.bl--compact]="compact">
+    @for (item of visible; track item.label; let i = $index) {
+      <li class="bl__row">
+        <div class="bl__head">
+          <span class="bl__label" [title]="label(item)">{{ label(item) }}</span>
+          <span class="bl__nums">
+            <b>{{ item.count | number }}</b>
+            <em>{{ share(item.count) }}%</em>
+          </span>
+        </div>
+        <div class="bl__track">
+          <span class="bl__fill" [style.width.%]="pct(item.count)" [style.background]="color(i)"></span>
+        </div>
+      </li>
+    }
+  </ul>
+}

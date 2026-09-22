@@ -23,13 +23,8 @@ export class OtpFlowGuard implements CanActivate {
     const codeChallenge = this.authService.getCodeChallenge();
 
     if (username && codeChallenge) {
-      console.log('[OtpFlowGuard] Valid flow. User:', username);
       return true;
     }
-    console.warn('[OtpFlowGuard] Invalid OTP flow. Missing required data:', {
-      username: !!username,
-      codeChallenge: !!codeChallenge,
-    });
 
     return this.router.createUrlTree(['/auth/login']);
   }
@@ -46,10 +41,8 @@ export const otpFlowGuard: CanActivateFn = (
   const codeChallenge = authService.getCodeChallenge();
 
   if (username && codeChallenge) {
-    console.log('[otpFlowGuard] Valid flow. User:', username);
     return true;
   }
 
-  console.warn('[otpFlowGuard] Invalid OTP flow. Redirecting to login.');
   return router.createUrlTree(['/auth/login']);
 };

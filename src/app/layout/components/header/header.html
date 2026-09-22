@@ -1,1 +1,98 @@
-<p>header works!</p>
+<header class="app-header">
+
+  <!-- Mobile hamburger -->
+  <div class="header-left">
+    <button class="menu-toggle" (click)="toggle()" title="Toggle sidebar">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+  </div>
+
+  <!-- Right actions -->
+  <div class="header-right">
+
+    <!-- Notifications -->
+    <div class="notif-wrap">
+      <button
+        class="icon-btn notif-btn"
+        [class.active]="notifOpen()"
+        (click)="toggleNotif($event)"
+        [title]="isAr ? 'الإشعارات' : 'Notifications'"
+      >
+        <span class="icon-bell"></span>
+        @if (unreadCount > 0) {
+          <span class="notif-dot">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        }
+      </button>
+
+      @if (notifOpen()) {
+        <div class="notif-dropdown">
+          <div class="notif-header">
+            <span class="notif-title">{{ isAr ? 'الإشعارات' : 'Notifications' }}</span>
+            @if (unreadCount > 0) {
+              <button class="mark-read-btn" (click)="markAllRead()">
+                {{ isAr ? 'تعيين الكل كمقروء' : 'Mark all read' }}
+              </button>
+            }
+          </div>
+
+          @if (notifications.length === 0) {
+            <div class="notif-empty">
+              <span class="icon-bell notif-empty-icon"></span>
+              <p class="notif-empty-title">{{ isAr ? 'لا توجد إشعارات' : 'No notifications' }}</p>
+              <p class="notif-empty-sub">{{ isAr ? 'ستظهر الإشعارات هنا عند وصولها' : 'Notifications will appear here when they arrive' }}</p>
+            </div>
+          } @else {
+            <ul class="notif-list">
+              @for (n of notifications; track n.id) {
+                <li class="notif-item" [class.notif-item--unread]="!notifSvc.isRead(n.id)" (click)="openNotification(n)">
+                  <div class="notif-dot-inline" [class.visible]="!notifSvc.isRead(n.id)" [class.notif-dot-inline--danger]="n.severity === 'Danger'" [class.notif-dot-inline--warning]="n.severity === 'Warning'"></div>
+                  <div class="notif-content">
+                    <p class="notif-item-title">{{ notifTitle(n) }}</p>
+                    <p class="notif-item-body">{{ notifBody(n) }}</p>
+                    <span class="notif-item-time">{{ notifTime(n) }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Language toggle -->
+    <button class="lang-btn" (click)="toggleLanguage()" [title]="currentLang === 'EN' ? 'Switch to Arabic' : 'التبديل للإنجليزية'">
+      {{ currentLang }}
+    </button>
+
+    <!-- Profile -->
+    <div class="profile-wrap">
+      <button class="avatar" (click)="toggleProfile($event)" [title]="displayName">
+        {{ initials }}
+      </button>
+
+      @if (profileOpen()) {
+        <div class="profile-dropdown">
+          <div class="profile-info">
+            <div class="profile-avatar-lg">{{ initials }}</div>
+            <div class="profile-meta">
+              <span class="profile-name">{{ displayName }}</span>
+              <span class="profile-role">{{ primaryRole }}</span>
+            </div>
+          </div>
+          <div class="profile-divider"></div>
+          <button class="profile-item" (click)="openSettings()">
+            <span class="icon-setting"></span>
+            {{ isAr ? 'الإعدادات' : 'Settings' }}
+          </button>
+          <button class="profile-item profile-item--danger" (click)="logout()">
+            <span class="icon-logout"></span>
+            {{ isAr ? 'تسجيل الخروج' : 'Logout' }}
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+</header>

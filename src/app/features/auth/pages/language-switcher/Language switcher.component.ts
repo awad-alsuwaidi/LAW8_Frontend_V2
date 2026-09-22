@@ -90,11 +90,11 @@ import { TranslationService, Language } from '../../services/Translation.service
       font-size: 14px;
       line-height: 20px;
       font-weight: 400;
-      text-align: left;
+      text-align: start;
     }
 
     .arrow {
-      margin-left: 2px;
+      margin-inline-start: 2px;
       margin-top: -4px;
       font-size: 22px;
       line-height: 16px;
@@ -108,7 +108,7 @@ import { TranslationService, Language } from '../../services/Translation.service
     .language-dropdown {
       position: absolute;
       top: calc(100% + 10px);
-      right: 0;
+      inset-inline-end: 0;
       z-index: 1000;
       min-width: 160px;
       background: #ffffff;
@@ -147,7 +147,7 @@ import { TranslationService, Language } from '../../services/Translation.service
       transition:
         background 0.2s ease,
         color 0.2s ease;
-      text-align: left;
+      text-align: start;
     }
 
     .language-option:hover {
@@ -181,24 +181,6 @@ import { TranslationService, Language } from '../../services/Translation.service
 
     .option-text {
       flex: 1;
-    }
-
-    :host-context([dir='rtl']) .language-dropdown {
-      right: auto;
-      left: 0;
-    }
-
-    :host-context([dir='rtl']) .language-name {
-      text-align: right;
-    }
-
-    :host-context([dir='rtl']) .arrow {
-      margin-left: 0;
-      margin-right: 2px;
-    }
-
-    :host-context([dir='rtl']) .language-button {
-      flex-direction: row-reverse;
     }
   `,
 })

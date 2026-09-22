@@ -1,1 +1,53 @@
-<p>at-risk-subscriptions works!</p>
+<div class="panel">
+  <div class="panel__header">
+    <div class="panel__title-row">
+      <span class="panel__icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </span>
+      <h3 class="panel__title">{{ t('dashboard.atRisk.title') }}</h3>
+    </div>
+    <button class="view-all" (click)="viewAll()">{{ t('dashboard.atRisk.viewAll') }}</button>
+  </div>
+
+  @if (items.length) {
+    <div class="table-wrap">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>{{ t('dashboard.atRisk.colOrg') }}</th>
+            <th>{{ t('dashboard.atRisk.colProduct') }}</th>
+            <th>{{ t('dashboard.atRisk.colExpiry') }}</th>
+            <th>{{ t('dashboard.atRisk.colStatus') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items; track item.subscriptionId) {
+            <tr>
+              <td class="cell-org">{{ item.organizationName }}</td>
+              <td>
+                <span class="product-chip">{{ item.productCode }}</span>
+              </td>
+              <td class="cell-date">{{ formatDate(item.endDate) }}</td>
+              <td>
+                <span [class]="statusClass(item)">{{ statusLabel(item) }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="panel__empty">
+      <span class="panel__empty-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </span>
+      <p>{{ t('dashboard.atRisk.allHealthy') }}</p>
+    </div>
+  }
+</div>

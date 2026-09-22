@@ -1,0 +1,61 @@
+:host { display: block; }
+
+/* Segmented type filter (All / System / Custom) */
+.filter-pills {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+.filter-pill {
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+
+  &:hover { color: var(--text); }
+  &.is-active { background: var(--accent-soft); color: var(--accent); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+
+.state-hint { font-size: 13px; color: var(--muted); }
+
+.role {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.role__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.is-system { background: var(--violet-soft); color: var(--violet); }
+}
+
+.role__text { min-width: 0; }
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
