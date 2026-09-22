@@ -1,61 +1,55 @@
-# Law8Tenant
+# LAW8 Admin Console
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.1.
+Angular front end for the LAW8 platform-admin console. It talks to the Tenancy
+service and covers tenant onboarding, subscriptions, on-prem licensing, master
+data, platform users and roles, and the audit trail. Arabic and English, RTL
+aware, with a shared design system in `src/styles.scss`.
 
-## Development server
+## Features
 
-To start a local development server, run ya nejmm:
+- **Tenants** — registration wizard (cloud and on-prem), organization details,
+  provisioning status, seats, attachments.
+- **Subscriptions** — billing cycles, seat changes, suspend/cancel, history.
+- **Licensing** — activation keys for on-prem installs, activations, renewals.
+- **Master data** — regions, countries, currencies, products, features,
+  organization types.
+- **Users & roles** — platform users and the role permission matrix.
+- **Dashboard & audit** — live metrics, per-currency revenue, header
+  notifications, and a readable change log.
 
-```bash
-ng serve
-```
+## Getting started
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Requires Node 20+ and a running Tenancy API (see `src/environments`).
 
 ```bash
-ng build
+npm install
+npm start
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The app runs at `http://localhost:4200/` and reloads on save.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Common commands
 
 ```bash
-ng test
+npm run build                            # production build into dist/
+npm test                                 # unit tests (Vitest)
+npx ngc -p tsconfig.app.json --noEmit    # type-check code and templates
 ```
 
-## Running end-to-end tests
+## Project layout
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```
+src/app/core        API client, auth, models, shared UI pieces and validators
+src/app/features    One folder per area (tenant, subscriptions, setup, ...)
+src/app/layout      Shell: sidebar, header, admin layout
+public/assets/i18n  ar.json / en.json translation files (keys must match)
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Conventions
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## Tahaaaaaaaaaa
+- Every user-facing string goes through `TranslationService`; `ar.json` and
+  `en.json` must stay key-for-key identical.
+- Forms put the Arabic name before the English one.
+- Lists use the shared `app-ui-pager` (10 rows by default) and show the newest
+  records first.
+- Create and edit happen in `ui-modal` dialogs, not separate pages.
