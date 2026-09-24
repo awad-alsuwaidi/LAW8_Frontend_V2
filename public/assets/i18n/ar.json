@@ -1171,7 +1171,8 @@
       "OrganizationAttachment": "مرفق شركة",
       "LicenseActivation": "تفعيل ترخيص",
       "LicenseRenewal": "تجديد ترخيص",
-      "LicenseReleaseAudit": "تحرير ترخيص"
+      "LicenseReleaseAudit": "تحرير ترخيص",
+      "RolePermissions": "صلاحيات دور"
     },
     "fields": {
       "Name": "الاسم",
@@ -1229,7 +1230,8 @@
       "CanDelete": "حذف",
       "CanSearch": "بحث",
       "CanPrint": "طباعة",
-      "CanExport": "تصدير"
+      "CanExport": "تصدير",
+      "Permissions": "عدد الصلاحيات"
     }
   },
   "selfService": {

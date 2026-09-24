@@ -1171,7 +1171,8 @@
       "OrganizationAttachment": "Organization Attachment",
       "LicenseActivation": "License Activation",
       "LicenseRenewal": "License Renewal",
-      "LicenseReleaseAudit": "License Release"
+      "LicenseReleaseAudit": "License Release",
+      "RolePermissions": "Role Permissions"
     },
     "fields": {
       "Name": "Name",
@@ -1229,7 +1230,8 @@
       "CanDelete": "Delete",
       "CanSearch": "Search",
       "CanPrint": "Print",
-      "CanExport": "Export"
+      "CanExport": "Export",
+      "Permissions": "Permissions"
     }
   },
   "selfService": {

@@ -14,7 +14,7 @@ const ENTITY_NAMES = [
   'Organization', 'OrganizationAttachment', 'Subscription',
   'LicenseKey', 'LicenseActivation', 'LicenseRenewal', 'LicenseReleaseAudit',
   'Product', 'Feature', 'OrganizationType', 'Region', 'Country', 'Currency',
-  'Permission', 'RolePermission',
+  'Permission', 'RolePermissions',
 ];
 
 
