@@ -32,6 +32,8 @@ import { Organization } from '../../../../../core/models/organizations/organizat
 import { SubscriptionsService } from '../../../../subscriptions/services/subscription-detail';
 import { LimitDefinition } from '../../../../../core/models/subscription/subscription.models';
 import { NotificationsService } from '../../../../../core/notifications/notifications.service';
+import { PlanTemplatesService } from '../../../../setup/services/plan-templates';
+import { PlanTemplateDto } from '../../../../../core/models/platform-ops/platform-ops.models';
 
 type WizardStep = 'org-admin' | 'subscriptions' | 'provisioning';
 
@@ -121,6 +123,37 @@ export class RegisterWizard implements OnInit, OnDestroy {
   private readonly subscriptionsSvc = inject(SubscriptionsService);
   /** Limit definitions keyed by product code; products without any show no limits section. */
   limitDefinitions: Record<string, LimitDefinition[]> = {};
+
+  private readonly planTemplatesSvc = inject(PlanTemplatesService);
+  /** Active plan templates keyed by product id, and the one picked per product. */
+  templatesMap = new Map<number, PlanTemplateDto[]>();
+  selectedTemplate: Record<number, number | null> = {};
+
+  templatesOf(productId: number): PlanTemplateDto[] { return this.templatesMap.get(productId) ?? []; }
+
+  /** Fills the product's form from a ready-made plan; every field stays editable afterwards. */
+  applyTemplate(product: ProductDto, templateId: number | null): void {
+    this.selectedTemplate[product.id] = templateId;
+    const tpl = this.templatesOf(product.id).find(x => x.id === +(templateId ?? 0));
+    if (!tpl) return;
+    const form = this.subForms[product.id];
+    if (!form.startDate) form.startDate = new Date().toISOString().slice(0, 10);
+    form.numberOfUsers = tpl.numberOfUsers;
+    form.billingCycle = tpl.billingCycle;
+    if (tpl.billingCycle === 'None') {
+      const end = new Date(form.startDate);
+      end.setDate(end.getDate() + (tpl.durationDays ?? 0));
+      form.endDate = end.toISOString().slice(0, 10);
+    } else {
+      form.cycleCount = tpl.cycleCount ?? 1;
+    }
+    form.totalPrice = tpl.totalPrice ?? null;
+    form.isTrial = tpl.isTrial;
+    form.limits = { ...(tpl.limits ?? {}) };
+    const available = new Set(this.featuresOf(product.id).map(f => f.id));
+    this.selectedFeaturesMap.set(product.id, new Set((tpl.featureIds ?? []).filter(id => available.has(id))));
+    this.cdr.markForCheck();
+  }
 
   limitsFor(product: ProductDto): LimitDefinition[] {
     return this.limitDefinitions[product.code] ?? [];
@@ -231,6 +264,15 @@ export class RegisterWizard implements OnInit, OnDestroy {
           this.subscriptionsSvc.getLimitDefinitions().pipe(takeUntil(this.destroy$)).subscribe({
             next: (defs) => { this.limitDefinitions = defs ?? {}; this.cdr.markForCheck(); },
             error: () => { /* No limits section then; subscriptions stay unlimited. */ },
+          });
+          this.planTemplatesSvc.getAll(undefined, true).pipe(takeUntil(this.destroy$)).subscribe({
+            next: (items) => {
+              for (const x of items ?? []) {
+                this.templatesMap.set(x.productId, [...(this.templatesMap.get(x.productId) ?? []), x]);
+              }
+              this.cdr.markForCheck();
+            },
+            error: () => { /* No template picker then; the form is filled by hand. */ },
           });
         },
         error: () => { this.errorMessage = this.t('tenants.register.errorLoadSetup'); },

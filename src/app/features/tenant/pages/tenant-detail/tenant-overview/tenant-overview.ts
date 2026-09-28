@@ -25,15 +25,16 @@ import { auditEntityLabel } from '../../../../audit/audit-changes.util';
 import { Money } from '../../../../../core/ui/money/money';
 import { CurrencySymbol } from '../../../../../core/ui/money/currency-symbol';
 import { ProductLabelPipe } from '../../../../../core/ui/product-label.pipe';
+import { TenantDataTab } from '../../../components/tenant-data-tab/tenant-data-tab';
 
 const SUB_COLORS = ['#3162f1', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#6366f1', '#0d9488'];
 
-type TabId = 'overview' | 'subscriptions' | 'auditlogs';
+type TabId = 'overview' | 'subscriptions' | 'auditlogs' | 'storage' | 'exports' | 'certificates';
 
 @Component({
   selector: 'app-tenant-overview',
   standalone: true,
-  imports: [ProductLabelPipe, CurrencySymbol, CommonModule, FormsModule, RouterLink, PositiveIntegerDirective, UiPager, Money, AuditChanges],
+  imports: [ProductLabelPipe, CurrencySymbol, CommonModule, FormsModule, RouterLink, PositiveIntegerDirective, UiPager, Money, AuditChanges, TenantDataTab],
   templateUrl: './tenant-overview.html',
   styleUrl: './tenant-overview.scss',
 })

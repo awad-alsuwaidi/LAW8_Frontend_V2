@@ -57,6 +57,9 @@
       <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'overview'" [class.is-active]="tab === 'overview'" (click)="setTab('overview')">{{ t('tenants.overview.tabOverview') }}</button>
       <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'subscriptions'" [class.is-active]="tab === 'subscriptions'" (click)="setTab('subscriptions')">{{ t('tenants.overview.tabSubscriptions') }} <span class="ui-tab__count">{{ subscriptions.length }}</span></button>
       <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'auditlogs'" [class.is-active]="tab === 'auditlogs'" (click)="setTab('auditlogs')">{{ t('tenants.overview.tabAuditLogs') }}</button>
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'storage'" [class.is-active]="tab === 'storage'" (click)="setTab('storage')">{{ t('tenantData.tabStorage') }}</button>
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'exports'" [class.is-active]="tab === 'exports'" (click)="setTab('exports')">{{ t('tenantData.tabExports') }}</button>
+      <button class="ui-tab" type="button" role="tab" [attr.aria-selected]="tab === 'certificates'" [class.is-active]="tab === 'certificates'" (click)="setTab('certificates')">{{ t('tenantData.tabCertificates') }}</button>
       <a class="ui-tab" role="tab" [routerLink]="['/tenants', orgId, 'attachments']">{{ t('tenants.overview.tabAttachments') }} @if (attachmentCount !== null) { <span class="ui-tab__count">{{ attachmentCount }}</span> }</a>
     </div>
 
@@ -337,6 +340,11 @@
           </div>
         }
       </div>
+    }
+
+    <!-- ========== STORAGE / EXPORTS / CERTIFICATES TABS ========== -->
+    @if (tab === 'storage' || tab === 'exports' || tab === 'certificates') {
+      <app-tenant-data-tab [orgId]="orgId" [view]="tab" />
     }
 
     <!-- ========== AUDIT LOGS TAB ========== -->

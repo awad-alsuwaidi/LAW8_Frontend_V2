@@ -244,6 +244,19 @@
             @if (subForms[product.id]?.enabled) {
               <div class="sub-body">
 
+                @if (templatesOf(product.id).length > 0) {
+                  <div class="sub-section">
+                    <p class="sub-section__label">{{ t('tenants.register.planTemplate') }}</p>
+                    <select class="ui-select" [ngModel]="selectedTemplate[product.id] ?? null" (ngModelChange)="applyTemplate(product, $event)">
+                      <option [ngValue]="null">{{ t('tenants.register.planTemplateCustom') }}</option>
+                      @for (tpl of templatesOf(product.id); track tpl.id) {
+                        <option [ngValue]="tpl.id">{{ tpl | localName }}{{ tpl.isTrial ? ' (' + t('subscriptions.limits.trialBadge') + ')' : '' }}</option>
+                      }
+                    </select>
+                    <span class="ui-hint">{{ t('tenants.register.planTemplateHint') }}</span>
+                  </div>
+                }
+
                 @if (featuresOf(product.id).length > 0) {
                   <div class="sub-section">
                     <p class="sub-section__label">{{ t('tenants.register.modulesFeatures') }}</p>

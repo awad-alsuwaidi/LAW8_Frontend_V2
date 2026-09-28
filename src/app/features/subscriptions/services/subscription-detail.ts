@@ -12,6 +12,12 @@ import {
   LimitDefinition,
   UpdateSubscriptionLimitsDto,
 } from '../../../core/models/subscription/subscription.models';
+import { RenewSubscriptionDto } from '../../../core/models/subscription/subscription.models';
+import {
+  DataDeletionCertificateDto,
+  OffboardingItemDto,
+  SubscriptionIntegrationDto,
+} from '../../../core/models/platform-ops/platform-ops.models';
 
 @Injectable({ providedIn: 'root' })
 export class SubscriptionsService {
@@ -54,6 +60,33 @@ export class SubscriptionsService {
 
   updateLimits(id: string, dto: UpdateSubscriptionLimitsDto): Observable<SubscriptionDetailDto> {
     return this.api.put<SubscriptionDetailDto>(`/subscriptions/${id}/limits`, dto);
+  }
+
+  /** New period: extends an active subscription or restores an expired / cancelled one (not purged). */
+  renew(id: string, dto: RenewSubscriptionDto): Observable<SubscriptionDetailDto> {
+    return this.api.patch<SubscriptionDetailDto>(`/subscriptions/${id}/renew`, dto);
+  }
+
+  /** Replace the add-on features; the API charges / credits the difference pro rata. */
+  updateFeatures(id: string, featureIds: number[]): Observable<SubscriptionDetailDto> {
+    return this.api.put<SubscriptionDetailDto>(`/subscriptions/${id}/features`, { featureIds });
+  }
+
+  getOffboarding(): Observable<OffboardingItemDto[]> {
+    return this.api.get<OffboardingItemDto[]>('/subscriptions/offboarding');
+  }
+
+  /** Permanent deletion (SuperAdmin); confirmSubdomain must equal the organization's subdomain. */
+  purge(id: string, confirmSubdomain: string, force: boolean): Observable<DataDeletionCertificateDto> {
+    return this.api.post<DataDeletionCertificateDto>(`/subscriptions/${id}/purge`, { confirmSubdomain, force });
+  }
+
+  getIntegrations(id: string): Observable<SubscriptionIntegrationDto[]> {
+    return this.api.get<SubscriptionIntegrationDto[]>(`/subscriptions/${id}/integrations`);
+  }
+
+  saveIntegration(id: string, providerCode: string, dto: Pick<SubscriptionIntegrationDto, 'syncMode' | 'syncIntervalMinutes' | 'rateLimitPerMinute'>): Observable<SubscriptionIntegrationDto> {
+    return this.api.put<SubscriptionIntegrationDto>(`/subscriptions/${id}/integrations/${providerCode}`, dto);
   }
 
   getByOrganization(organizationId: string): Observable<SubscriptionDetailDto[]> {

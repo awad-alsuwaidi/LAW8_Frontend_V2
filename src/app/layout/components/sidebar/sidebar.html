@@ -49,6 +49,7 @@
                         class="sub-link"
                         [routerLink]="child.route"
                         routerLinkActive="sub-link--active"
+                        [routerLinkActiveOptions]="{ exact: child.route === '/subscriptions' }"
                       >
                         @if (child.icon) {
                           <span class="sub-icon {{ child.icon }}"></span>
@@ -69,6 +70,7 @@
                         class="flyout-link"
                         [routerLink]="child.route"
                         routerLinkActive="flyout-link--active"
+                        [routerLinkActiveOptions]="{ exact: child.route === '/subscriptions' }"
                       >
                         @if (child.icon) {
                           <span class="flyout-item-icon {{ child.icon }}"></span>

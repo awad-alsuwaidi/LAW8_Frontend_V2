@@ -7,5 +7,7 @@ export const SETUP_ROUTES: Routes = [
   { path: 'features',          loadComponent: () => import('./pages/features/features-list/features-list').then(c => c.FeaturesList) },
   { path: 'org-types',         loadComponent: () => import('./pages/org-types/org-types-list/org-types-list').then(c => c.OrgTypesList) },
   { path: 'products',          loadComponent: () => import('./pages/products/products-list/products-list').then(c => c.ProductsList) },
+  { path: 'plan-templates',    loadComponent: () => import('./pages/plan-templates/plan-templates-list/plan-templates-list').then(c => c.PlanTemplatesList) },
+  { path: 'integrations',      loadComponent: () => import('./pages/integrations/integrations-list/integrations-list').then(c => c.IntegrationsList) },
   { path: '',                  redirectTo: 'regions', pathMatch: 'full' },
 ];

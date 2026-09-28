@@ -27,7 +27,10 @@ export class Menu {
           label: 'Subscription Management',
           labelAr: 'إدارة الاشتراكات',
           icon: 'icon-timesheet',
-          route: '/subscriptions',
+          children: [
+            { label: 'Subscriptions', labelAr: 'الاشتراكات', route: '/subscriptions', icon: 'icon-timesheet' },
+            { label: 'Offboarding', labelAr: 'إنهاء الاشتراكات', route: '/subscriptions/offboarding', icon: 'icon-report' },
+          ],
         },
         {
           label: 'Users & Roles',
@@ -48,6 +51,8 @@ export class Menu {
             { label: 'Currencies', labelAr: 'العملات', route: '/setup/currencies', icon: 'icon-lookups' },
             { label: 'Products', labelAr: 'المنتجات', route: '/setup/products', icon: 'icon-task' },
             { label: 'Features', labelAr: 'الميزات', route: '/setup/features', icon: 'icon-checks' },
+            { label: 'Plan Templates', labelAr: 'قوالب الباقات', route: '/setup/plan-templates', icon: 'icon-task' },
+            { label: 'Integrations', labelAr: 'التكاملات', route: '/setup/integrations', icon: 'icon-setting' },
             { label: 'Org Types', labelAr: 'أنواع الشركات والمكاتب', route: '/setup/org-types', icon: 'icon-clients' },
           ],
         },

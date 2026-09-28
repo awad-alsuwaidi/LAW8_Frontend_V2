@@ -15,18 +15,24 @@ import { AddUsersModal } from '../modals/add-users-modal/add-users-modal';
 import { SuspendModal } from '../modals/suspend-modal/suspend-modal';
 import { CancelModal } from '../modals/cancel-modal/cancel-modal';
 import { LimitsModal } from '../modals/limits-modal/limits-modal';
+import { RenewModal } from '../modals/renew-modal/renew-modal';
+import { FeaturesModal } from '../modals/features-modal/features-modal';
+import { IntegrationSettingsModal } from '../modals/integration-settings-modal/integration-settings-modal';
+import { ProductsService } from '../../../setup/services/products';
+import { SubscriptionIntegrationDto } from '../../../../core/models/platform-ops/platform-ops.models';
+import { LocalNamePipe } from '../../../../core/ui/local-name.pipe';
 import { LimitDefinition } from '../../../../core/models/subscription/subscription.models';
 import { UiPager, pageSlice } from '../../../../core/ui/pager/ui-pager';
 import { Money } from '../../../../core/ui/money/money';
 import { ProductLabelPipe } from '../../../../core/ui/product-label.pipe';
 
-type ModalType = 'add-users' | 'suspend' | 'cancel' | 'limits';
+type ModalType = 'add-users' | 'suspend' | 'cancel' | 'limits' | 'renew' | 'features' | 'integration';
 
 
 @Component({
   selector: 'app-subscription-detail',
   standalone: true,
-  imports: [ProductLabelPipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, LimitsModal, UiPager, Money],
+  imports: [ProductLabelPipe, LocalNamePipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, LimitsModal, RenewModal, FeaturesModal, IntegrationSettingsModal, UiPager, Money],
   templateUrl: './subscription-detail.html',
   styleUrl: './subscription-detail.scss',
 })
@@ -34,6 +40,7 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SubscriptionsService);
+  private readonly products = inject(ProductsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private readonly i18n = inject(TranslationService);
@@ -50,6 +57,44 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   reactivating = false;
 
   activeModal: ModalType | null = null;
+
+  /** Product id of the subscription (resolved from its code; needed to list the product's features). */
+  productId: number | null = null;
+  private productIds: Record<string, number> = {};
+  integrations: SubscriptionIntegrationDto[] = [];
+  editingIntegration: SubscriptionIntegrationDto | null = null;
+
+  /** Renewal is allowed while the data still exists: active, expired or cancelled (grace / archive). */
+  get canRenew(): boolean {
+    const d = this.detail;
+    return !!d && !d.purgedAt && (d.status === 'Active' || d.status === 'Expired' || d.status === 'Cancelled');
+  }
+
+  get accessStateLabel(): string {
+    const s = this.detail?.accessState ?? '';
+    const key = 'subscriptions.access.state' + s;
+    const v = this.t(key);
+    return v === key ? s : v;
+  }
+
+  get accessLabel(): string {
+    const a = this.detail?.access ?? '';
+    const key = 'subscriptions.access.level' + a;
+    const v = this.t(key);
+    return v === key ? a : v;
+  }
+
+  get accessClass(): string {
+    switch (this.detail?.accessState) {
+      case 'Active':   return 'ui-badge--success';
+      case 'Grace':
+      case 'Suspended': return 'ui-badge--warning';
+      case 'Archived':
+      case 'PurgeDue':
+      case 'Purged':   return 'ui-badge--danger';
+      default:         return 'ui-badge--neutral';
+    }
+  }
 
   /** Limit definitions keyed by product code (for the plan card and the limits modal). */
   limitDefinitions: Record<string, LimitDefinition[]> = {};
@@ -75,6 +120,15 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       next: (defs) => { this.limitDefinitions = defs ?? {}; this.cdr.markForCheck(); },
       error: () => { /* The plan card then just shows no limits. */ },
     });
+    this.products.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (items) => {
+        items.forEach((p) => (this.productIds[p.code] = p.id));
+        this.resolveProductId();
+        this.cdr.markForCheck();
+      },
+      error: () => { /* Editing features then stays hidden. */ },
+    });
+    this.loadIntegrations(id);
   }
 
   get subscriptionId(): string {
@@ -95,6 +149,7 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       .subscribe({
         next: ({ detail, history }) => {
           this.detail = detail;
+          this.resolveProductId();
           this.history = history;
           this.histPage = 1;
         },
@@ -108,7 +163,32 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
     this.detail = updated;
     this.activeModal = null;
     this.reloadHistory();
+    // Features decide which integrations are licensed.
+    this.loadIntegrations(this.subscriptionId);
     this.cdr.markForCheck();
+  }
+
+  editIntegration(i: SubscriptionIntegrationDto): void {
+    this.editingIntegration = i;
+    this.activeModal = 'integration';
+  }
+
+  onIntegrationSaved(updated: SubscriptionIntegrationDto): void {
+    this.integrations = this.integrations.map((i) => (i.providerCode === updated.providerCode ? updated : i));
+    this.activeModal = null;
+    this.editingIntegration = null;
+    this.cdr.markForCheck();
+  }
+
+  private loadIntegrations(id: string): void {
+    this.service.getIntegrations(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (items) => { this.integrations = items ?? []; this.cdr.markForCheck(); },
+      error: () => { this.integrations = []; },
+    });
+  }
+
+  private resolveProductId(): void {
+    this.productId = this.detail ? this.productIds[this.detail.productCode] ?? null : null;
   }
 
   reactivate(): void {

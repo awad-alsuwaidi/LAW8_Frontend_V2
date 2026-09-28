@@ -41,6 +41,9 @@
           <button class="ui-btn ui-btn--ghost is-warning" type="button" (click)="activeModal = 'suspend'">{{ t('subscriptions.detail.suspend') }}</button>
           <button class="ui-btn ui-btn--ghost is-danger" type="button" (click)="activeModal = 'cancel'">{{ t('subscriptions.detail.cancel') }}</button>
         }
+        @if (canRenew) {
+          <button class="ui-btn" [ngClass]="detail.status === 'Active' ? 'ui-btn--ghost' : 'ui-btn--primary'" type="button" (click)="activeModal = 'renew'">{{ t('subscriptions.renew.button') }}</button>
+        }
         @if (detail.status === 'Suspended') {
           <button class="ui-btn ui-btn--primary" type="button" (click)="reactivate()" [disabled]="reactivating">
             {{ reactivating ? t('subscriptions.detail.reactivating') : t('subscriptions.detail.reactivate') }}
@@ -124,6 +127,60 @@
           </dl>
         </section>
 
+        @if (detail.accessState) {
+          <section class="sd-card">
+            <h3 class="sd-card__title sd-card__title--bar">
+              {{ t('subscriptions.access.section') }}
+              <span class="ui-badge" [ngClass]="accessClass">{{ accessStateLabel }}</span>
+            </h3>
+            <dl class="sd-facts">
+              <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.level') }}</dt><dd>{{ accessLabel }}</dd></div>
+              @if (detail.expiredAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.expiredAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.expiredAt) }}</dd></div> }
+              @if (detail.accessEndsAt && !detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.endsAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.accessEndsAt) }}</dd></div> }
+              @if (detail.purgeAt && !detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.purgeAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.purgeAt) }}</dd></div> }
+              @if (detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.purgedAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.purgedAt) }}</dd></div> }
+            </dl>
+          </section>
+        }
+
+        <section class="sd-card">
+          <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.features.section') }}</h3>
+          @if (!detail.features?.length) {
+            <p class="ui-cell-muted">{{ t('subscriptions.features.noneSelected') }}</p>
+          } @else {
+            <dl class="sd-facts">
+              @for (f of detail.features; track f.featureId) {
+                <div class="sd-fact sd-fact--row"><dt>{{ f | localName }}</dt><dd class="ui-cell-num"><app-money [value]="f.priceAddOnAtSelection" [ref]="detail" /></dd></div>
+              }
+            </dl>
+          }
+          @if (detail.status === 'Active' && productId) {
+            <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'features'">{{ t('subscriptions.features.edit') }}</button>
+          }
+        </section>
+
+        @if (integrations.length) {
+          <section class="sd-card">
+            <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.integrations.section') }}</h3>
+            <dl class="sd-facts">
+              @for (i of integrations; track i.providerCode) {
+                <div class="sd-fact sd-fact--row">
+                  <dt>
+                    {{ i.providerName }}
+                    <span class="ui-badge ui-badge--plain" [ngClass]="i.licensed ? 'ui-badge--success' : 'ui-badge--neutral'">{{ i.licensed ? t('subscriptions.integrations.licensed') : t('subscriptions.integrations.notLicensed') }}</span>
+                  </dt>
+                  <dd>
+                    <span class="ui-cell-muted">{{ t('integrations.mode' + i.syncMode) }}</span>
+                    @if (!detail.purgedAt) {
+                      <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="editIntegration(i)">{{ t('common.edit') }}</button>
+                    }
+                  </dd>
+                </div>
+              }
+            </dl>
+          </section>
+        }
+
         @if (productLimitDefinitions.length || detail.isTrial) {
           <section class="sd-card">
             <h3 class="sd-card__title sd-card__title--bar">
@@ -194,4 +251,13 @@
 }
 @if (detail && activeModal === 'cancel') {
   <app-cancel-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'renew') {
+  <app-renew-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'features' && productId) {
+  <app-features-modal [subscription]="detail" [productId]="productId" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'integration' && editingIntegration) {
+  <app-integration-settings-modal [subscription]="detail" [integration]="editingIntegration" (saved)="onIntegrationSaved($event)" (closed)="activeModal = null" />
 }

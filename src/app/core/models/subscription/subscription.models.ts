@@ -87,3 +87,13 @@ export interface UpdateSubscriptionLimitsDto {
   limits: Record<string, number>;
   isTrial?: boolean;
 }
+
+export interface RenewSubscriptionDto {
+  billingCycle: BillingCycle;
+  cycleCount?: number;
+  /** Required when billingCycle is None. */
+  endDate?: string;
+  /** Price of the new period (pre-tax, after discount); omitted keeps the current price. */
+  totalPrice?: number;
+  reason?: string;
+}

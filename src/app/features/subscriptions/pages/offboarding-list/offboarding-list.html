@@ -1,0 +1,152 @@
+<div class="ui-page">
+
+  <header class="ui-page-header">
+    <div>
+      <p class="ui-eyebrow">{{ t('subscriptions.eyebrow') }}</p>
+      <h1 class="ui-title">
+        {{ t('offboarding.title') }}
+        @if (!isLoading) { <span class="ui-title-count">{{ filtered.length }}</span> }
+      </h1>
+      <p class="ui-subtitle">{{ t('offboarding.subtitle') }}</p>
+    </div>
+    <div class="ui-actions">
+      <button class="ui-btn ui-btn--ghost" type="button" (click)="load()" [disabled]="isLoading">{{ t('offboarding.refresh') }}</button>
+    </div>
+  </header>
+
+  @if (!isLoading && items.length > 0) {
+    <div class="ui-kpis">
+      <div class="ui-kpi ui-kpi--warning"><b>{{ count('Grace') }}</b><span>{{ stateLabel('Grace') }}</span></div>
+      <div class="ui-kpi ui-kpi--neutral"><b>{{ count('Archived') }}</b><span>{{ stateLabel('Archived') }}</span></div>
+      <div class="ui-kpi ui-kpi--danger"><b>{{ count('PurgeDue') }}</b><span>{{ stateLabel('PurgeDue') }}</span></div>
+    </div>
+  }
+
+  <div class="ui-toolbar">
+    <select class="ui-select" [ngModel]="filter" (ngModelChange)="setFilter($event)">
+      @for (f of filters; track f) {
+        <option [value]="f">{{ f === 'all' ? t('subscriptions.filterAll') : stateLabel(f) }} ({{ count(f) }})</option>
+      }
+    </select>
+  </div>
+
+  @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('common.loading') }}</p></div>
+  }
+
+  @if (!isLoading && filtered.length === 0 && !errorMessage) {
+    <div class="ui-state"><p>{{ t('offboarding.empty') }}</p></div>
+  }
+
+  @if (!isLoading && filtered.length > 0) {
+    <div class="ui-table-wrap">
+      <table class="ui-table">
+        <thead>
+          <tr>
+            <th>{{ t('offboarding.colOrganization') }}</th>
+            <th>{{ t('offboarding.colProduct') }}</th>
+            <th>{{ t('offboarding.colState') }}</th>
+            <th>{{ t('offboarding.colEnded') }}</th>
+            <th>{{ t('offboarding.colAccessEnds') }}</th>
+            <th>{{ t('offboarding.colPurgeAt') }}</th>
+            <th class="ui-cell-actions">{{ t('common.actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of pagedRows; track i.subscriptionId) {
+            <tr>
+              <td>
+                <a class="ui-cell-primary" [routerLink]="['/tenants', i.organizationId]">{{ i.organizationName }}</a>
+                <span class="ui-cell-secondary" dir="ltr">{{ i.subdomain }}</span>
+              </td>
+              <td><a [routerLink]="['/subscriptions', i.subscriptionId]">{{ i.productCode }}</a></td>
+              <td><span class="ui-badge" [ngClass]="stateClass(i.state)">{{ stateLabel(i.state) }}</span></td>
+              <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.cancelledAt || i.endDate) }}</td>
+              <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.accessEndsAt) }}</td>
+              <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.purgeAt) }}</td>
+              <td class="ui-cell-actions">
+                <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" [routerLink]="['/subscriptions', i.subscriptionId]">{{ t('offboarding.open') }}</button>
+                <button class="ui-btn ui-btn--ghost ui-btn--sm is-danger" type="button" (click)="openPurge(i)">{{ t('offboarding.purge') }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-ui-pager [total]="filtered.length" [(page)]="page" [(pageSize)]="pageSize" />
+    </div>
+  }
+</div>
+
+<!-- Purge confirmation -->
+@if (purgeTarget) {
+  <div class="ui-overlay" (click)="closePurge()">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <span class="ui-modal__icon ui-modal__icon--danger">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </span>
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ t('offboarding.purgeTitle') }}</h3>
+          <p class="ui-modal__subtitle">{{ purgeTarget.organizationName }} · {{ purgeTarget.productCode }}</p>
+        </div>
+        <button type="button" class="ui-modal__close" (click)="closePurge()" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        @if (purgeError) { <div class="ui-alert ui-alert--error">{{ purgeError }}</div> }
+        <div class="ui-alert ui-alert--warning">{{ t('offboarding.purgeWarning') }}</div>
+
+        <div class="ui-field">
+          <label class="ui-label">{{ t('offboarding.confirmSubdomain') }} <strong dir="ltr">{{ purgeTarget.subdomain }}</strong></label>
+          <input class="ui-input" type="text" dir="ltr" autocomplete="off" name="confirm" [(ngModel)]="confirmSubdomain" />
+        </div>
+
+        @if (needsForce) {
+          <label class="ui-switch ui-switch--danger">
+            <input type="checkbox" name="force" [(ngModel)]="force" />
+            <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+            <span class="ui-switch__text">
+              <span class="ui-switch__label">{{ t('offboarding.force') }}</span>
+              <span class="ui-switch__hint">{{ t('offboarding.forceHint') }}</span>
+            </span>
+          </label>
+        }
+      </div>
+      <div class="ui-modal__foot">
+        <button type="button" class="ui-btn ui-btn--ghost" (click)="closePurge()" [disabled]="isPurging">{{ t('common.cancel') }}</button>
+        <button type="button" class="ui-btn ui-btn--danger" [disabled]="isPurging || !canPurge" (click)="doPurge()">
+          {{ isPurging ? t('common.deleting') : t('offboarding.purgeSubmit') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Deletion certificate issued by the purge -->
+@if (certificate) {
+  <div class="ui-overlay" (click)="certificate = null">
+    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ t('offboarding.certificateTitle') }}</h3>
+          <p class="ui-modal__subtitle" dir="ltr">{{ certificate.certificateNumber }}</p>
+        </div>
+      </div>
+      <div class="ui-modal__body">
+        <div class="ui-alert ui-alert--success">{{ t('offboarding.purged') }}</div>
+        <p><strong>{{ certificate.organizationName }}</strong> <span dir="ltr">({{ certificate.subdomain }})</span></p>
+        <p>{{ t('certificates.products') }}: {{ certificate.products.join(', ') }}</p>
+        <p>{{ t('certificates.databases') }}: <span dir="ltr">{{ certificate.databasesDropped.join(', ') || '—' }}</span></p>
+        <p>{{ t('certificates.files') }}: {{ certificate.filesDeleted }} ({{ formatBytes(certificate.bytesDeleted) }})</p>
+        <p>{{ t('certificates.issued') }}: {{ formatDateTime(certificate.issuedAtUtc) }} · {{ certificate.issuedBy }}</p>
+        <p class="ui-cell-muted" dir="ltr" style="word-break: break-all">SHA-256: {{ certificate.fingerprint }}</p>
+      </div>
+      <div class="ui-modal__foot">
+        <button type="button" class="ui-btn ui-btn--primary" (click)="certificate = null">{{ t('offboarding.done') }}</button>
+      </div>
+    </div>
+  </div>
+}

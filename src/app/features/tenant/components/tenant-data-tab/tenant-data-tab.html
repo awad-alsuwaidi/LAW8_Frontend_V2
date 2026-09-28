@@ -1,0 +1,196 @@
+<div style="display: flex; flex-direction: column; gap: 16px">
+  @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
+
+  @if (isLoading) {
+    <div class="ui-state"><span class="ui-spinner"></span><p>{{ t('common.loading') }}</p></div>
+  }
+
+  <!-- ========== STORAGE ========== -->
+  @if (!isLoading && view === 'storage') {
+    <div class="ui-page-header">
+      <div>
+        <h3 class="ui-card-title">{{ t('tenantData.storage.title') }}</h3>
+        <p class="ui-subtitle">
+          {{ t('tenantData.storage.measuredAt') }}: {{ formatDateTime(storage?.measuredAtUtc) }}
+        </p>
+      </div>
+      <div class="ui-actions">
+        <button class="ui-btn ui-btn--ghost" type="button" (click)="refreshStorage()" [disabled]="isRefreshing">
+          {{ isRefreshing ? t('tenantData.storage.refreshing') : t('tenantData.storage.refresh') }}
+        </button>
+      </div>
+    </div>
+
+    @if (storage) {
+      <div class="ui-kpis">
+        <div class="ui-kpi ui-kpi--info"><b dir="ltr">{{ formatBytes(storage.totalBytes) }}</b><span>{{ t('tenantData.storage.total') }}</span></div>
+        <div class="ui-kpi ui-kpi--neutral"><b>{{ storage.fileCount }}</b><span>{{ t('tenantData.storage.files') }}</span></div>
+      </div>
+
+      @if (storage.products.length === 0) {
+        <div class="ui-state"><p>{{ t('tenantData.storage.empty') }}</p></div>
+      } @else {
+        <div class="ui-table-wrap">
+          <table class="ui-table">
+            <thead>
+              <tr>
+                <th>{{ t('tenantData.storage.product') }}</th>
+                <th class="ui-cell-num">{{ t('tenantData.storage.files') }}</th>
+                <th class="ui-cell-num">{{ t('tenantData.storage.private') }}</th>
+                <th class="ui-cell-num">{{ t('tenantData.storage.public') }}</th>
+                <th class="ui-cell-num">{{ t('tenantData.storage.total') }}</th>
+                <th class="ui-cell-num">%</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of storage.products; track p.product) {
+                <tr>
+                  <td class="ui-cell-primary">{{ p.product }}</td>
+                  <td class="ui-cell-num">{{ p.fileCount }}</td>
+                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.privateBytes) }}</td>
+                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.publicBytes) }}</td>
+                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.totalBytes) }}</td>
+                  <td class="ui-cell-num">{{ share(p.totalBytes) }}%</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  }
+
+  <!-- ========== EXPORTS ========== -->
+  @if (!isLoading && view === 'exports') {
+    <div class="ui-page-header">
+      <div>
+        <h3 class="ui-card-title">{{ t('tenantData.exports.title') }}</h3>
+        <p class="ui-subtitle">{{ t('tenantData.exports.subtitle') }}</p>
+      </div>
+      <div class="ui-actions">
+        <label class="ui-switch">
+          <input type="checkbox" name="allVersions" [(ngModel)]="includeAllVersions" />
+          <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+          <span class="ui-switch__text"><span class="ui-switch__label">{{ t('tenantData.exports.allVersions') }}</span></span>
+        </label>
+        <button class="ui-btn ui-btn--primary" type="button" (click)="startExport()" [disabled]="isStarting || hasRunning">
+          {{ isStarting ? t('tenantData.exports.starting') : t('tenantData.exports.start') }}
+        </button>
+      </div>
+    </div>
+
+    @if (exports.length === 0) {
+      <div class="ui-state"><p>{{ t('tenantData.exports.empty') }}</p></div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('tenantData.exports.requested') }}</th>
+              <th>{{ t('tenantData.exports.state') }}</th>
+              <th>{{ t('tenantData.exports.parts') }}</th>
+              <th>{{ t('tenantData.exports.expires') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of exports; track e.id) {
+              <tr>
+                <td>
+                  <span class="ui-cell-primary ui-cell-num">{{ formatDateTime(e.requestedAtUtc) }}</span>
+                  <span class="ui-cell-secondary">{{ e.requestedBy }}@if (e.includeAllVersions) { · {{ t('tenantData.exports.allVersions') }} }</span>
+                </td>
+                <td>
+                  <span class="ui-badge" [ngClass]="stateClass(e.state)">{{ stateLabel(e.state) }}</span>
+                  @if (e.skippedProducts) { <span class="ui-cell-secondary">{{ t('tenantData.exports.skipped') }}: {{ e.skippedProducts }}</span> }
+                </td>
+                <td>
+                  @for (p of e.parts; track p.product) {
+                    <div>
+                      <strong>{{ p.product }}</strong>
+                      <span class="ui-badge ui-badge--plain" [ngClass]="stateClass(p.state)">{{ stateLabel(p.state) }}</span>
+                      <span class="ui-cell-muted">{{ p.files }} · <span dir="ltr">{{ formatBytes(p.bytes) }}</span></span>
+                      @if (p.missingFiles) { <span class="ui-cell-muted"> · {{ t('tenantData.exports.missing') }}: {{ p.missingFiles }}</span> }
+                      @if (p.error) { <span class="ui-cell-muted" [title]="p.error"> · {{ t('tenantData.exports.error') }}</span> }
+                      @if (p.state === 'Completed' && e.state !== 'Expired') {
+                        <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="download(e, p)" [disabled]="downloading === e.id + p.product">
+                          {{ downloading === e.id + p.product ? t('tenantData.exports.downloading') : t('tenantData.exports.download') }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </td>
+                <td class="ui-cell-muted ui-cell-num">{{ formatDateTime(e.expiresAtUtc) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+  <!-- ========== DELETION CERTIFICATES ========== -->
+  @if (!isLoading && view === 'certificates') {
+    <div>
+      <h3 class="ui-card-title">{{ t('tenantData.certificates.title') }}</h3>
+      <p class="ui-subtitle">{{ t('tenantData.certificates.subtitle') }}</p>
+    </div>
+
+    @if (certificates.length === 0) {
+      <div class="ui-state"><p>{{ t('tenantData.certificates.empty') }}</p></div>
+    } @else {
+      <div class="ui-table-wrap">
+        <table class="ui-table">
+          <thead>
+            <tr>
+              <th>{{ t('tenantData.certificates.number') }}</th>
+              <th>{{ t('certificates.products') }}</th>
+              <th class="ui-cell-num">{{ t('certificates.files') }}</th>
+              <th>{{ t('certificates.issued') }}</th>
+              <th class="ui-cell-actions">{{ t('common.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of certificates; track c.id) {
+              <tr>
+                <td class="ui-cell-primary" dir="ltr">{{ c.certificateNumber }}</td>
+                <td>{{ c.products.join(', ') }} @if (c.organizationFullyPurged) { <span class="ui-badge ui-badge--danger">{{ t('tenantData.certificates.full') }}</span> }</td>
+                <td class="ui-cell-num">{{ c.filesDeleted }} (<span dir="ltr">{{ formatBytes(c.bytesDeleted) }}</span>)</td>
+                <td class="ui-cell-muted">{{ formatDateTime(c.issuedAtUtc) }} · {{ c.issuedBy }}</td>
+                <td class="ui-cell-actions">
+                  <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="openCertificate = c">{{ t('tenantData.certificates.view') }}</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
+
+@if (openCertificate) {
+  <div class="ui-overlay" (click)="openCertificate = null">
+    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <div class="ui-modal__head">
+        <div class="ui-modal__text">
+          <h3 class="ui-modal__title">{{ t('offboarding.certificateTitle') }}</h3>
+          <p class="ui-modal__subtitle" dir="ltr">{{ openCertificate.certificateNumber }}</p>
+        </div>
+        <button type="button" class="ui-modal__close" (click)="openCertificate = null" [attr.aria-label]="t('common.cancel')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="ui-modal__body">
+        <p><strong>{{ openCertificate.organizationName }}</strong> <span dir="ltr">({{ openCertificate.subdomain }})</span></p>
+        <p>{{ t('certificates.products') }}: {{ openCertificate.products.join(', ') }}</p>
+        <p>{{ t('certificates.databases') }}: <span dir="ltr">{{ openCertificate.databasesDropped.join(', ') || '—' }}</span></p>
+        <p>{{ t('certificates.files') }}: {{ openCertificate.filesDeleted }} (<span dir="ltr">{{ formatBytes(openCertificate.bytesDeleted) }}</span>)</p>
+        <p>{{ t('certificates.issued') }}: {{ formatDateTime(openCertificate.issuedAtUtc) }} · {{ openCertificate.issuedBy }}</p>
+        <p class="ui-cell-muted" dir="ltr" style="word-break: break-all">SHA-256: {{ openCertificate.fingerprint }}</p>
+      </div>
+      <div class="ui-modal__foot">
+        <button type="button" class="ui-btn ui-btn--primary" (click)="openCertificate = null">{{ t('offboarding.done') }}</button>
+      </div>
+    </div>
+  </div>
+}
