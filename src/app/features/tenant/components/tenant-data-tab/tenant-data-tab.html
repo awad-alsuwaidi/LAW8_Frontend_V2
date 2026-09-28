@@ -47,9 +47,9 @@
                 <tr>
                   <td class="ui-cell-primary">{{ p.product }}</td>
                   <td class="ui-cell-num">{{ p.fileCount }}</td>
-                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.privateBytes) }}</td>
-                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.publicBytes) }}</td>
-                  <td class="ui-cell-num" dir="ltr">{{ formatBytes(p.totalBytes) }}</td>
+                  <td class="ui-cell-num"><span dir="ltr">{{ formatBytes(p.privateBytes) }}</span></td>
+                  <td class="ui-cell-num"><span dir="ltr">{{ formatBytes(p.publicBytes) }}</span></td>
+                  <td class="ui-cell-num"><span dir="ltr">{{ formatBytes(p.totalBytes) }}</span></td>
                   <td class="ui-cell-num">{{ share(p.totalBytes) }}%</td>
                 </tr>
               }
@@ -157,7 +157,7 @@
           <tbody>
             @for (c of certificates; track c.id) {
               <tr>
-                <td class="ui-cell-primary" dir="ltr">{{ c.certificateNumber }}</td>
+                <td class="ui-cell-primary"><span dir="ltr">{{ c.certificateNumber }}</span></td>
                 <td>{{ c.products.join(', ') }} @if (c.organizationFullyPurged) { <span class="ui-badge ui-badge--danger">{{ t('tenantData.certificates.full') }}</span> }</td>
                 <td class="ui-cell-num">{{ c.filesDeleted }} (<span dir="ltr">{{ formatBytes(c.bytesDeleted) }}</span>)</td>
                 <td class="ui-cell-muted">{{ formatDateTime(c.issuedAtUtc) }} · {{ c.issuedBy }}</td>

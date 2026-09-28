@@ -542,3 +542,9 @@
   color: var(--ink);
   direction: ltr;
 }
+
+/* Plan template picker: select on its own line, hint below it. */
+.tpl-pick {
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px; max-width: 420px;
+  .ui-select { width: 100%; }
+}

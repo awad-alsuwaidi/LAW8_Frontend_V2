@@ -52,9 +52,9 @@
                 <span class="ui-cell-secondary" dir="ltr">{{ x.code }}</span>
               </td>
               <td>{{ productName(x.productId) }}</td>
-              <td class="ui-cell-muted" dir="ltr">{{ x.featureCode || x.featureId }}</td>
+              <td class="ui-cell-muted"><span dir="ltr">{{ x.featureCode || x.featureId }}</span></td>
               <td>{{ t('integrations.mode' + x.syncModes) }}</td>
-              <td class="ui-cell-muted" dir="ltr">{{ x.events.length ? x.events.join(', ') : '—' }}</td>
+              <td class="ui-cell-muted"><span dir="ltr">{{ x.events.length ? x.events.join(', ') : '—' }}</span></td>
               <td>
                 <span class="ui-badge" [class.ui-badge--success]="x.isActive" [class.ui-badge--neutral]="!x.isActive">
                   {{ x.isActive ? t('common.active') : t('common.inactive') }}
