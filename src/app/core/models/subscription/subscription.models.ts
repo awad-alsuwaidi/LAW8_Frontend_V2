@@ -7,7 +7,7 @@ export type SubscriptionStatus = 'Pending' | 'Active' | 'Suspended' | 'Cancelled
 export type DiscountType = 'None' | 'FixedAmount' | 'Percentage';
 export type SubscriptionAction =
   | 'Created' | 'Suspended' | 'Reactivated' | 'Cancelled' | 'Renewed' | 'UsersAdded' | 'UsersRemoved'
-  | 'FeaturesChanged' | 'Expired' | 'Archived' | 'Purged';
+  | 'FeaturesChanged' | 'Expired' | 'Archived' | 'Purged' | 'LimitsChanged';
 
 export interface SubscriptionDetailDto {
   id: string;
@@ -41,6 +41,19 @@ export interface SubscriptionDetailDto {
   cancelledAt?: string;
   cancellationReason?: string;
   createdAtUtc: string;
+  /** What the organization can do now. */
+  access?: 'Full' | 'ReadOnly' | 'Locked' | 'None';
+  /** Active, Pending, Suspended, Grace (read-only), Archived, PurgeDue or Purged. */
+  accessState?: string;
+  accessEndsAt?: string | null;
+  purgeAt?: string | null;
+  expiredAt?: string | null;
+  purgedAt?: string | null;
+  features?: { featureId: number; code: string; nameEn: string; nameAr?: string | null; priceAddOnAtSelection: number }[];
+  /** Trial subscription (usually free and short). */
+  isTrial?: boolean;
+  /** Quotas of a limited ("Lite") subscription, keyed by limit key; missing = unlimited. */
+  limits?: Record<string, number>;
 }
 
 export interface SubscriptionHistoryDto {
@@ -60,3 +73,17 @@ export interface SubscriptionHistoryDto {
 export interface SuspendSubscriptionDto { reason?: string; }
 export interface CancelSubscriptionDto { reason?: string; }
 export interface AddUsersDto { count: number; }
+
+/** A quota a product understands (GET /subscriptions/limit-definitions, grouped by product code). */
+export interface LimitDefinition {
+  key: string;
+  nameEn: string;
+  nameAr: string;
+  unit: 'count' | 'MB' | string;
+}
+
+export interface UpdateSubscriptionLimitsDto {
+  /** Empty object = unlimited. */
+  limits: Record<string, number>;
+  isTrial?: boolean;
+}

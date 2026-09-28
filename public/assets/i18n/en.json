@@ -733,7 +733,22 @@
       "FeaturesChanged": "Features changed",
       "Expired": "Expired",
       "Archived": "Archived",
-      "Purged": "Data deleted"
+      "Purged": "Data deleted",
+      "LimitsChanged": "Limits changed"
+    },
+    "limits": {
+      "section": "Plan & limits",
+      "trial": "Trial / Lite subscription",
+      "trialBadge": "Trial",
+      "trialHint": "Free and usually short. When it ends, access becomes read-only, then archived.",
+      "unlimited": "Unlimited",
+      "emptyHint": "Leave a field empty for no limit.",
+      "edit": "Edit limits",
+      "title": "Plan limits",
+      "save": "Save limits",
+      "saving": "Saving…",
+      "failed": "Could not save the limits.",
+      "noDefinitions": "This product has no limits to set."
     }
   },
   "setup": {

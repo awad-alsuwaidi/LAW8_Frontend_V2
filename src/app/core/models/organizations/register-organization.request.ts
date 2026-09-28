@@ -9,6 +9,10 @@ export interface SubscriptionRequest {
   cycleCount?: number;
   startDate: string;
   endDate?: string;
+  /** Trial subscription: may be free; ends through the normal offboarding. */
+  isTrial?: boolean;
+  /** Quotas for a limited ("Lite") subscription; missing keys are unlimited. */
+  limits?: Record<string, number>;
 }
 
 export interface RegisterOrganizationRequest {

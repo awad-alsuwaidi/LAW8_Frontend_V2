@@ -29,6 +29,8 @@ import { BILLING_CYCLES, computeEndDate } from '../../../../../core/models/subsc
 import { PositiveIntegerDirective } from '../../../../../core/validators/positive-integer.directive';
 import { CurrencySymbol } from '../../../../../core/ui/money/currency-symbol';
 import { Organization } from '../../../../../core/models/organizations/organization.model';
+import { SubscriptionsService } from '../../../../subscriptions/services/subscription-detail';
+import { LimitDefinition } from '../../../../../core/models/subscription/subscription.models';
 import { NotificationsService } from '../../../../../core/notifications/notifications.service';
 
 type WizardStep = 'org-admin' | 'subscriptions' | 'provisioning';
@@ -44,6 +46,10 @@ export interface ProductSubForm {
   endDate: string;
   totalPrice: number | null;
   discountValue: number;
+  /** Trial subscription: may be free. */
+  isTrial: boolean;
+  /** Quotas for a limited ("Lite") plan keyed by limit key; empty = unlimited. */
+  limits: Record<string, number | null>;
 }
 
 @Component({
@@ -111,6 +117,18 @@ export class RegisterWizard implements OnInit, OnDestroy {
   featuresMap = new Map<number, FeatureDto[]>();
   selectedFeaturesMap = new Map<number, Set<number>>();
   subForms: Record<number, ProductSubForm> = {};
+
+  private readonly subscriptionsSvc = inject(SubscriptionsService);
+  /** Limit definitions keyed by product code; products without any show no limits section. */
+  limitDefinitions: Record<string, LimitDefinition[]> = {};
+
+  limitsFor(product: ProductDto): LimitDefinition[] {
+    return this.limitDefinitions[product.code] ?? [];
+  }
+
+  limitName(d: LimitDefinition): string {
+    return this.i18n.getLocale().startsWith('ar') ? d.nameAr : d.nameEn;
+  }
 
   orgAdminForm = this.fb.nonNullable.group({
     nameEn:             ['', [trimRequired(), Validators.minLength(2), Validators.maxLength(100)]],
@@ -205,13 +223,27 @@ export class RegisterWizard implements OnInit, OnDestroy {
             this.subForms[p.id] = {
               enabled: false, numberOfUsers: 1, billingCycle: 'Monthly', cycleCount: 1,
               startDate: '', endDate: '', totalPrice: null, discountValue: 0,
+              isTrial: false, limits: {},
             };
             this.selectedFeaturesMap.set(p.id, new Set());
           });
           this.loadAllFeatures();
+          this.subscriptionsSvc.getLimitDefinitions().pipe(takeUntil(this.destroy$)).subscribe({
+            next: (defs) => { this.limitDefinitions = defs ?? {}; this.cdr.markForCheck(); },
+            error: () => { /* No limits section then; subscriptions stay unlimited. */ },
+          });
         },
         error: () => { this.errorMessage = this.t('tenants.register.errorLoadSetup'); },
       });
+  }
+
+  /** Filled limit fields only; none means an unlimited subscription. */
+  private collectLimits(form: ProductSubForm): Record<string, number> | undefined {
+    const limits: Record<string, number> = {};
+    for (const [key, value] of Object.entries(form.limits ?? {})) {
+      if (value !== null && value !== undefined && `${value}` !== '' && Number(value) >= 0) limits[key] = Math.floor(Number(value));
+    }
+    return Object.keys(limits).length ? limits : undefined;
   }
 
   private loadAllFeatures(): void {
@@ -293,6 +325,8 @@ export class RegisterWizard implements OnInit, OnDestroy {
           cycleCount:    form.billingCycle === 'None' ? undefined : Math.max(1, Math.floor(form.cycleCount || 1)),
           startDate:     form.startDate,
           endDate:       form.billingCycle === 'None' ? form.endDate : undefined,
+          isTrial:       form.isTrial || undefined,
+          limits:        this.collectLimits(form),
         };
       });
 

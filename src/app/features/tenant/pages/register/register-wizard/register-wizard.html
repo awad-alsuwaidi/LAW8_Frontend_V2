@@ -333,6 +333,33 @@
                     </div>
                   </div>
 
+                  <div class="wiz-row">
+                    <label class="ui-switch">
+                      <input type="checkbox" [(ngModel)]="subForms[product.id].isTrial" />
+                      <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
+                      <span class="ui-switch__text">
+                        <span class="ui-switch__label">{{ t('subscriptions.limits.trial') }}</span>
+                        <span class="ui-switch__hint">{{ t('subscriptions.limits.trialHint') }}</span>
+                      </span>
+                    </label>
+                  </div>
+
+                  @if (limitsFor(product).length) {
+                    <div class="ui-field">
+                      <label class="ui-label">{{ t('subscriptions.limits.section') }}</label>
+                      <span class="ui-hint">{{ t('subscriptions.limits.emptyHint') }}</span>
+                    </div>
+                    <div class="wiz-row">
+                      @for (d of limitsFor(product); track d.key) {
+                        <div class="ui-field">
+                          <label class="ui-label">{{ limitName(d) }} @if (d.unit === 'MB') { <span class="ui-cell-muted">(MB)</span> }</label>
+                          <input class="ui-input" type="number" min="0" step="1" dir="ltr"
+                                 [(ngModel)]="subForms[product.id].limits[d.key]" [placeholder]="t('subscriptions.limits.unlimited')" />
+                        </div>
+                      }
+                    </div>
+                  }
+
                   <div class="sub-total">
                     <span>{{ t('tenants.register.totalAfterDiscount') }}</span>
                     <strong class="sub-total__val"><app-money [value]="totalAfterDiscount(product.id)" [ref]="currencyRef" /></strong>

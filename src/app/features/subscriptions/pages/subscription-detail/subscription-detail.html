@@ -124,6 +124,23 @@
           </dl>
         </section>
 
+        @if (productLimitDefinitions.length || detail.isTrial) {
+          <section class="sd-card">
+            <h3 class="sd-card__title sd-card__title--bar">
+              {{ t('subscriptions.limits.section') }}
+              @if (detail.isTrial) { <span class="ui-badge ui-badge--info">{{ t('subscriptions.limits.trialBadge') }}</span> }
+            </h3>
+            <dl class="sd-facts">
+              @for (d of productLimitDefinitions; track d.key) {
+                <div class="sd-fact sd-fact--row"><dt>{{ limitName(d) }}</dt><dd class="ui-cell-num">{{ limitValue(d) }}</dd></div>
+              }
+            </dl>
+            @if (!detail.purgedAt) {
+              <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'limits'">{{ t('subscriptions.limits.edit') }}</button>
+            }
+          </section>
+        }
+
         <section class="sd-card">
           <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.detail.sectionPricing') }}</h3>
           <dl class="sd-facts">
@@ -171,6 +188,9 @@
 }
 @if (detail && activeModal === 'suspend') {
   <app-suspend-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'limits') {
+  <app-limits-modal [subscription]="detail" [definitions]="productLimitDefinitions" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
 }
 @if (detail && activeModal === 'cancel') {
   <app-cancel-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />

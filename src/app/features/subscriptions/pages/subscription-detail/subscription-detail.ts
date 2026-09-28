@@ -14,17 +14,19 @@ import { TranslationService } from '../../../auth/services/Translation.service';
 import { AddUsersModal } from '../modals/add-users-modal/add-users-modal';
 import { SuspendModal } from '../modals/suspend-modal/suspend-modal';
 import { CancelModal } from '../modals/cancel-modal/cancel-modal';
+import { LimitsModal } from '../modals/limits-modal/limits-modal';
+import { LimitDefinition } from '../../../../core/models/subscription/subscription.models';
 import { UiPager, pageSlice } from '../../../../core/ui/pager/ui-pager';
 import { Money } from '../../../../core/ui/money/money';
 import { ProductLabelPipe } from '../../../../core/ui/product-label.pipe';
 
-type ModalType = 'add-users' | 'suspend' | 'cancel';
+type ModalType = 'add-users' | 'suspend' | 'cancel' | 'limits';
 
 
 @Component({
   selector: 'app-subscription-detail',
   standalone: true,
-  imports: [ProductLabelPipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, UiPager, Money],
+  imports: [ProductLabelPipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, LimitsModal, UiPager, Money],
   templateUrl: './subscription-detail.html',
   styleUrl: './subscription-detail.scss',
 })
@@ -49,9 +51,30 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
 
   activeModal: ModalType | null = null;
 
+  /** Limit definitions keyed by product code (for the plan card and the limits modal). */
+  limitDefinitions: Record<string, LimitDefinition[]> = {};
+
+  get productLimitDefinitions(): LimitDefinition[] {
+    return this.detail ? this.limitDefinitions[this.detail.productCode] ?? [] : [];
+  }
+
+  limitName(d: LimitDefinition): string {
+    return this.i18n.getLocale().startsWith('ar') ? d.nameAr : d.nameEn;
+  }
+
+  limitValue(d: LimitDefinition): string {
+    const v = this.detail?.limits?.[d.key];
+    if (v === undefined || v === null) return this.t('subscriptions.limits.unlimited');
+    return d.unit === 'MB' ? `${v} MB` : `${v}`;
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.load(id);
+    this.service.getLimitDefinitions().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (defs) => { this.limitDefinitions = defs ?? {}; this.cdr.markForCheck(); },
+      error: () => { /* The plan card then just shows no limits. */ },
+    });
   }
 
   get subscriptionId(): string {
@@ -156,7 +179,8 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       case 'UsersAdded':
       case 'Renewed':      return 'ui-badge--info';
       case 'UsersRemoved': return 'ui-badge--neutral';
-      case 'FeaturesChanged': return 'ui-badge--info';
+      case 'FeaturesChanged':
+      case 'LimitsChanged': return 'ui-badge--info';
       case 'Expired':
       case 'Archived':     return 'ui-badge--warning';
       case 'Purged':       return 'ui-badge--danger';

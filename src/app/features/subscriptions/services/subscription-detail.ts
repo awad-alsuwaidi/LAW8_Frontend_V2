@@ -9,6 +9,8 @@ import {
   SuspendSubscriptionDto,
   CancelSubscriptionDto,
   AddUsersDto,
+  LimitDefinition,
+  UpdateSubscriptionLimitsDto,
 } from '../../../core/models/subscription/subscription.models';
 
 @Injectable({ providedIn: 'root' })
@@ -43,6 +45,15 @@ export class SubscriptionsService {
 
   cancel(id: string, dto: CancelSubscriptionDto): Observable<SubscriptionDetailDto> {
     return this.api.patch<SubscriptionDetailDto>(`/subscriptions/${id}/cancel`, dto);
+  }
+
+  /** Quotas each product understands, keyed by product code. */
+  getLimitDefinitions(): Observable<Record<string, LimitDefinition[]>> {
+    return this.api.get<Record<string, LimitDefinition[]>>('/subscriptions/limit-definitions');
+  }
+
+  updateLimits(id: string, dto: UpdateSubscriptionLimitsDto): Observable<SubscriptionDetailDto> {
+    return this.api.put<SubscriptionDetailDto>(`/subscriptions/${id}/limits`, dto);
   }
 
   getByOrganization(organizationId: string): Observable<SubscriptionDetailDto[]> {
