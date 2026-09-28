@@ -332,6 +332,7 @@
     "statusActive": "Active",
     "statusSuspended": "Suspended",
     "statusCancelled": "Cancelled",
+    "statusExpired": "Expired",
     "statusPending": "Pending",
     "deployCloud": "Cloud",
     "deployOnPrem": "On-Premises",
@@ -616,6 +617,7 @@
     "kpiActive": "Active",
     "kpiSuspended": "Suspended",
     "kpiCancelled": "Cancelled",
+    "kpiExpired": "Expired",
     "kpiPending": "Pending",
     "colOrg": "Organization",
     "colProduct": "Product",
@@ -628,6 +630,7 @@
     "statusActive": "Active",
     "statusSuspended": "Suspended",
     "statusCancelled": "Cancelled",
+    "statusExpired": "Expired",
     "statusPending": "Pending",
     "expired": "Expired",
     "loading": "Loading subscriptions…",
@@ -681,7 +684,7 @@
       "taxAmount": "Tax Amount",
       "created": "Created",
       "proratedAdj": "Prorated adjustment",
-      "historyNote": "Subscription changes — creation, seats added, suspension, reactivation, renewal and cancellation — with the seat count and price at the time of each action."
+      "historyNote": "Subscription changes — creation, seats, features, suspension, reactivation, renewal, cancellation, expiry, archive and data deletion — with the seat count and price at the time of each action."
     },
     "addUsers": {
       "title": "Add Users",
@@ -700,7 +703,7 @@
     },
     "cancel": {
       "title": "Cancel Subscription",
-      "warning": "This action is irreversible. The subscription will be cancelled immediately.",
+      "warning": "Access becomes read-only right away. After the grace period the data is archived, and later deleted permanently. Renewing before the deletion restores the subscription.",
       "reasonLabel": "Reason (optional)",
       "reasonPlaceholder": "Enter cancellation reason…",
       "submit": "Cancel Subscription",
@@ -718,7 +721,20 @@
     "suffixMonthly": "/mo",
     "suffixQuarterly": "/qtr",
     "suffixYearly": "/yr",
-    "daysShort": "d"
+    "daysShort": "d",
+    "action": {
+      "Created": "Created",
+      "Suspended": "Suspended",
+      "Reactivated": "Reactivated",
+      "Cancelled": "Cancelled",
+      "Renewed": "Renewed",
+      "UsersAdded": "Users added",
+      "UsersRemoved": "Users removed",
+      "FeaturesChanged": "Features changed",
+      "Expired": "Expired",
+      "Archived": "Archived",
+      "Purged": "Data deleted"
+    }
   },
   "setup": {
     "eyebrow": "Master Data",
@@ -896,6 +912,7 @@
       "filterAll": "Select Product",
       "colNameEn": "Feature Name",
       "colNameAr": "Name (AR)",
+      "colCode": "Code",
       "colDesc": "Description",
       "colPrice": "Add-on Price",
       "colStatus": "Status",
@@ -912,6 +929,10 @@
         "nameEn": "Feature name (English)",
         "namePlaceholder": "e.g. Advanced Reports",
         "errorNameRequired": "Feature name is required",
+        "code": "Code",
+        "codePlaceholder": "e.g. advanced-reports",
+        "codeHint": "Optional. Generated from the English name when empty.",
+        "errorCodeFormat": "Lower-case letters, digits and \"-\" only (max 50).",
         "nameAr": "Name (Arabic)",
         "description": "Description",
         "descPlaceholder": "Briefly describe the feature's functionality…",

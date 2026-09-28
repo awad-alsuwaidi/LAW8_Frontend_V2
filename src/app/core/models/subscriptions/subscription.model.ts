@@ -2,7 +2,7 @@ export interface Subscription {
   id: string;
   organizationId: string;
   productCode: string;
-  status: 'Active' | 'Suspended' | 'Cancelled' | 'Pending';
+  status: 'Active' | 'Suspended' | 'Cancelled' | 'Pending' | 'Expired';
   numberOfUsers: number;
   totalPrice: number;
   taxAmount: number;

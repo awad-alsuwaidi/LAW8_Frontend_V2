@@ -68,6 +68,8 @@ export interface FeatureDto {
   id: number;
   productId: number;
   productName?: string;
+  /** Stable identifier products check (lower-case, digits, '-'); generated from nameEn when not given. */
+  code: string;
   nameEn: string;
   nameAr?: string;
   description?: string;
@@ -77,6 +79,8 @@ export interface FeatureDto {
 
 export interface SaveFeatureDto {
   productId: number;
+  /** Optional: generated from nameEn when omitted. */
+  code?: string;
   nameEn: string;
   nameAr?: string;
   description?: string;

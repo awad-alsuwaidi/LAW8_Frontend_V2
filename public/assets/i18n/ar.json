@@ -332,6 +332,7 @@
     "statusActive": "نشط",
     "statusSuspended": "معلق",
     "statusCancelled": "ملغى",
+    "statusExpired": "منتهي",
     "statusPending": "قيد الانتظار",
     "deployCloud": "سحابي",
     "deployOnPrem": "محلي",
@@ -616,6 +617,7 @@
     "kpiActive": "نشط",
     "kpiSuspended": "معلق",
     "kpiCancelled": "ملغى",
+    "kpiExpired": "منتهي",
     "kpiPending": "قيد الانتظار",
     "colOrg": "الشركة/المكتب",
     "colProduct": "المنتج",
@@ -628,6 +630,7 @@
     "statusActive": "نشط",
     "statusSuspended": "معلق",
     "statusCancelled": "ملغى",
+    "statusExpired": "منتهي",
     "statusPending": "قيد الانتظار",
     "expired": "منتهي",
     "loading": "جارٍ تحميل الاشتراكات…",
@@ -681,7 +684,7 @@
       "taxAmount": "قيمة الضريبة",
       "created": "تاريخ الإنشاء",
       "proratedAdj": "تسوية تناسبية",
-      "historyNote": "عرض تغييرات الاشتراك — الإنشاء، إضافة مقاعد، التعليق، إعادة التفعيل، التجديد، والإلغاء — مع عدد المقاعد والسعر وقت الإجراء."
+      "historyNote": "عرض تغييرات الاشتراك — الإنشاء، المقاعد، الميزات، التعليق، إعادة التفعيل، التجديد، الإلغاء، الانتهاء، الأرشفة وحذف البيانات — مع عدد المقاعد والسعر وقت الإجراء."
     },
     "addUsers": {
       "title": "إضافة مستخدمين",
@@ -700,7 +703,7 @@
     },
     "cancel": {
       "title": "إلغاء الاشتراك",
-      "warning": "هذا الإجراء لا يمكن التراجع عنه. سيتم إلغاء الاشتراك فوراً.",
+      "warning": "سيصبح الوصول للقراءة فقط فوراً. بعد فترة السماح تُؤرشف البيانات، ثم تُحذف نهائياً لاحقاً. التجديد قبل الحذف يعيد الاشتراك كما كان.",
       "reasonLabel": "السبب (اختياري)",
       "reasonPlaceholder": "أدخل سبب الإلغاء…",
       "submit": "إلغاء الاشتراك",
@@ -718,7 +721,20 @@
     "suffixMonthly": "/شهر",
     "suffixQuarterly": "/ربع",
     "suffixYearly": "/سنة",
-    "daysShort": "يوم"
+    "daysShort": "يوم",
+    "action": {
+      "Created": "إنشاء",
+      "Suspended": "تعليق",
+      "Reactivated": "إعادة تفعيل",
+      "Cancelled": "إلغاء",
+      "Renewed": "تجديد",
+      "UsersAdded": "إضافة مستخدمين",
+      "UsersRemoved": "إزالة مستخدمين",
+      "FeaturesChanged": "تعديل الميزات",
+      "Expired": "انتهاء",
+      "Archived": "أرشفة",
+      "Purged": "حذف البيانات"
+    }
   },
   "setup": {
     "eyebrow": "البيانات الأساسية",
@@ -896,6 +912,7 @@
       "filterAll": "اختر منتجاً",
       "colNameEn": "اسم الميزة",
       "colNameAr": "الاسم (AR)",
+      "colCode": "الكود",
       "colDesc": "الوصف",
       "colPrice": "سعر الإضافة",
       "colStatus": "الحالة",
@@ -912,6 +929,10 @@
         "nameEn": "اسم الميزة (إنجليزي)",
         "namePlaceholder": "مثال: التقارير المتقدمة",
         "errorNameRequired": "اسم الميزة مطلوب",
+        "code": "الكود",
+        "codePlaceholder": "مثال: advanced-reports",
+        "codeHint": "اختياري. يتولد تلقائياً من الاسم الإنجليزي لو تُرك فارغاً.",
+        "errorCodeFormat": "حروف إنجليزية صغيرة وأرقام و \"-\" فقط (حتى 50).",
         "nameAr": "الاسم (عربي)",
         "description": "الوصف",
         "descPlaceholder": "وصف مختصر لوظيفة الميزة…",

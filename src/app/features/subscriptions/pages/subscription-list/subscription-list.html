@@ -18,6 +18,9 @@
       <div class="ui-kpi ui-kpi--info"><b>{{ items.length }}</b><span>{{ t('subscriptions.kpiTotal') }}</span></div>
       <div class="ui-kpi ui-kpi--success"><b>{{ activeCount }}</b><span>{{ t('subscriptions.kpiActive') }}</span></div>
       <div class="ui-kpi ui-kpi--warning"><b>{{ suspendedCount }}</b><span>{{ t('subscriptions.kpiSuspended') }}</span></div>
+      @if (expiredCount > 0) {
+        <div class="ui-kpi ui-kpi--danger"><b>{{ expiredCount }}</b><span>{{ t('subscriptions.kpiExpired') }}</span></div>
+      }
       <div class="ui-kpi ui-kpi--danger"><b>{{ cancelledCount }}</b><span>{{ t('subscriptions.kpiCancelled') }}</span></div>
       @if (pendingCount > 0) {
         <div class="ui-kpi ui-kpi--neutral"><b>{{ pendingCount }}</b><span>{{ t('subscriptions.kpiPending') }}</span></div>
@@ -36,6 +39,7 @@
       <option value="">{{ t('subscriptions.filterAll') }}</option>
       <option value="Active">{{ t('subscriptions.statusActive') }}</option>
       <option value="Suspended">{{ t('subscriptions.statusSuspended') }}</option>
+      <option value="Expired">{{ t('subscriptions.statusExpired') }}</option>
       <option value="Cancelled">{{ t('subscriptions.statusCancelled') }}</option>
       <option value="Pending">{{ t('subscriptions.statusPending') }}</option>
     </select>

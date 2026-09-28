@@ -1,4 +1,4 @@
-export type OrganizationStatus = 'Active' | 'Suspended' | 'Cancelled' | 'Pending';
+export type OrganizationStatus = 'Active' | 'Suspended' | 'Cancelled' | 'Pending' | 'Expired';
 
 export interface OrganizationSubscriptionSummary {
   id: string;
@@ -90,6 +90,8 @@ export function deriveOrganizationStatus(dto: OrganizationApiDto): OrganizationS
   if (statuses.includes('Active')) return 'Active';
   if (statuses.includes('Suspended')) return 'Suspended';
   if (statuses.includes('Pending') || statuses.length === 0) return 'Pending';
+  // Ended but still renewable (read-only grace / archive) until every subscription is cancelled.
+  if (statuses.includes('Expired')) return 'Expired';
   return 'Cancelled';
 }
 

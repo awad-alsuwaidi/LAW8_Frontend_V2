@@ -359,6 +359,7 @@ export class TenantOverview implements OnInit, OnDestroy {
       Suspended: 'ui-badge--warning',
       Cancelled: 'ui-badge--danger',
       Pending: 'ui-badge--neutral',
+      Expired: 'ui-badge--danger',
     };
     return map[status] ?? 'ui-badge--neutral';
   }

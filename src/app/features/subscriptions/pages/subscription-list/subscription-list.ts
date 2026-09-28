@@ -42,6 +42,7 @@ export class SubscriptionList implements OnInit, OnDestroy {
   get suspendedCount(): number { return this.items.filter((s) => s.status === 'Suspended').length; }
   get cancelledCount(): number { return this.items.filter((s) => s.status === 'Cancelled').length; }
   get pendingCount(): number { return this.items.filter((s) => s.status === 'Pending').length; }
+  get expiredCount(): number { return this.items.filter((s) => s.status === 'Expired').length; }
 
   ngOnInit(): void {
     this.load();
@@ -103,6 +104,8 @@ export class SubscriptionList implements OnInit, OnDestroy {
       case 'Suspended': return 'ui-badge--warning';
       case 'Cancelled': return 'ui-badge--danger';
       case 'Pending':   return 'ui-badge--neutral';
+      case 'Expired':   return 'ui-badge--danger';
+      default:          return 'ui-badge--neutral';
     }
   }
 

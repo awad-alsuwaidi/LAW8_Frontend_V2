@@ -63,6 +63,8 @@
           <thead>
             <tr>
               <th>{{ t('setup.features.colNameEn') }}</th>
+              <th>{{ t('setup.features.colCode') }}</th>
+              <th>{{ t('setup.features.colPrice') }}</th>
               <th>{{ t('setup.features.colDesc') }}</th>
               <th>{{ t('setup.features.colStatus') }}</th>
               <th class="ui-cell-actions">{{ t('setup.features.colActions') }}</th>
@@ -71,12 +73,14 @@
           <tbody>
             @if (featuresOf(product.id).length === 0) {
               <tr>
-                <td colspan="4" class="empty-row">{{ t('setup.features.noFeaturesInProduct') }}</td>
+                <td colspan="6" class="empty-row">{{ t('setup.features.noFeaturesInProduct') }}</td>
               </tr>
             }
             @for (feat of featuresOf(product.id); track feat.id) {
               <tr>
                 <td><span class="ui-cell-primary">{{ feat | localName }}</span></td>
+                <td class="ui-cell-muted"><code>{{ feat.code }}</code></td>
+                <td class="ui-cell-num">{{ feat.priceAddOn | number: '1.0-2' }}</td>
                 <td class="ui-cell-muted cell-desc">{{ feat.description || '—' }}</td>
                 <td>
                   <span class="ui-badge" [class.ui-badge--success]="feat.isActive" [class.ui-badge--neutral]="!feat.isActive">
@@ -157,6 +161,22 @@
               @if (isFeatureInvalid('nameEn')) {
                 <span class="ui-error">{{ t('setup.features.modal.errorNameRequired') }}</span>
               }
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label">{{ t('setup.features.modal.code') }}</label>
+              <input class="ui-input" [class.is-invalid]="isFeatureInvalid('code')" formControlName="code" type="text" dir="ltr"
+                     [placeholder]="t('setup.features.modal.codePlaceholder')" />
+              @if (isFeatureInvalid('code')) {
+                <span class="ui-error">{{ t('setup.features.modal.errorCodeFormat') }}</span>
+              } @else {
+                <span class="ui-hint">{{ t('setup.features.modal.codeHint') }}</span>
+              }
+            </div>
+
+            <div class="ui-field">
+              <label class="ui-label">{{ t('setup.features.modal.price') }}</label>
+              <input class="ui-input" [class.is-invalid]="isFeatureInvalid('priceAddOn')" formControlName="priceAddOn" type="number" min="0" step="0.01" dir="ltr" />
             </div>
 
             <div class="ui-field ui-field--full">

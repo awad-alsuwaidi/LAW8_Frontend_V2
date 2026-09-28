@@ -46,6 +46,8 @@ export class FeaturesList implements OnInit, OnDestroy {
   featureForm = this.fb.group({
     nameAr:      ['', [Validators.maxLength(200)]],
     nameEn:      ['', [Validators.required, Validators.maxLength(200)]],
+    code:        ['', [Validators.pattern(/^[a-z0-9][a-z0-9-]{0,49}$/)]],
+    priceAddOn:  [0, [Validators.min(0)]],
     description: [''],
     isActive:    [true],
   });
@@ -99,7 +101,7 @@ export class FeaturesList implements OnInit, OnDestroy {
   openAddFeature(product: ProductDto): void {
     this.targetProduct  = product;
     this.editingFeature = null;
-    this.featureForm.reset({ nameAr: '', nameEn: '', description: '', isActive: true });
+    this.featureForm.reset({ nameAr: '', nameEn: '', code: '', priceAddOn: 0, description: '', isActive: true });
     this.showFeatureModal = true;
   }
 
@@ -107,7 +109,7 @@ export class FeaturesList implements OnInit, OnDestroy {
     event.stopPropagation();
     this.targetProduct  = product;
     this.editingFeature = feature;
-    this.featureForm.patchValue({ nameAr: feature.nameAr ?? '', nameEn: feature.nameEn, description: feature.description ?? '', isActive: feature.isActive });
+    this.featureForm.patchValue({ nameAr: feature.nameAr ?? '', nameEn: feature.nameEn, code: feature.code ?? '', priceAddOn: feature.priceAddOn ?? 0, description: feature.description ?? '', isActive: feature.isActive });
     this.showFeatureModal = true;
   }
 
@@ -122,7 +124,10 @@ export class FeaturesList implements OnInit, OnDestroy {
       nameEn:      v.nameEn!.trim(),
       nameAr:      v.nameAr?.trim() || undefined,
       description: v.description?.trim() || undefined,
-      priceAddOn:  0,
+      // Empty code: the API generates it from the English name (and keeps the existing one on edit).
+      code:        v.code?.trim() || undefined,
+      // The add-on price is charged on subscriptions; never reset it on edit.
+      priceAddOn:  Number(v.priceAddOn ?? 0),
       isActive:    v.isActive!,
     };
 

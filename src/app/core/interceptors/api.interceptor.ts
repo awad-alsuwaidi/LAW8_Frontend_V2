@@ -46,6 +46,9 @@ function withErrorDetails(error: HttpErrorResponse): HttpErrorResponse {
   const body = error.error as { message?: string; error?: unknown } | null;
   const details = Array.isArray(body?.error) ? (body!.error as unknown[]).filter((d): d is string => typeof d === 'string' && d.trim() !== '') : [];
   if (!body || details.length === 0) return error;
+  // Some responses (e.g. subscription checks) put machine codes like "Subscription.Suspended" in error[]
+  // and the readable sentence in message; keep the sentence then.
+  if (body.message && details.every((d) => /^[A-Za-z]+(\.[A-Za-z0-9]+)+$/.test(d))) return error;
   return new HttpErrorResponse({
     error: { ...body, message: details.join(' • ') },
     headers: error.headers,

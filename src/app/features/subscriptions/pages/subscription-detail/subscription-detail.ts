@@ -135,19 +135,16 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       case 'Suspended': return 'ui-badge--warning';
       case 'Cancelled': return 'ui-badge--danger';
       case 'Pending':   return 'ui-badge--neutral';
+      case 'Expired':   return 'ui-badge--danger';
+      default:          return 'ui-badge--neutral';
     }
   }
 
+  /** Translated history action; falls back to the raw action name for values added later on the API. */
   actionLabel(action: SubscriptionAction): string {
-    switch (action) {
-      case 'Created':      return 'Created';
-      case 'Suspended':    return 'Suspended';
-      case 'Reactivated':  return 'Reactivated';
-      case 'Cancelled':    return 'Cancelled';
-      case 'Renewed':      return 'Renewed';
-      case 'UsersAdded':   return 'Users Added';
-      case 'UsersRemoved': return 'Users Removed';
-    }
+    const key = 'subscriptions.action.' + action;
+    const label = this.t(key);
+    return label === key ? action : label;
   }
 
   actionClass(action: SubscriptionAction): string {
@@ -159,6 +156,11 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       case 'UsersAdded':
       case 'Renewed':      return 'ui-badge--info';
       case 'UsersRemoved': return 'ui-badge--neutral';
+      case 'FeaturesChanged': return 'ui-badge--info';
+      case 'Expired':
+      case 'Archived':     return 'ui-badge--warning';
+      case 'Purged':       return 'ui-badge--danger';
+      default:             return 'ui-badge--neutral';
     }
   }
 

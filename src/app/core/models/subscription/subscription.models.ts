@@ -3,9 +3,11 @@ import { PaginatedResult } from '../setup/setup.models';
 export type { PaginatedResult };
 
 export type BillingCycle = 'None' | 'Monthly' | 'Quarterly' | 'Yearly';
-export type SubscriptionStatus = 'Pending' | 'Active' | 'Suspended' | 'Cancelled';
+export type SubscriptionStatus = 'Pending' | 'Active' | 'Suspended' | 'Cancelled' | 'Expired';
 export type DiscountType = 'None' | 'FixedAmount' | 'Percentage';
-export type SubscriptionAction = 'Created' | 'Suspended' | 'Reactivated' | 'Cancelled' | 'Renewed' | 'UsersAdded' | 'UsersRemoved';
+export type SubscriptionAction =
+  | 'Created' | 'Suspended' | 'Reactivated' | 'Cancelled' | 'Renewed' | 'UsersAdded' | 'UsersRemoved'
+  | 'FeaturesChanged' | 'Expired' | 'Archived' | 'Purged';
 
 export interface SubscriptionDetailDto {
   id: string;

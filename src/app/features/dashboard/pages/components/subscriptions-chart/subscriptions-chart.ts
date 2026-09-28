@@ -12,6 +12,7 @@ const STATUS_COLORS: Record<string, string> = {
   Suspended: '#f79009',
   Cancelled: '#f04438',
   Pending:   '#98a2b3',
+  Expired:   '#b42318',
 };
 
 @Component({
@@ -41,7 +42,7 @@ export class SubscriptionsChart implements OnChanges {
   };
 
   ngOnChanges(): void {
-    const order = ['Active', 'Suspended', 'Cancelled', 'Pending'];
+    const order = ['Active', 'Suspended', 'Expired', 'Cancelled', 'Pending'];
     const map = new Map(this.items.map(i => [i.label, i.count]));
 
     this.legendItems = order.map(key => ({

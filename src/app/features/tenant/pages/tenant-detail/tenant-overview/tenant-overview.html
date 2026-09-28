@@ -323,7 +323,10 @@
               </div>
             }
             <div class="to-sub-card__foot">
-              <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="openManageSeats(sub, $event)">{{ t('tenants.overview.addSeats') }}</button>
+              @if (sub.status === 'Active') {
+                <!-- The API only changes seats on an active subscription. -->
+                <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="openManageSeats(sub, $event)">{{ t('tenants.overview.addSeats') }}</button>
+              }
               @if (sub.status === 'Active') {
                 <button class="ui-btn ui-btn--ghost ui-btn--sm to-sub-card__cancel" type="button" (click)="openSuspend(sub, $event)">{{ t('tenants.overview.suspend') }}</button>
               }
