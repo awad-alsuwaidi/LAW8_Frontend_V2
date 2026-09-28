@@ -687,7 +687,8 @@
       "taxAmount": "Tax Amount",
       "created": "Created",
       "proratedAdj": "Prorated adjustment",
-      "historyNote": "Subscription changes — creation, seats, features, suspension, reactivation, renewal, cancellation, expiry, archive and data deletion — with the seat count and price at the time of each action."
+      "historyNote": "Subscription changes — creation, seats, features, suspension, reactivation, renewal, cancellation, expiry, archive and data deletion — with the seat count and price at the time of each action.",
+      "colPeriod": "Period"
     },
     "addUsers": {
       "title": "Add Users",
@@ -803,7 +804,8 @@
       "levelFull": "Full",
       "levelReadOnly": "Read-only",
       "levelLocked": "Locked",
-      "levelNone": "None"
+      "levelNone": "None",
+      "fullUntil": "Full access until"
     }
   },
   "setup": {
@@ -1438,7 +1440,10 @@
     "products": "Products",
     "databases": "Databases deleted",
     "files": "Files deleted",
-    "issued": "Issued"
+    "issued": "Issued",
+    "issuedBy": "Issued by",
+    "fingerprint": "Fingerprint",
+    "fingerprintHint": "Proves the certificate was not altered; keep it with the certificate number."
   },
   "planTemplates": {
     "title": "Plan templates",
@@ -1480,8 +1485,8 @@
     "storage": {
       "title": "Storage usage",
       "measuredAt": "Last measured",
-      "refresh": "Measure now",
-      "refreshing": "Measuring…",
+      "refresh": "Recalculate storage size",
+      "refreshing": "Calculating…",
       "total": "Total",
       "files": "Files",
       "product": "Product",

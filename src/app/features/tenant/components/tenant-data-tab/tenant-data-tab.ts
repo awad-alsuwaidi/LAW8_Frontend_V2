@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, Subscription, timer } from 'rxjs';
-import { takeUntil, finalize, switchMap } from 'rxjs/operators';
+import { Observable, Subject, Subscription, forkJoin, of, timer } from 'rxjs';
+import { takeUntil, finalize, switchMap, catchError, map } from 'rxjs/operators';
 import { TenantDataService } from '../../services/tenant-data';
 import {
   DataDeletionCertificateDto,
@@ -12,6 +12,7 @@ import {
   formatBytes,
 } from '../../../../core/models/platform-ops/platform-ops.models';
 import { TranslationService } from '../../../auth/services/Translation.service';
+import { DeletionCertificate } from '../deletion-certificate/deletion-certificate';
 
 export type TenantDataView = 'storage' | 'exports' | 'certificates';
 
@@ -19,8 +20,9 @@ export type TenantDataView = 'storage' | 'exports' | 'certificates';
 @Component({
   selector: 'app-tenant-data-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DeletionCertificate],
   templateUrl: './tenant-data-tab.html',
+  styleUrl: './tenant-data-tab.scss',
 })
 export class TenantDataTab implements OnChanges, OnDestroy {
   @Input({ required: true }) orgId!: string;
@@ -86,9 +88,25 @@ export class TenantDataTab implements OnChanges, OnDestroy {
 
   /* ---------- Exports ---------- */
 
+  /**
+   * The list endpoint returns summaries only; the state is refreshed and the packages / links come from
+   * GET by id, so the latest exports are loaded one by one.
+   */
+  private fetchExports(): Observable<TenantExportDto[]> {
+    return this.service.getExports(this.orgId).pipe(
+      switchMap((items) => {
+        const list = items ?? [];
+        if (!list.length) return of(list);
+        const detailed = list.slice(0, 10).map((e) =>
+          this.service.getExport(this.orgId, e.id).pipe(catchError(() => of(e))));
+        return forkJoin(detailed).pipe(map((d) => [...d, ...list.slice(10)]));
+      }),
+    );
+  }
+
   loadExports(): void {
     this.isLoading = true;
-    this.service.getExports(this.orgId)
+    this.fetchExports()
       .pipe(takeUntil(this.destroy$), finalize(() => { this.isLoading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: (items) => { this.exports = items ?? []; this.pollWhileRunning(); },
@@ -116,7 +134,7 @@ export class TenantDataTab implements OnChanges, OnDestroy {
     this.stopPolling();
     if (!this.hasRunning) return;
     this.poll = timer(5000, 5000)
-      .pipe(takeUntil(this.destroy$), switchMap(() => this.service.getExports(this.orgId)))
+      .pipe(takeUntil(this.destroy$), switchMap(() => this.fetchExports()))
       .subscribe({
         next: (items) => {
           this.exports = items ?? [];
@@ -134,7 +152,9 @@ export class TenantDataTab implements OnChanges, OnDestroy {
 
   /** Signed storage link when available; otherwise the package streams through the API. */
   download(e: TenantExportDto, part: TenantExportPartDto): void {
-    if (part.downloadUrl) {
+    // A link back to our own API needs the bearer token, so it is fetched as a blob instead of opened.
+    const viaApi = !part.downloadUrl || part.downloadUrl.includes(`/exports/${e.id}/download/`);
+    if (!viaApi && part.downloadUrl) {
       window.open(part.downloadUrl, '_blank', 'noopener');
       return;
     }

@@ -21,6 +21,7 @@ import { IntegrationSettingsModal } from '../modals/integration-settings-modal/i
 import { ProductsService } from '../../../setup/services/products';
 import { SubscriptionIntegrationDto } from '../../../../core/models/platform-ops/platform-ops.models';
 import { LocalNamePipe } from '../../../../core/ui/local-name.pipe';
+import { PlatformUsersService } from '../../../platform/services/platform-users';
 import { LimitDefinition } from '../../../../core/models/subscription/subscription.models';
 import { UiPager, pageSlice } from '../../../../core/ui/pager/ui-pager';
 import { Money } from '../../../../core/ui/money/money';
@@ -41,6 +42,9 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(SubscriptionsService);
   private readonly products = inject(ProductsService);
+  private readonly platformUsers = inject(PlatformUsersService);
+  /** Platform users keyed by id and e-mail (lower case), to show who made each change. */
+  private userNames: Record<string, string> = {};
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
   private readonly i18n = inject(TranslationService);
@@ -129,6 +133,18 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
       error: () => { /* Editing features then stays hidden. */ },
     });
     this.loadIntegrations(id);
+    this.platformUsers.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (users) => {
+        const ar = this.i18n.getCurrentLanguage() === 'ar';
+        for (const u of users ?? []) {
+          const name = (ar ? u.nameAr || u.nameEn : u.nameEn || u.nameAr) || u.email;
+          this.userNames[u.id.toLowerCase()] = name;
+          if (u.email) this.userNames[u.email.toLowerCase()] = name;
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => { /* The raw value is shown then. */ },
+    });
   }
 
   get subscriptionId(): string {
@@ -187,6 +203,12 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
     });
   }
 
+  /** Name of the user who made a change; history rows store a user id (older ones) or an e-mail. */
+  userLabel(changedBy: string | null | undefined): string {
+    if (!changedBy) return '—';
+    return this.userNames[changedBy.toLowerCase()] ?? changedBy;
+  }
+
   private resolveProductId(): void {
     this.productId = this.detail ? this.productIds[this.detail.productCode] ?? null : null;
   }
@@ -223,6 +245,15 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString(this.i18n.getLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  /** Compact numeric date for the history table. */
+  formatShort(date: string): string {
+    return new Date(date).toLocaleDateString(this.i18n.getLocale(), { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+
+  formatTime(date: string): string {
+    return new Date(date).toLocaleTimeString(this.i18n.getLocale(), { hour: '2-digit', minute: '2-digit' });
   }
 
   formatDateTime(date: string): string {

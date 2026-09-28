@@ -1,0 +1,48 @@
+.dc { max-width: 560px; }
+
+.dc__number {
+  display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+}
+
+.dc__org {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2);
+}
+.dc__org-name { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
+.dc__org-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); text-align: start; }
+
+.dc__facts { margin: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.dc__fact {
+  display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: center;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+  dt { font-size: 12.5px; color: var(--muted); }
+  dd { margin: 0; font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; gap: 4px; }
+}
+
+.dc__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.dc__chip {
+  padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent);
+  &--mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 500; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+}
+.dc__muted { font-size: 12px; color: var(--muted); font-weight: 400; }
+.dc__left { text-align: start; }
+
+.dc__fingerprint {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 16px; border: 1px dashed var(--border-strong); border-radius: 12px;
+  code {
+    display: block; padding: 8px 10px; border-radius: 8px; background: var(--surface-2);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--text);
+    word-break: break-all; text-align: left; font-size: 11.5px;
+  }
+  p { margin: 0; }
+}
+.dc__fingerprint-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+}

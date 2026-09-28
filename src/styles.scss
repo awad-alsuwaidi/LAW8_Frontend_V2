@@ -533,6 +533,9 @@ button, input, select, textarea { font-family: inherit; }
   &--sm { max-width: 420px; }
   &--lg { max-width: 720px; }
 
+  /* A <form> wrapping body + foot must pass the flex column on, or long bodies overflow instead of scrolling. */
+  > form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+
   &__head {
     display: flex;
     align-items: center;
@@ -567,6 +570,7 @@ button, input, select, textarea { font-family: inherit; }
     display: flex; flex-direction: column; gap: 18px;
     font-size: 14px; color: var(--text);
     overflow-y: auto;
+    min-height: 0;
     p { margin: 0; }
   }
 

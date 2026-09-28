@@ -1,0 +1,73 @@
+<div class="ui-overlay" (click)="closed.emit()">
+  <div class="ui-modal dc" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+    <div class="ui-modal__head">
+      <span class="ui-modal__icon ui-modal__icon--success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </span>
+      <div class="ui-modal__text">
+        <h3 class="ui-modal__title">{{ t('offboarding.certificateTitle') }}</h3>
+        <p class="ui-modal__subtitle"><span class="dc__number" dir="ltr">{{ certificate.certificateNumber }}</span></p>
+      </div>
+      <button type="button" class="ui-modal__close" (click)="closed.emit()" [attr.aria-label]="t('common.cancel')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="ui-modal__body">
+      @if (justIssued) { <div class="ui-alert ui-alert--success">{{ t('offboarding.purged') }}</div> }
+
+      <div class="dc__org">
+        <div>
+          <p class="dc__org-name">{{ certificate.organizationName }}</p>
+          <p class="dc__org-sub" dir="ltr">{{ certificate.subdomain }}</p>
+        </div>
+        @if (certificate.organizationFullyPurged) {
+          <span class="ui-badge ui-badge--danger">{{ t('tenantData.certificates.full') }}</span>
+        }
+      </div>
+
+      <dl class="dc__facts">
+        <div class="dc__fact">
+          <dt>{{ t('certificates.products') }}</dt>
+          <dd class="dc__chips">
+            @for (p of certificate.products; track p) { <span class="dc__chip">{{ p }}</span> }
+          </dd>
+        </div>
+        <div class="dc__fact">
+          <dt>{{ t('certificates.databases') }}</dt>
+          <dd class="dc__chips">
+            @for (d of certificate.databasesDropped; track d) { <span class="dc__chip dc__chip--mono" dir="ltr">{{ d }}</span> }
+            @empty { <span class="dc__muted">—</span> }
+          </dd>
+        </div>
+        <div class="dc__fact">
+          <dt>{{ t('certificates.files') }}</dt>
+          <dd>{{ certificate.filesDeleted }} <span class="dc__muted" dir="ltr">({{ formatBytes(certificate.bytesDeleted) }})</span></dd>
+        </div>
+        <div class="dc__fact">
+          <dt>{{ t('certificates.issued') }}</dt>
+          <dd>{{ issuedAt }}</dd>
+        </div>
+        <div class="dc__fact">
+          <dt>{{ t('certificates.issuedBy') }}</dt>
+          <dd><span dir="ltr">{{ certificate.issuedBy }}</span></dd>
+        </div>
+      </dl>
+
+      <div class="dc__fingerprint">
+        <div class="dc__fingerprint-head">
+          <span>{{ t('certificates.fingerprint') }} (SHA-256)</span>
+          <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="copyFingerprint()">
+            {{ copied ? t('common.copied') : t('common.copy') }}
+          </button>
+        </div>
+        <code dir="ltr">{{ certificate.fingerprint }}</code>
+        <p class="dc__muted">{{ t('certificates.fingerprintHint') }}</p>
+      </div>
+    </div>
+
+    <div class="ui-modal__foot">
+      <button type="button" class="ui-btn ui-btn--primary" (click)="closed.emit()">{{ t('offboarding.done') }}</button>
+    </div>
+  </div>
+</div>

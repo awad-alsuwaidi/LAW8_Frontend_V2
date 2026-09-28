@@ -64,7 +64,7 @@
               <td class="ui-cell-muted">{{ periodLabel(x) }}</td>
               <td class="ui-cell-num">{{ x.numberOfUsers }}</td>
               <td class="ui-cell-num">{{ x.totalPrice !== null && x.totalPrice !== undefined ? (x.totalPrice | number: '1.0-2') : '—' }}</td>
-              <td class="ui-cell-muted" dir="ltr">{{ limitsSummary(x) }}</td>
+              <td class="ui-cell-muted">{{ limitsSummary(x) }}</td>
               <td>
                 <span class="ui-badge" [class.ui-badge--success]="x.isActive" [class.ui-badge--neutral]="!x.isActive">
                   {{ x.isActive ? t('common.active') : t('common.inactive') }}

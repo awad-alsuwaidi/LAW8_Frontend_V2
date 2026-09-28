@@ -67,7 +67,7 @@
         <h3 class="ui-card-title">{{ t('tenantData.exports.title') }}</h3>
         <p class="ui-subtitle">{{ t('tenantData.exports.subtitle') }}</p>
       </div>
-      <div class="ui-actions">
+      <div class="ui-actions td-actions">
         <label class="ui-switch">
           <input type="checkbox" name="allVersions" [(ngModel)]="includeAllVersions" />
           <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
@@ -104,20 +104,24 @@
                   @if (e.skippedProducts) { <span class="ui-cell-secondary">{{ t('tenantData.exports.skipped') }}: {{ e.skippedProducts }}</span> }
                 </td>
                 <td>
-                  @for (p of e.parts; track p.product) {
-                    <div>
-                      <strong>{{ p.product }}</strong>
-                      <span class="ui-badge ui-badge--plain" [ngClass]="stateClass(p.state)">{{ stateLabel(p.state) }}</span>
-                      <span class="ui-cell-muted">{{ p.files }} · <span dir="ltr">{{ formatBytes(p.bytes) }}</span></span>
-                      @if (p.missingFiles) { <span class="ui-cell-muted"> · {{ t('tenantData.exports.missing') }}: {{ p.missingFiles }}</span> }
-                      @if (p.error) { <span class="ui-cell-muted" [title]="p.error"> · {{ t('tenantData.exports.error') }}</span> }
-                      @if (p.state === 'Completed' && e.state !== 'Expired') {
-                        <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="download(e, p)" [disabled]="downloading === e.id + p.product">
-                          {{ downloading === e.id + p.product ? t('tenantData.exports.downloading') : t('tenantData.exports.download') }}
-                        </button>
-                      }
-                    </div>
-                  }
+                  <div class="td-parts">
+                    @for (p of e.parts; track p.product) {
+                      <div class="td-part">
+                        <span class="td-part__name" dir="ltr">{{ p.product }}</span>
+                        <span class="ui-badge" [ngClass]="stateClass(p.state)">{{ stateLabel(p.state) }}</span>
+                        <span class="td-part__size">
+                          {{ p.files }} {{ t('tenantData.storage.files') }} · <span dir="ltr">{{ formatBytes(p.bytes) }}</span>
+                          @if (p.missingFiles) { · {{ t('tenantData.exports.missing') }}: {{ p.missingFiles }} }
+                          @if (p.error) { · <span class="td-part__error" [title]="p.error">{{ t('tenantData.exports.error') }}</span> }
+                        </span>
+                        @if (p.state === 'Completed' && e.state !== 'Expired') {
+                          <button class="ui-btn ui-btn--soft ui-btn--sm td-part__btn" type="button" (click)="download(e, p)" [disabled]="downloading === e.id + p.product">
+                            {{ downloading === e.id + p.product ? t('tenantData.exports.downloading') : t('tenantData.exports.download') }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
                 </td>
                 <td class="ui-cell-muted ui-cell-num">{{ formatDateTime(e.expiresAtUtc) }}</td>
               </tr>
@@ -169,28 +173,5 @@
 </div>
 
 @if (openCertificate) {
-  <div class="ui-overlay" (click)="openCertificate = null">
-    <div class="ui-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <div class="ui-modal__head">
-        <div class="ui-modal__text">
-          <h3 class="ui-modal__title">{{ t('offboarding.certificateTitle') }}</h3>
-          <p class="ui-modal__subtitle" dir="ltr">{{ openCertificate.certificateNumber }}</p>
-        </div>
-        <button type="button" class="ui-modal__close" (click)="openCertificate = null" [attr.aria-label]="t('common.cancel')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="ui-modal__body">
-        <p><strong>{{ openCertificate.organizationName }}</strong> <span dir="ltr">({{ openCertificate.subdomain }})</span></p>
-        <p>{{ t('certificates.products') }}: {{ openCertificate.products.join(', ') }}</p>
-        <p>{{ t('certificates.databases') }}: <span dir="ltr">{{ openCertificate.databasesDropped.join(', ') || '—' }}</span></p>
-        <p>{{ t('certificates.files') }}: {{ openCertificate.filesDeleted }} (<span dir="ltr">{{ formatBytes(openCertificate.bytesDeleted) }}</span>)</p>
-        <p>{{ t('certificates.issued') }}: {{ formatDateTime(openCertificate.issuedAtUtc) }} · {{ openCertificate.issuedBy }}</p>
-        <p class="ui-cell-muted" dir="ltr" style="word-break: break-all">SHA-256: {{ openCertificate.fingerprint }}</p>
-      </div>
-      <div class="ui-modal__foot">
-        <button type="button" class="ui-btn ui-btn--primary" (click)="openCertificate = null">{{ t('offboarding.done') }}</button>
-      </div>
-    </div>
-  </div>
+  <app-deletion-certificate [certificate]="openCertificate" (closed)="openCertificate = null" />
 }

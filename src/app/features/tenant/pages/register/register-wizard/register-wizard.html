@@ -250,7 +250,7 @@
                     <select class="ui-select" [ngModel]="selectedTemplate[product.id] ?? null" (ngModelChange)="applyTemplate(product, $event)">
                       <option [ngValue]="null">{{ t('tenants.register.planTemplateCustom') }}</option>
                       @for (tpl of templatesOf(product.id); track tpl.id) {
-                        <option [ngValue]="tpl.id">{{ tpl | localName }}{{ tpl.isTrial ? ' (' + t('subscriptions.limits.trialBadge') + ')' : '' }}</option>
+                        <option [ngValue]="tpl.id">{{ tpl | localName }}</option>
                       }
                     </select>
                     <span class="ui-hint">{{ t('tenants.register.planTemplateHint') }}</span>

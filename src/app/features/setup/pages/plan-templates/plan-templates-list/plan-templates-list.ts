@@ -130,7 +130,13 @@ export class PlanTemplatesList implements OnInit, OnDestroy {
 
   limitsSummary(x: PlanTemplateDto): string {
     const keys = Object.keys(x.limits ?? {});
-    return keys.length ? keys.map((k) => `${k}: ${x.limits[k]}`).join(' · ') : this.t('subscriptions.limits.unlimited');
+    if (!keys.length) return this.t('subscriptions.limits.unlimited');
+    const code = this.products.find((p) => p.id === x.productId)?.code ?? '';
+    const defs = this.limitDefinitions[code] ?? [];
+    return keys.map((k) => {
+      const d = defs.find((z) => z.key === k);
+      return `${d ? this.limitName(d) : k}: ${x.limits[k]}${d?.unit === 'MB' ? ' MB' : ''}`;
+    }).join(' · ');
   }
 
   limitName(d: LimitDefinition): string {

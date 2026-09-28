@@ -58,17 +58,19 @@
           @for (i of pagedRows; track i.subscriptionId) {
             <tr>
               <td>
-                <a class="ui-cell-primary" [routerLink]="['/tenants', i.organizationId]">{{ i.organizationName }}</a>
+                <a class="ui-cell-primary ob-link" [routerLink]="['/tenants', i.organizationId]">{{ i.organizationName }}</a>
                 <span class="ui-cell-secondary" dir="ltr">{{ i.subdomain }}</span>
               </td>
-              <td><a [routerLink]="['/subscriptions', i.subscriptionId]">{{ i.productCode }}</a></td>
+              <td><a class="ob-link" [routerLink]="['/subscriptions', i.subscriptionId]">{{ i.productCode }}</a></td>
               <td><span class="ui-badge" [ngClass]="stateClass(i.state)">{{ stateLabel(i.state) }}</span></td>
               <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.cancelledAt || i.endDate) }}</td>
               <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.accessEndsAt) }}</td>
               <td class="ui-cell-muted ui-cell-num">{{ formatDate(i.purgeAt) }}</td>
               <td class="ui-cell-actions">
-                <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" [routerLink]="['/subscriptions', i.subscriptionId]">{{ t('offboarding.open') }}</button>
-                <button class="ui-btn ui-btn--ghost ui-btn--sm is-danger" type="button" (click)="openPurge(i)">{{ t('offboarding.purge') }}</button>
+                <div class="ob-actions">
+                  <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" [routerLink]="['/subscriptions', i.subscriptionId]">{{ t('offboarding.open') }}</button>
+                  <button class="ui-btn ui-btn--ghost ui-btn--sm is-danger" type="button" (click)="openPurge(i)">{{ t('offboarding.purge') }}</button>
+                </div>
               </td>
             </tr>
           }
@@ -127,26 +129,5 @@
 
 <!-- Deletion certificate issued by the purge -->
 @if (certificate) {
-  <div class="ui-overlay" (click)="certificate = null">
-    <div class="ui-modal ui-modal--sm" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <div class="ui-modal__head">
-        <div class="ui-modal__text">
-          <h3 class="ui-modal__title">{{ t('offboarding.certificateTitle') }}</h3>
-          <p class="ui-modal__subtitle" dir="ltr">{{ certificate.certificateNumber }}</p>
-        </div>
-      </div>
-      <div class="ui-modal__body">
-        <div class="ui-alert ui-alert--success">{{ t('offboarding.purged') }}</div>
-        <p><strong>{{ certificate.organizationName }}</strong> <span dir="ltr">({{ certificate.subdomain }})</span></p>
-        <p>{{ t('certificates.products') }}: {{ certificate.products.join(', ') }}</p>
-        <p>{{ t('certificates.databases') }}: <span dir="ltr">{{ certificate.databasesDropped.join(', ') || '—' }}</span></p>
-        <p>{{ t('certificates.files') }}: {{ certificate.filesDeleted }} ({{ formatBytes(certificate.bytesDeleted) }})</p>
-        <p>{{ t('certificates.issued') }}: {{ formatDateTime(certificate.issuedAtUtc) }} · {{ certificate.issuedBy }}</p>
-        <p class="ui-cell-muted" dir="ltr" style="word-break: break-all">SHA-256: {{ certificate.fingerprint }}</p>
-      </div>
-      <div class="ui-modal__foot">
-        <button type="button" class="ui-btn ui-btn--primary" (click)="certificate = null">{{ t('offboarding.done') }}</button>
-      </div>
-    </div>
-  </div>
+  <app-deletion-certificate [certificate]="certificate" [justIssued]="true" (closed)="certificate = null" />
 }

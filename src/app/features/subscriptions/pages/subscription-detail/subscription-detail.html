@@ -86,10 +86,8 @@
                     <th>{{ t('subscriptions.detail.colAction') }}</th>
                     <th class="ui-cell-num">{{ t('subscriptions.detail.colUsers') }}</th>
                     <th class="ui-cell-num">{{ t('subscriptions.detail.colPrice') }}</th>
-                    <th>{{ t('subscriptions.detail.colStart') }}</th>
-                    <th>{{ t('subscriptions.detail.colEnd') }}</th>
+                    <th>{{ t('subscriptions.detail.colPeriod') }}</th>
                     <th>{{ t('subscriptions.detail.colReason') }}</th>
-                    <th>{{ t('subscriptions.detail.colDate') }}</th>
                     <th>{{ t('subscriptions.detail.colBy') }}</th>
                   </tr>
                 </thead>
@@ -98,12 +96,10 @@
                     <tr>
                       <td><span class="ui-badge ui-badge--plain" [ngClass]="actionClass(h.action)">{{ actionLabel(h.action) }}</span></td>
                       <td class="ui-cell-num">{{ h.numberOfUsersAtAction }}</td>
-                      <td class="ui-cell-num"><app-money [value]="h.priceAtAction" [ref]="detail" /></td>
-                      <td class="ui-cell-muted ui-cell-num">{{ formatDate(h.startDate) }}</td>
-                      <td class="ui-cell-muted ui-cell-num">{{ formatDate(h.endDate) }}</td>
+                      <td class="ui-cell-num sd-nowrap"><app-money [value]="h.priceAtAction" [ref]="detail" /></td>
+                      <td class="ui-cell-muted ui-cell-num sd-nowrap">{{ formatShort(h.startDate) }}<span class="sd-time">{{ formatShort(h.endDate) }}</span></td>
                       <td class="ui-cell-muted sd-reason" [title]="h.reason || ''">{{ h.reason || '—' }}</td>
-                      <td class="ui-cell-muted ui-cell-num">{{ formatDateTime(h.changedAt) }}</td>
-                      <td class="ui-cell-muted">{{ h.changedBy || '—' }}</td>
+                      <td class="sd-nowrap" [title]="h.changedBy || ''">{{ userLabel(h.changedBy) }}<span class="sd-time ui-cell-num">{{ formatShort(h.changedAt) }} · {{ formatTime(h.changedAt) }}</span></td>
                     </tr>
                   }
                 </tbody>
@@ -136,7 +132,7 @@
             <dl class="sd-facts">
               <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.level') }}</dt><dd>{{ accessLabel }}</dd></div>
               @if (detail.expiredAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.expiredAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.expiredAt) }}</dd></div> }
-              @if (detail.accessEndsAt && !detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.endsAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.accessEndsAt) }}</dd></div> }
+              @if (detail.accessEndsAt && !detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ detail.accessState === 'Grace' ? t('subscriptions.access.endsAt') : t('subscriptions.access.fullUntil') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.accessEndsAt) }}</dd></div> }
               @if (detail.purgeAt && !detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.purgeAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.purgeAt) }}</dd></div> }
               @if (detail.purgedAt) { <div class="sd-fact sd-fact--row"><dt>{{ t('subscriptions.access.purgedAt') }}</dt><dd class="ui-cell-num">{{ formatDate(detail.purgedAt) }}</dd></div> }
             </dl>
@@ -146,7 +142,7 @@
         <section class="sd-card">
           <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.features.section') }}</h3>
           @if (!detail.features?.length) {
-            <p class="ui-cell-muted">{{ t('subscriptions.features.noneSelected') }}</p>
+            <p class="ui-cell-muted sd-card__empty">{{ t('subscriptions.features.noneSelected') }}</p>
           } @else {
             <dl class="sd-facts">
               @for (f of detail.features; track f.featureId) {
@@ -155,29 +151,31 @@
             </dl>
           }
           @if (detail.status === 'Active' && productId) {
-            <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'features'">{{ t('subscriptions.features.edit') }}</button>
+            <div class="sd-card__foot">
+              <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'features'">{{ t('subscriptions.features.edit') }}</button>
+            </div>
           }
         </section>
 
         @if (integrations.length) {
           <section class="sd-card">
             <h3 class="sd-card__title sd-card__title--bar">{{ t('subscriptions.integrations.section') }}</h3>
-            <dl class="sd-facts">
+            <ul class="sd-integ">
               @for (i of integrations; track i.providerCode) {
-                <div class="sd-fact sd-fact--row">
-                  <dt>
-                    {{ i.providerName }}
-                    <span class="ui-badge ui-badge--plain" [ngClass]="i.licensed ? 'ui-badge--success' : 'ui-badge--neutral'">{{ i.licensed ? t('subscriptions.integrations.licensed') : t('subscriptions.integrations.notLicensed') }}</span>
-                  </dt>
-                  <dd>
-                    <span class="ui-cell-muted">{{ t('integrations.mode' + i.syncMode) }}</span>
-                    @if (!detail.purgedAt) {
-                      <button class="ui-btn ui-btn--ghost ui-btn--sm" type="button" (click)="editIntegration(i)">{{ t('common.edit') }}</button>
-                    }
-                  </dd>
-                </div>
+                <li class="sd-integ__row">
+                  <div class="sd-integ__info">
+                    <span class="sd-integ__name">{{ i.providerName }}</span>
+                    <span class="sd-integ__meta">
+                      <span class="ui-badge" [ngClass]="i.licensed ? 'ui-badge--success' : 'ui-badge--neutral'">{{ i.licensed ? t('subscriptions.integrations.licensed') : t('subscriptions.integrations.notLicensed') }}</span>
+                      <span class="sd-integ__mode">{{ t('integrations.mode' + i.syncMode) }}</span>
+                    </span>
+                  </div>
+                  @if (!detail.purgedAt) {
+                    <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="editIntegration(i)">{{ t('common.edit') }}</button>
+                  }
+                </li>
               }
-            </dl>
+            </ul>
           </section>
         }
 
@@ -193,7 +191,9 @@
               }
             </dl>
             @if (!detail.purgedAt) {
-              <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'limits'">{{ t('subscriptions.limits.edit') }}</button>
+              <div class="sd-card__foot">
+                <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'limits'">{{ t('subscriptions.limits.edit') }}</button>
+              </div>
             }
           </section>
         }

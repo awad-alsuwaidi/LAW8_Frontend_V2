@@ -8,6 +8,7 @@ import { SubscriptionsService } from '../../services/subscription-detail';
 import { DataDeletionCertificateDto, OffboardingItemDto, formatBytes } from '../../../../core/models/platform-ops/platform-ops.models';
 import { TranslationService } from '../../../auth/services/Translation.service';
 import { UiPager, pageSlice } from '../../../../core/ui/pager/ui-pager';
+import { DeletionCertificate } from '../../../tenant/components/deletion-certificate/deletion-certificate';
 
 type StateFilter = 'all' | 'Grace' | 'Archived' | 'PurgeDue';
 
@@ -18,8 +19,9 @@ type StateFilter = 'all' | 'Grace' | 'Archived' | 'PurgeDue';
 @Component({
   selector: 'app-offboarding-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, UiPager],
+  imports: [CommonModule, FormsModule, RouterLink, UiPager, DeletionCertificate],
   templateUrl: './offboarding-list.html',
+  styleUrl: './offboarding-list.scss',
 })
 export class OffboardingList implements OnInit, OnDestroy {
   private readonly service = inject(SubscriptionsService);
