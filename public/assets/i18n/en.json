@@ -1519,7 +1519,9 @@
       "stateExpired": "Expired",
       "loadFailed": "Could not load the exports.",
       "startFailed": "Could not start the export.",
-      "downloadFailed": "Download failed."
+      "downloadFailed": "Download failed.",
+      "entries": "items",
+      "entriesHint": "Each package holds the product data as CSV tables, a manifest and checksums, plus the uploaded documents if any."
     },
     "certificates": {
       "title": "Deletion certificates",

@@ -1519,7 +1519,9 @@
       "stateExpired": "منتهي",
       "loadFailed": "تعذر تحميل عمليات التصدير.",
       "startFailed": "تعذر بدء التصدير.",
-      "downloadFailed": "فشل التنزيل."
+      "downloadFailed": "فشل التنزيل.",
+      "entries": "عنصر",
+      "entriesHint": "كل حزمة فيها بيانات المنتج كجداول CSV مع ملف وصف (manifest) وبصمات تحقق، بالإضافة للمستندات المرفوعة إن وُجدت."
     },
     "certificates": {
       "title": "شهادات الحذف",

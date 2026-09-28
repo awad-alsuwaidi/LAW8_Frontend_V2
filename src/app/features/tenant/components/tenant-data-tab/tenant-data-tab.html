@@ -66,6 +66,7 @@
       <div>
         <h3 class="ui-card-title">{{ t('tenantData.exports.title') }}</h3>
         <p class="ui-subtitle">{{ t('tenantData.exports.subtitle') }}</p>
+        <p class="ui-hint">{{ t('tenantData.exports.entriesHint') }}</p>
       </div>
       <div class="ui-actions td-actions">
         <label class="ui-switch">
@@ -110,7 +111,7 @@
                         <span class="td-part__name" dir="ltr">{{ p.product }}</span>
                         <span class="ui-badge" [ngClass]="stateClass(p.state)">{{ stateLabel(p.state) }}</span>
                         <span class="td-part__size">
-                          {{ p.files }} {{ t('tenantData.storage.files') }} · <span dir="ltr">{{ formatBytes(p.bytes) }}</span>
+                          {{ p.files }} {{ t('tenantData.exports.entries') }} · <span dir="ltr">{{ formatBytes(p.bytes) }}</span>
                           @if (p.missingFiles) { · {{ t('tenantData.exports.missing') }}: {{ p.missingFiles }} }
                           @if (p.error) { · <span class="td-part__error" [title]="p.error">{{ t('tenantData.exports.error') }}</span> }
                         </span>
