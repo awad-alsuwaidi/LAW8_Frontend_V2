@@ -48,6 +48,7 @@ export class ProductsList implements OnInit, OnDestroy {
     isProvisionable: [false],
     provisioningKey: ['', [Validators.maxLength(100)]],
     isActive:        [true],
+    pricePerExtraGb: [null as number | null, [Validators.min(0)]],
   });
 
   ngOnInit(): void { this.load(); }
@@ -78,14 +79,14 @@ export class ProductsList implements OnInit, OnDestroy {
 
   openCreate(): void {
     this.editingItem = null;
-    this.form.reset({ code: '', nameEn: '', nameAr: '', description: '', isProvisionable: false, provisioningKey: '', isActive: true });
+    this.form.reset({ code: '', nameEn: '', nameAr: '', description: '', isProvisionable: false, provisioningKey: '', isActive: true, pricePerExtraGb: null });
     this.showModal = true;
   }
 
   openEdit(item: ProductDto, event: Event): void {
     event.stopPropagation();
     this.editingItem = item;
-    this.form.patchValue({ code: item.code, nameEn: item.nameEn, nameAr: item.nameAr ?? '', description: item.description ?? '', isProvisionable: item.isProvisionable, provisioningKey: item.provisioningKey ?? '', isActive: item.isActive });
+    this.form.patchValue({ code: item.code, nameEn: item.nameEn, nameAr: item.nameAr ?? '', description: item.description ?? '', isProvisionable: item.isProvisionable, provisioningKey: item.provisioningKey ?? '', isActive: item.isActive, pricePerExtraGb: item.pricePerExtraGb ?? null });
     this.showModal = true;
   }
 
@@ -95,7 +96,8 @@ export class ProductsList implements OnInit, OnDestroy {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.isSaving = true;
     const v = this.form.getRawValue();
-    const dto: SaveProductDto = { code: v.code!, nameEn: v.nameEn!, nameAr: v.nameAr || undefined, description: v.description || undefined, isProvisionable: v.isProvisionable!, provisioningKey: v.provisioningKey || undefined, isActive: v.isActive! };
+    const dto: SaveProductDto = { code: v.code!, nameEn: v.nameEn!, nameAr: v.nameAr || undefined, description: v.description || undefined, isProvisionable: v.isProvisionable!, provisioningKey: v.provisioningKey || undefined, isActive: v.isActive!,
+      pricePerExtraGb: v.pricePerExtraGb === null || v.pricePerExtraGb === undefined || `${v.pricePerExtraGb}` === '' ? null : Number(v.pricePerExtraGb) };
 
     const obs = this.editingItem
       ? this.service.update(this.editingItem.id, dto)

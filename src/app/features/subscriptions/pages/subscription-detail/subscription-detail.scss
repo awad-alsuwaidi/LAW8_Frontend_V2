@@ -90,7 +90,7 @@
 
 .sd-nowrap { white-space: nowrap; }
 
-.sd-card__foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.sd-card__foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .sd-card__empty { margin: 0; padding: 14px 18px; }
 
 /* ---- Integrations ---- */
@@ -106,3 +106,13 @@
 .sd-integ__mode { font-size: 12.5px; color: var(--muted); }
 .sd-time { display: block; font-size: 11.5px; color: var(--faint); }
 .sd-table-wrap .ui-table { th, td { padding-left: 10px; padding-right: 10px; } }
+
+/* ---- Storage usage ---- */
+.sd-storage { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+.sd-storage__head { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.sd-storage__bar {
+  height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden;
+  span { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .3s; }
+  span.is-warn { background: var(--warning); }
+  span.is-full { background: var(--danger); }
+}

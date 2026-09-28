@@ -9,6 +9,7 @@ import {
   SuspendSubscriptionDto,
   CancelSubscriptionDto,
   AddUsersDto,
+  AddStorageDto,
   LimitDefinition,
   UpdateSubscriptionLimitsDto,
 } from '../../../core/models/subscription/subscription.models';
@@ -47,6 +48,11 @@ export class SubscriptionsService {
 
   addUsers(id: string, dto: AddUsersDto): Observable<SubscriptionDetailDto> {
     return this.api.patch<SubscriptionDetailDto>(`/subscriptions/${id}/add-users`, dto);
+  }
+
+  /** Extra storage on top of the plan's limit, charged pro rata for the rest of the period. */
+  addStorage(id: string, dto: AddStorageDto): Observable<SubscriptionDetailDto> {
+    return this.api.patch<SubscriptionDetailDto>(`/subscriptions/${id}/add-storage`, dto);
   }
 
   cancel(id: string, dto: CancelSubscriptionDto): Observable<SubscriptionDetailDto> {

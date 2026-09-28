@@ -154,6 +154,12 @@
               <label class="ui-label">{{ t('setup.products.modal.provisioningKey') }}</label>
               <input class="ui-input" type="text" formControlName="provisioningKey" [placeholder]="t('setup.products.modal.provisioningKeyPlaceholder')" />
             </div>
+
+            <div class="ui-field ui-field--full">
+              <label class="ui-label">{{ t('setup.products.modal.pricePerExtraGb') }}</label>
+              <input class="ui-input" type="number" min="0" step="0.01" dir="ltr" formControlName="pricePerExtraGb" />
+              <span class="ui-hint">{{ t('setup.products.modal.pricePerExtraGbHint') }}</span>
+            </div>
           </div>
 
           <label class="ui-switch">

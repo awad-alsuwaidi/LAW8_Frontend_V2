@@ -114,6 +114,8 @@ export interface ProductDto {
   isProvisionable: boolean;
   provisioningKey?: string;
   isActive: boolean;
+  /** Default price of one extra GB of storage per subscription period; null = not sold. */
+  pricePerExtraGb?: number | null;
 }
 
 export interface SaveProductDto {
@@ -124,6 +126,7 @@ export interface SaveProductDto {
   isProvisionable: boolean;
   provisioningKey?: string;
   isActive: boolean;
+  pricePerExtraGb?: number | null;
 }
 
 /** Fixed display precedence for the core products; anything else follows alphabetically by code. */

@@ -688,7 +688,8 @@
       "created": "Created",
       "proratedAdj": "Prorated adjustment",
       "historyNote": "Subscription changes — creation, seats, features, suspension, reactivation, renewal, cancellation, expiry, archive and data deletion — with the seat count and price at the time of each action.",
-      "colPeriod": "Period"
+      "colPeriod": "Period",
+      "unknownUser": "Unknown user"
     },
     "addUsers": {
       "title": "Add Users",
@@ -738,7 +739,8 @@
       "Expired": "Expired",
       "Archived": "Archived",
       "Purged": "Data deleted",
-      "LimitsChanged": "Limits changed"
+      "LimitsChanged": "Limits changed",
+      "StorageAdded": "Storage added"
     },
     "limits": {
       "section": "Plan & limits",
@@ -806,6 +808,20 @@
       "levelLocked": "Locked",
       "levelNone": "None",
       "fullUntil": "Full access until"
+    },
+    "storage": {
+      "add": "Add storage",
+      "addTitle": "Add storage",
+      "gb": "Extra storage (GB)",
+      "pricePerGb": "Price per GB (full period)",
+      "pricePerGbHint": "Defaults to the product price; charged pro rata for the days left.",
+      "current": "Current storage",
+      "after": "Storage after",
+      "charge": "Estimated charge now",
+      "chargeHint": "The exact amount is calculated when saving and added to the subscription price.",
+      "submit": "Add storage",
+      "failed": "Could not add storage.",
+      "used": "Storage used"
     }
   },
   "setup": {
@@ -965,7 +981,9 @@
         "codePlaceholder": "e.g. LAW8",
         "nameArPlaceholder": "e.g. اسم المنتج",
         "provisionableHint": "Each tenant gets its own database for this product.",
-        "provisioningKeyPlaceholder": "e.g. law8"
+        "provisioningKeyPlaceholder": "e.g. law8",
+        "pricePerExtraGb": "Price per extra GB",
+        "pricePerExtraGbHint": "Default price of 1 GB of extra storage for a full subscription period. Empty = extra storage is not sold."
       },
       "deleteTitle": "Delete Product",
       "deleteBody": "Delete {{name}}? This action cannot be undone.",
@@ -1373,6 +1391,14 @@
     "ProvisioningCompleted": {
       "title": "{{org}} is ready",
       "body": "Databases and identity are provisioned; the workspace can be used now."
+    },
+    "StorageNearLimit": {
+      "title": "{{org}} · {{product}} storage is almost full",
+      "body": "{{detail}} — offer extra storage."
+    },
+    "StorageFull": {
+      "title": "{{org}} · {{product}} storage is full",
+      "body": "{{detail}} — uploads are blocked until storage is added."
     }
   },
   "integrations": {

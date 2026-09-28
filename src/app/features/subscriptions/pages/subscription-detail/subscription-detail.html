@@ -187,11 +187,23 @@
             </h3>
             <dl class="sd-facts">
               @for (d of productLimitDefinitions; track d.key) {
-                <div class="sd-fact sd-fact--row"><dt>{{ limitName(d) }}</dt><dd class="ui-cell-num">{{ limitValue(d) }}</dd></div>
+                <div class="sd-fact sd-fact--row"><dt>{{ limitName(d) }}</dt><dd class="ui-cell-num"><span dir="ltr">{{ limitValue(d) }}</span></dd></div>
               }
             </dl>
+            @if (storageLimitBytes !== null && storageUsedBytes !== null) {
+              <div class="sd-storage">
+                <div class="sd-storage__head">
+                  <span>{{ t('subscriptions.storage.used') }}</span>
+                  <span dir="ltr">{{ formatBytes(storageUsedBytes) }} / {{ formatBytes(storageLimitBytes) }} ({{ storagePercent }}%)</span>
+                </div>
+                <div class="sd-storage__bar"><span [style.width.%]="storagePercent" [class.is-warn]="storagePercent >= 80" [class.is-full]="storagePercent >= 100"></span></div>
+              </div>
+            }
             @if (!detail.purgedAt) {
               <div class="sd-card__foot">
+                @if (canAddStorage) {
+                  <button class="ui-btn ui-btn--primary ui-btn--sm" type="button" (click)="activeModal = 'add-storage'">{{ t('subscriptions.storage.add') }}</button>
+                }
                 <button class="ui-btn ui-btn--soft ui-btn--sm" type="button" (click)="activeModal = 'limits'">{{ t('subscriptions.limits.edit') }}</button>
               </div>
             }
@@ -251,6 +263,9 @@
 }
 @if (detail && activeModal === 'cancel') {
   <app-cancel-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
+}
+@if (detail && activeModal === 'add-storage' && baseStorageMb !== null) {
+  <app-add-storage-modal [subscription]="detail" [baseStorageMb]="baseStorageMb" (saved)="onModalSaved($event)" (closed)="activeModal = null" />
 }
 @if (detail && activeModal === 'renew') {
   <app-renew-modal [subscription]="detail" (saved)="onModalSaved($event)" (closed)="activeModal = null" />

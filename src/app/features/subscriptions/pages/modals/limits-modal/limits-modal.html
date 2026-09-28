@@ -17,15 +17,6 @@
       <div class="ui-modal__body">
         @if (errorMessage) { <div class="ui-alert ui-alert--error">{{ errorMessage }}</div> }
 
-        <label class="ui-switch">
-          <input type="checkbox" name="isTrial" [(ngModel)]="isTrial" />
-          <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
-          <span class="ui-switch__text">
-            <span class="ui-switch__label">{{ t('subscriptions.limits.trial') }}</span>
-            <span class="ui-switch__hint">{{ t('subscriptions.limits.trialHint') }}</span>
-          </span>
-        </label>
-
         @if (definitions.length === 0) {
           <p class="ui-hint">{{ t('subscriptions.limits.noDefinitions') }}</p>
         }

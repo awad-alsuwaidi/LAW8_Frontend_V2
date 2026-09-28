@@ -32,12 +32,10 @@ export class LimitsModal implements OnInit, OnDestroy {
   t = (k: string) => this.i18n.translate(k);
 
   values: Record<string, number | null> = {};
-  isTrial = false;
   isLoading = false;
   errorMessage = '';
 
   ngOnInit(): void {
-    this.isTrial = !!this.subscription.isTrial;
     for (const d of this.definitions) {
       this.values[d.key] = this.subscription.limits?.[d.key] ?? null;
     }
@@ -60,7 +58,7 @@ export class LimitsModal implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.service
-      .updateLimits(this.subscription.id, { limits, isTrial: this.isTrial })
+      .updateLimits(this.subscription.id, { limits })
       .pipe(takeUntil(this.destroy$), finalize(() => { this.isLoading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: (updated) => this.saved.emit(updated),

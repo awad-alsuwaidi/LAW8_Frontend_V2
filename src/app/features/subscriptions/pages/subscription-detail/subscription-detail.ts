@@ -15,6 +15,9 @@ import { AddUsersModal } from '../modals/add-users-modal/add-users-modal';
 import { SuspendModal } from '../modals/suspend-modal/suspend-modal';
 import { CancelModal } from '../modals/cancel-modal/cancel-modal';
 import { LimitsModal } from '../modals/limits-modal/limits-modal';
+import { AddStorageModal } from '../modals/add-storage-modal/add-storage-modal';
+import { TenantDataService } from '../../../tenant/services/tenant-data';
+import { formatBytes } from '../../../../core/models/platform-ops/platform-ops.models';
 import { RenewModal } from '../modals/renew-modal/renew-modal';
 import { FeaturesModal } from '../modals/features-modal/features-modal';
 import { IntegrationSettingsModal } from '../modals/integration-settings-modal/integration-settings-modal';
@@ -27,13 +30,13 @@ import { UiPager, pageSlice } from '../../../../core/ui/pager/ui-pager';
 import { Money } from '../../../../core/ui/money/money';
 import { ProductLabelPipe } from '../../../../core/ui/product-label.pipe';
 
-type ModalType = 'add-users' | 'suspend' | 'cancel' | 'limits' | 'renew' | 'features' | 'integration';
+type ModalType = 'add-users' | 'suspend' | 'cancel' | 'limits' | 'renew' | 'features' | 'integration' | 'add-storage';
 
 
 @Component({
   selector: 'app-subscription-detail',
   standalone: true,
-  imports: [ProductLabelPipe, LocalNamePipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, LimitsModal, RenewModal, FeaturesModal, IntegrationSettingsModal, UiPager, Money],
+  imports: [ProductLabelPipe, LocalNamePipe, CommonModule, RouterLink, AddUsersModal, SuspendModal, CancelModal, LimitsModal, AddStorageModal, RenewModal, FeaturesModal, IntegrationSettingsModal, UiPager, Money],
   templateUrl: './subscription-detail.html',
   styleUrl: './subscription-detail.scss',
 })
@@ -43,6 +46,10 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   private readonly service = inject(SubscriptionsService);
   private readonly products = inject(ProductsService);
   private readonly platformUsers = inject(PlatformUsersService);
+  private readonly tenantData = inject(TenantDataService);
+  /** Bytes this product stores for the organization (latest measurement); null = not measured. */
+  storageUsedBytes: number | null = null;
+  readonly formatBytes = formatBytes;
   /** Platform users keyed by id and e-mail (lower case), to show who made each change. */
   private userNames: Record<string, string> = {};
   private readonly cdr = inject(ChangeDetectorRef);
@@ -114,7 +121,45 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   limitValue(d: LimitDefinition): string {
     const v = this.detail?.limits?.[d.key];
     if (v === undefined || v === null) return this.t('subscriptions.limits.unlimited');
+    if (d.key === 'storageMb') {
+      const extra = this.detail?.extraStorageGb ?? 0;
+      return extra > 0 ? `${v} MB + ${extra} GB` : `${v} MB`;
+    }
     return d.unit === 'MB' ? `${v} MB` : `${v}`;
+  }
+
+  /** Plan storage (MB) without purchased extra; null when storage is unlimited. */
+  get baseStorageMb(): number | null {
+    const v = this.detail?.limits?.['storageMb'];
+    return v === undefined || v === null ? null : v;
+  }
+
+  /** Plan storage plus purchased extra, in bytes. */
+  get storageLimitBytes(): number | null {
+    const base = this.baseStorageMb;
+    return base === null ? null : (base + (this.detail?.extraStorageGb ?? 0) * 1024) * 1024 * 1024;
+  }
+
+  get storagePercent(): number {
+    const limit = this.storageLimitBytes;
+    return limit && this.storageUsedBytes !== null ? Math.min(100, Math.round((this.storageUsedBytes / limit) * 100)) : 0;
+  }
+
+  get canAddStorage(): boolean {
+    return !!this.detail && this.detail.status === 'Active' && this.baseStorageMb !== null;
+  }
+
+  private loadStorageUsage(): void {
+    const d = this.detail;
+    if (!d) return;
+    this.tenantData.getStorageUsage(d.organizationId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (usage) => {
+        const product = usage.products?.find((p) => p.product.toLowerCase() === d.productCode.toLowerCase());
+        this.storageUsedBytes = usage.measuredAtUtc ? product?.totalBytes ?? 0 : null;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.storageUsedBytes = null; },
+    });
   }
 
   ngOnInit(): void {
@@ -166,6 +211,7 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
         next: ({ detail, history }) => {
           this.detail = detail;
           this.resolveProductId();
+          this.loadStorageUsage();
           this.history = history;
           this.histPage = 1;
         },
@@ -206,7 +252,10 @@ export class SubscriptionDetail implements OnInit, OnDestroy {
   /** Name of the user who made a change; history rows store a user id (older ones) or an e-mail. */
   userLabel(changedBy: string | null | undefined): string {
     if (!changedBy) return '—';
-    return this.userNames[changedBy.toLowerCase()] ?? changedBy;
+    const name = this.userNames[changedBy.toLowerCase()];
+    if (name) return name;
+    // An id of a user that no longer exists (or never did) says nothing to the reader; the tooltip keeps it.
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(changedBy) ? this.t('subscriptions.detail.unknownUser') : changedBy;
   }
 
   private resolveProductId(): void {

@@ -348,17 +348,6 @@
                     </div>
                   </div>
 
-                  <div class="wiz-row">
-                    <label class="ui-switch">
-                      <input type="checkbox" [(ngModel)]="subForms[product.id].isTrial" />
-                      <span class="ui-switch__track"><span class="ui-switch__thumb"></span></span>
-                      <span class="ui-switch__text">
-                        <span class="ui-switch__label">{{ t('subscriptions.limits.trial') }}</span>
-                        <span class="ui-switch__hint">{{ t('subscriptions.limits.trialHint') }}</span>
-                      </span>
-                    </label>
-                  </div>
-
                   @if (limitsFor(product).length) {
                     <div class="ui-field">
                       <label class="ui-label">{{ t('subscriptions.limits.section') }}</label>

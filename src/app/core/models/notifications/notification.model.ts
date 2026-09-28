@@ -1,6 +1,7 @@
 export type NotificationKind =
   | 'SubscriptionExpiring' | 'SubscriptionExpired'
-  | 'ProvisioningFailed' | 'ProvisioningPending' | 'ProvisioningCompleted' | 'LicenseExpiring';
+  | 'ProvisioningFailed' | 'ProvisioningPending' | 'ProvisioningCompleted' | 'LicenseExpiring'
+  | 'StorageNearLimit' | 'StorageFull';
 
 export type NotificationSeverity = 'Info' | 'Warning' | 'Danger';
 

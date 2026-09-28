@@ -7,7 +7,7 @@ export type SubscriptionStatus = 'Pending' | 'Active' | 'Suspended' | 'Cancelled
 export type DiscountType = 'None' | 'FixedAmount' | 'Percentage';
 export type SubscriptionAction =
   | 'Created' | 'Suspended' | 'Reactivated' | 'Cancelled' | 'Renewed' | 'UsersAdded' | 'UsersRemoved'
-  | 'FeaturesChanged' | 'Expired' | 'Archived' | 'Purged' | 'LimitsChanged';
+  | 'FeaturesChanged' | 'Expired' | 'Archived' | 'Purged' | 'LimitsChanged' | 'StorageAdded';
 
 export interface SubscriptionDetailDto {
   id: string;
@@ -54,6 +54,10 @@ export interface SubscriptionDetailDto {
   isTrial?: boolean;
   /** Quotas of a limited ("Lite") subscription, keyed by limit key; missing = unlimited. */
   limits?: Record<string, number>;
+  /** Storage bought on top of the plan's storage limit (GB). */
+  extraStorageGb?: number;
+  /** The product's default price per extra GB (null = not sold). */
+  pricePerExtraGb?: number | null;
 }
 
 export interface SubscriptionHistoryDto {
@@ -73,6 +77,8 @@ export interface SubscriptionHistoryDto {
 export interface SuspendSubscriptionDto { reason?: string; }
 export interface CancelSubscriptionDto { reason?: string; }
 export interface AddUsersDto { count: number; }
+/** Extra storage for the rest of the period; pricePerGb defaults to the product's price. */
+export interface AddStorageDto { gb: number; pricePerGb?: number; }
 
 /** A quota a product understands (GET /subscriptions/limit-definitions, grouped by product code). */
 export interface LimitDefinition {
