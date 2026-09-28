@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PositiveIntegerDirective } from '../../../../../core/validators/positive-integer.directive';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -12,7 +13,7 @@ import { TranslationService } from '../../../../auth/services/Translation.servic
 @Component({
   selector: 'app-integration-settings-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [PositiveIntegerDirective, CommonModule, FormsModule],
   templateUrl: './integration-settings-modal.html',
 })
 export class IntegrationSettingsModal implements OnInit, OnDestroy {

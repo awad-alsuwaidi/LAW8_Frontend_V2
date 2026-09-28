@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PositiveIntegerDirective } from '../../../../../core/validators/positive-integer.directive';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -36,7 +37,7 @@ interface TemplateForm {
 @Component({
   selector: 'app-plan-templates-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocalNamePipe, UiPager],
+  imports: [PositiveIntegerDirective, CommonModule, FormsModule, LocalNamePipe, UiPager],
   templateUrl: './plan-templates-list.html',
 })
 export class PlanTemplatesList implements OnInit, OnDestroy {

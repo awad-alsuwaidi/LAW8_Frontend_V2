@@ -28,7 +28,7 @@
         @if (billingCycle !== 'None') {
           <div class="ui-field">
             <label class="ui-label">{{ t('subscriptions.renew.cycleCount') }}</label>
-            <input class="ui-input" type="number" min="1" step="1" name="count" dir="ltr" [(ngModel)]="cycleCount" />
+            <input class="ui-input" type="number" appPositiveInteger min="1" step="1" name="count" dir="ltr" [(ngModel)]="cycleCount" />
           </div>
         } @else {
           <div class="ui-field">

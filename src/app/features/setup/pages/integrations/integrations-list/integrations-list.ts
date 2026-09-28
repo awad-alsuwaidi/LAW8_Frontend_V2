@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PositiveIntegerDirective } from '../../../../../core/validators/positive-integer.directive';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -37,7 +38,7 @@ interface ProviderForm {
 @Component({
   selector: 'app-integrations-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocalNamePipe],
+  imports: [PositiveIntegerDirective, CommonModule, FormsModule, LocalNamePipe],
   templateUrl: './integrations-list.html',
 })
 export class IntegrationsList implements OnInit, OnDestroy {

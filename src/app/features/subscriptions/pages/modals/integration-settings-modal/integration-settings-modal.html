@@ -28,14 +28,14 @@
         @if (syncMode !== 'Webhook') {
           <div class="ui-field">
             <label class="ui-label">{{ t('integrations.syncInterval') }}</label>
-            <input class="ui-input" type="number" min="5" max="10080" step="1" name="interval" dir="ltr" [(ngModel)]="syncIntervalMinutes" />
+            <input class="ui-input" type="number" appPositiveInteger min="5" max="10080" step="1" name="interval" dir="ltr" [(ngModel)]="syncIntervalMinutes" />
             <span class="ui-hint">{{ t('integrations.syncIntervalHint') }}</span>
           </div>
         }
 
         <div class="ui-field">
           <label class="ui-label">{{ t('subscriptions.integrations.rateLimit') }}</label>
-          <input class="ui-input" type="number" min="1" max="10000" step="1" name="rate" dir="ltr" [(ngModel)]="rateLimitPerMinute" />
+          <input class="ui-input" type="number" appPositiveInteger min="1" max="10000" step="1" name="rate" dir="ltr" [(ngModel)]="rateLimitPerMinute" />
         </div>
       </div>
 

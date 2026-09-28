@@ -368,7 +368,7 @@
                       @for (d of limitsFor(product); track d.key) {
                         <div class="ui-field">
                           <label class="ui-label">{{ limitName(d) }} @if (d.unit === 'MB') { <span class="ui-cell-muted">(MB)</span> }</label>
-                          <input class="ui-input" type="number" min="0" step="1" dir="ltr"
+                          <input class="ui-input" type="number" appPositiveInteger min="0" step="1" dir="ltr"
                                  [(ngModel)]="subForms[product.id].limits[d.key]" [placeholder]="t('subscriptions.limits.unlimited')" />
                         </div>
                       }

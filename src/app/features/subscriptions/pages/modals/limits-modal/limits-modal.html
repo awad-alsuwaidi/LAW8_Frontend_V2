@@ -34,7 +34,7 @@
             <label class="ui-label" [for]="'limit-' + d.key">
               {{ definitionName(d) }} @if (d.unit === 'MB') { <span class="ui-cell-muted">(MB)</span> }
             </label>
-            <input class="ui-input" type="number" min="0" step="1" dir="ltr" [id]="'limit-' + d.key" [name]="'limit-' + d.key"
+            <input class="ui-input" type="number" appPositiveInteger min="0" step="1" dir="ltr" [id]="'limit-' + d.key" [name]="'limit-' + d.key"
                    [(ngModel)]="values[d.key]" [placeholder]="t('subscriptions.limits.unlimited')" />
           </div>
         }

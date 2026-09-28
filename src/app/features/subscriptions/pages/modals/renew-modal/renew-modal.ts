@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { PositiveIntegerDirective } from '../../../../../core/validators/positive-integer.directive';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
@@ -16,7 +17,7 @@ import { ProductLabelPipe } from '../../../../../core/ui/product-label.pipe';
 @Component({
   selector: 'app-renew-modal',
   standalone: true,
-  imports: [ProductLabelPipe, CommonModule, FormsModule],
+  imports: [PositiveIntegerDirective, ProductLabelPipe, CommonModule, FormsModule],
   templateUrl: './renew-modal.html',
 })
 export class RenewModal implements OnInit, OnDestroy {

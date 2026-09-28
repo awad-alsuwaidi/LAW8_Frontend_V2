@@ -134,9 +134,15 @@ export class RegisterWizard implements OnInit, OnDestroy {
   /** Fills the product's form from a ready-made plan; every field stays editable afterwards. */
   applyTemplate(product: ProductDto, templateId: number | null): void {
     this.selectedTemplate[product.id] = templateId;
-    const tpl = this.templatesOf(product.id).find(x => x.id === +(templateId ?? 0));
-    if (!tpl) return;
     const form = this.subForms[product.id];
+    const tpl = this.templatesOf(product.id).find(x => x.id === +(templateId ?? 0));
+    if (!tpl) {
+      // Custom: the admin enters the plan by hand, so nothing a template filled in is kept for limits / trial.
+      form.isTrial = false;
+      form.limits = {};
+      this.cdr.markForCheck();
+      return;
+    }
     if (!form.startDate) form.startDate = new Date().toISOString().slice(0, 10);
     form.numberOfUsers = tpl.numberOfUsers;
     form.billingCycle = tpl.billingCycle;

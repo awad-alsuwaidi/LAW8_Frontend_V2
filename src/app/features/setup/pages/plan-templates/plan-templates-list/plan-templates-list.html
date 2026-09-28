@@ -138,18 +138,18 @@
             @if (form.billingCycle !== 'None') {
               <div class="ui-field">
                 <label class="ui-label">{{ t('subscriptions.renew.cycleCount') }} <span class="ui-req">*</span></label>
-                <input class="ui-input" type="number" min="1" step="1" dir="ltr" name="cycleCount" [(ngModel)]="form.cycleCount" />
+                <input class="ui-input" type="number" appPositiveInteger min="1" step="1" dir="ltr" name="cycleCount" [(ngModel)]="form.cycleCount" />
               </div>
             } @else {
               <div class="ui-field">
                 <label class="ui-label">{{ t('planTemplates.durationDays') }} <span class="ui-req">*</span></label>
-                <input class="ui-input" type="number" min="1" step="1" dir="ltr" name="durationDays" [(ngModel)]="form.durationDays" />
+                <input class="ui-input" type="number" appPositiveInteger min="1" step="1" dir="ltr" name="durationDays" [(ngModel)]="form.durationDays" />
               </div>
             }
 
             <div class="ui-field">
               <label class="ui-label">{{ t('planTemplates.users') }} <span class="ui-req">*</span></label>
-              <input class="ui-input" type="number" min="1" step="1" dir="ltr" name="users" [(ngModel)]="form.numberOfUsers" />
+              <input class="ui-input" type="number" appPositiveInteger min="1" step="1" dir="ltr" name="users" [(ngModel)]="form.numberOfUsers" />
             </div>
             <div class="ui-field">
               <label class="ui-label">{{ t('planTemplates.pricePerUser') }}</label>
@@ -162,7 +162,7 @@
             </div>
             <div class="ui-field">
               <label class="ui-label">{{ t('planTemplates.sortOrder') }}</label>
-              <input class="ui-input" type="number" step="1" dir="ltr" name="sort" [(ngModel)]="form.sortOrder" />
+              <input class="ui-input" type="number" appPositiveInteger step="1" dir="ltr" name="sort" [(ngModel)]="form.sortOrder" />
             </div>
           </div>
 
@@ -198,7 +198,7 @@
                 @for (d of formLimitDefinitions; track d.key) {
                   <div class="ui-field">
                     <label class="ui-label">{{ limitName(d) }} @if (d.unit === 'MB') { <span class="ui-cell-muted">(MB)</span> }</label>
-                    <input class="ui-input" type="number" min="0" step="1" dir="ltr" [name]="'limit-' + d.key"
+                    <input class="ui-input" type="number" appPositiveInteger min="0" step="1" dir="ltr" [name]="'limit-' + d.key"
                            [(ngModel)]="limitValues[d.key]" [placeholder]="t('subscriptions.limits.unlimited')" />
                   </div>
                 }

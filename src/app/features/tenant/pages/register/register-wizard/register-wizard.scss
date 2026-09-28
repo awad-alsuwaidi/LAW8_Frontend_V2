@@ -543,8 +543,9 @@
   direction: ltr;
 }
 
-/* Plan template picker: select on its own line, hint below it. */
+/* Plan template picker: hint beside the select with a gap (wraps below on narrow screens). */
 .tpl-pick {
-  display: flex; flex-direction: column; align-items: stretch; gap: 8px; max-width: 420px;
-  .ui-select { width: 100%; }
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;
+  .ui-select { width: 280px; max-width: 100%; }
+  .ui-hint { flex: 1 1 200px; margin: 0; }
 }

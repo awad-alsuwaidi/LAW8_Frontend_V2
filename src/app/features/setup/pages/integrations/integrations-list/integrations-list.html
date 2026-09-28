@@ -129,7 +129,7 @@
             </div>
             <div class="ui-field">
               <label class="ui-label">{{ t('integrations.syncInterval') }}</label>
-              <input class="ui-input" type="number" min="5" max="10080" step="1" dir="ltr" name="interval" [(ngModel)]="form.defaultSyncIntervalMinutes" />
+              <input class="ui-input" type="number" appPositiveInteger min="5" max="10080" step="1" dir="ltr" name="interval" [(ngModel)]="form.defaultSyncIntervalMinutes" />
               <span class="ui-hint">{{ t('integrations.syncIntervalHint') }}</span>
             </div>
             <div class="ui-field">
