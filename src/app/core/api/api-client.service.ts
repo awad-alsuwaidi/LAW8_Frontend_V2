@@ -9,6 +9,7 @@ import { getAccessToken } from '../auth/services/token-storage';
   providedIn: 'root',
 })
 export class ApiClientService {
+  // Any localhost port (ng serve --port ...) talks to the local services: Tenancy :5236, Auth :5238.
   private readonly isLocal =
     typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
