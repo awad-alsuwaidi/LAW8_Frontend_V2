@@ -40,6 +40,6 @@ export class PlatformUsersService {
   }
 
   removeRole(id: string, roleName: string): Observable<void> {
-    return this.api.delete<void>(`/platform/users/${id}/roles/${roleName}`);
+    return this.api.delete<void>(`/platform/users/${id}/roles/${encodeURIComponent(roleName)}`);
   }
 }

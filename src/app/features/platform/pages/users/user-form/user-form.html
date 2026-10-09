@@ -116,15 +116,15 @@
           </div>
         </section>
 
-        <!-- Roles (create only) -->
-        @if (!isEdit && roles.length > 0) {
+        <!-- Roles -->
+        @if (roles.length > 0) {
           <section class="uf-card">
             <h3 class="uf-card__title">{{ t('platformUsers.form.roles') }}</h3>
             <div class="uf-card__body">
               <div class="roles-grid">
                 @for (role of roles; track role.name) {
                   <label class="role-check" [class.is-selected]="selectedRoles.has(role.name)">
-                    <input type="checkbox" [checked]="selectedRoles.has(role.name)" (change)="toggleRole(role.name)" />
+                    <input type="checkbox" [checked]="selectedRoles.has(role.name)" [disabled]="isReserved(role.name)" (change)="toggleRole(role.name)" />
                     <span class="role-check__box">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                     </span>

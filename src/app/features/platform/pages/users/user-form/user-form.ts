@@ -6,8 +6,8 @@ import { PhoneInputDirective } from '../../../../../core/validators/phone-input.
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, Subject, forkJoin } from 'rxjs';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { Observable, Subject, concat, forkJoin } from 'rxjs';
+import { takeUntil, finalize, toArray } from 'rxjs/operators';
 import { PlatformUsersService } from '../../../services/platform-users';
 import { PlatformRolesService } from '../../../services/platform-roles';
 import { PlatformRole } from '../../../../../core/models/platform/platform-role.model';
@@ -62,6 +62,11 @@ export class UserForm implements OnInit, OnDestroy {
     return src.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
   }
   selectedRoles: Set<string> = new Set();
+  /** The user's roles when the page loaded; saving sends only what changed. */
+  private originalRoles: Set<string> = new Set();
+  /** SuperAdmin stays with its one holder (same rule as the Roles page). */
+  readonly reservedRoles = ['SuperAdmin'];
+  isReserved = (name: string) => this.reservedRoles.includes(name);
 
   form = this.fb.group({
     email:       ['', [Validators.required, emailValidator()]],
@@ -102,6 +107,7 @@ export class UserForm implements OnInit, OnDestroy {
             });
             this.form.get('password')?.disable();
             this.selectedRoles = new Set(u.roles);
+            this.originalRoles = new Set(u.roles);
           }
         },
         error: (err: any) => {
@@ -111,6 +117,7 @@ export class UserForm implements OnInit, OnDestroy {
   }
 
   toggleRole(name: string): void {
+    if (this.isReserved(name)) return;
     if (this.selectedRoles.has(name)) {
       this.selectedRoles.delete(name);
     } else {
@@ -129,21 +136,26 @@ export class UserForm implements OnInit, OnDestroy {
     const v = this.form.getRawValue();
 
     const obs: Observable<any> = this.isEdit
-      ? this.usersService.update(this.userId, {
-          email: v.email ?? undefined,
-          nameEn: v.nameEn ?? undefined,
-          nameAr: v.nameAr ?? undefined,
-          phoneNumber: v.phoneNumber ?? undefined,
-          active: v.active ?? undefined,
-          locked: v.locked ?? undefined,
-        })
+      ? concat(
+          this.usersService.update(this.userId, {
+            email: v.email ?? undefined,
+            nameEn: v.nameEn ?? undefined,
+            nameAr: v.nameAr ?? undefined,
+            phoneNumber: v.phoneNumber ?? undefined,
+            active: v.active ?? undefined,
+            locked: v.locked ?? undefined,
+          }),
+          // One call per role that changed, one after the other; the first refusal stops the rest and is shown.
+          ...[...this.selectedRoles].filter((r) => !this.originalRoles.has(r)).map((r) => this.usersService.assignRole(this.userId, r)),
+          ...[...this.originalRoles].filter((r) => !this.selectedRoles.has(r)).map((r) => this.usersService.removeRole(this.userId, r)),
+        ).pipe(toArray())
       : this.usersService.create({
           email: v.email!,
           password: v.password || undefined,
           nameEn: v.nameEn || undefined,
           nameAr: v.nameAr || undefined,
           phoneNumber: v.phoneNumber || undefined,
-          roles: Array.from(this.selectedRoles),
+          roles: Array.from(this.selectedRoles).filter((r) => !this.isReserved(r)),
         });
 
     obs

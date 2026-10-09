@@ -1,8 +1,8 @@
 import { HttpInterceptorFn, HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
+import { from, throwError } from 'rxjs';
 import { clearTokens } from '../auth/services/token-storage';
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
@@ -23,10 +23,28 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
         clearTokens();
         router.navigate(['/auth/login']);
       }
+      // File downloads ask for a Blob, so an API error arrives as a Blob too; read it back into the usual JSON body.
+      if (error.error instanceof Blob) {
+        return from(error.error.text()).pipe(
+          switchMap((text) => throwError(() => withErrorDetails(withJsonBody(error, text))))
+        );
+      }
       return throwError(() => withErrorDetails(error));
     })
   );
 };
+
+function withJsonBody(error: HttpErrorResponse, text: string): HttpErrorResponse {
+  let body: unknown;
+  try { body = JSON.parse(text); } catch { return error; }
+  return new HttpErrorResponse({
+    error: body,
+    headers: error.headers,
+    status: error.status,
+    statusText: error.statusText,
+    url: error.url ?? undefined,
+  });
+}
 
 function isApiResponse(body: unknown): body is { data: unknown; message?: string; success?: boolean } {
   return (

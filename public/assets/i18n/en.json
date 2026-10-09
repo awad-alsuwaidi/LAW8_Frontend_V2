@@ -1143,7 +1143,7 @@
       "permissionsUnit": "permissions",
       "activeHint": "Inactive users cannot sign in.",
       "lockedHint": "Locked users are blocked until unlocked, even if active.",
-      "rolesEditHint": "Roles are assigned from the Roles page.",
+      "rolesEditHint": "Tick or untick roles in the Roles section; the changes are saved with the user. The SuperAdmin role cannot be moved.",
       "generate": "Generate",
       "showPassword": "Show password",
       "hidePassword": "Hide password"

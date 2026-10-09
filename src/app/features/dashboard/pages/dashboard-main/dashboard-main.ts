@@ -103,7 +103,7 @@ export class DashboardMain implements OnInit, OnDestroy {
           a.click();
           URL.revokeObjectURL(url);
         },
-        error: () => this.error.set(this.t('dashboard.exportFailed')),
+        error: (err) => this.error.set(err?.error?.message ?? this.t('dashboard.exportFailed')),
       });
   }
 

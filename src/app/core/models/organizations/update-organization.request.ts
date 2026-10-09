@@ -1,6 +1,5 @@
 export interface UpdateOrganizationRequest {
   name?: string;
-  subdomain?: string;
   adminNameEn?: string;
   address?: string;
   phoneNumber?: string;

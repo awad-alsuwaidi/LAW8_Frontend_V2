@@ -113,7 +113,7 @@ export class TenantList implements OnInit, OnDestroy {
           a.click();
           URL.revokeObjectURL(url);
         },
-        error: () => { this.errorMessage = 'Export failed.'; },
+        error: (err) => { this.errorMessage = err?.error?.message ?? 'Export failed.'; },
       });
   }
 
