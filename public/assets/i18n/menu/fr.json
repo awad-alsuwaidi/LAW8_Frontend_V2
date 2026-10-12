@@ -1,0 +1,30 @@
+{
+    "menu": {
+      "dashboard": "Tableau de bord",
+      "clients": "Clients",
+            "entityList": "Entity List",
+       "clientAdd": "New Clients",
+       "newclients": "New Clients",
+      "matters": "Affaires",
+      "taskManagement": "Gestion des tâches",	
+      "timesheet": "Feuille de temps",
+      "users": "Utilisateurs",
+      "lookups": "Recherches",
+      "reports": "Rapports",
+      "settingsAndManage": "Paramètres et Gérer",
+      "getHelp": "Obtenir de l'aide",
+      "inactiveClients":"Inactive Clients",
+        "entity": "Entity",
+  "entities": "Entities",
+
+  "activeEntity": "Active Entity",
+  "activeEntities": "Active Entities",
+
+  "inactiveEntity": "Inactive Entity",
+  "inactiveEntities": "Inactive Entities",
+
+  "newEntity": "New Entity",
+  "editEntity": "Edit Entity",
+  "viewEntity": "View Entity"
+    }
+  }

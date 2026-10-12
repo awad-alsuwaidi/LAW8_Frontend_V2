@@ -1,0 +1,103 @@
+<!-- <p-toast position="bottom-right" />
+<div class="relative" clickOutside (clickOutside)="closeMenu()"> -->
+
+<div class="relative" clickOutside (clickOutside)="closeMenu()">
+  <div class="relative inline-block">
+    <button
+      (click)="toggleMenu()"
+      class="relative p-2 bg-white rounded-full w-10 h-10 flex items-center justify-center"
+      type="button">
+
+      <i class="icon-bell text-2xl text-textSecondary"></i>
+
+      <span
+        *ngIf="notificationCount > 0"
+        class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none shadow">
+              {{ notificationCount }}
+      </span>
+    </button>
+  </div>
+
+  <div
+    [@openClose]="isOpen ? 'open' : 'closed'"
+    class="py-5 absolute end-0 z-20 mt-2 w-[440px] origin-top-right transform rounded-2xl bg-white shadow-lg ring-1 ring-transparent ring-opacity-5 transition focus:outline-none">
+
+    <div class="flex justify-between items-center mb-2 px-6">
+      <span class="text-2xl text-textConfirmTitle font-bold">
+        {{ 'topBar.notifications' | translate }}
+      </span>
+
+      <p
+        (click)="markAllAsRead()"
+        class="text-primary text-sm font-semibold cursor-pointer flex items-center">
+        <i class="icon-checks text-2xl pe-2"></i>
+        <span>{{ 'topBar.markAllAsRead' | translate }}</span>
+      </p>
+    </div>
+
+    <div class="px-6 pb-2 text-xs text-grey400">
+      {{ notifications.length }} item(s) displayed
+    </div>
+
+    <ul
+      class="max-h-80 overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
+
+      @if(notifications.length){
+        @for (item of notifications; track item.id) {
+       <li
+  (click)="onNotificationClick(item)"
+  class="flex gap-3 cursor-pointer px-4 py-2 transition-all duration-200 border-b"
+  [ngClass]="isRead(item) ? 'bg-white hover:bg-greyScale100' : 'bg-blue-50 hover:bg-blue-100 border-blue-100'"
+>
+  <div class="relative shrink-0">
+    <img
+      [src]="getNotificationIconPath(item)"
+      [alt]="item.type || item.module"
+      class="size-10"
+    />
+  </div>
+
+  <!-- Content -->
+  <div class="flex flex-col justify-center grow min-w-0">
+
+    <div class="flex justify-between items-start gap-2">
+      <h5 class="text-sm font-semibold text-textSecondaryHover">
+        {{ item.lable }}
+      </h5>
+
+      <!-- <span class="text-[11px] text-grey400 whitespace-nowrap">
+        {{ item.actionDate | date:'dd/MM/yyyy' }}
+      </span> -->
+      <span class="text-[11px] text-grey400 whitespace-nowrap">
+  {{ item.actionDate | date:'dd/MM/yyyy, h:mm a' }}
+</span>
+    </div>
+
+    <!-- Description -->
+    <p class="text-xs text-grey500 line-clamp-2">
+      {{ getNotificationBody(item) }}
+    </p>
+
+<!--     <span class="text-[11px] text-grey400 mt-1">
+      {{ item.actionDate | date:'h:mm a' }}
+    </span> -->
+
+  </div>
+</li>
+        }
+      } @else {
+        <li class="px-6 py-8 text-center text-grey400 text-sm">
+          No notifications found
+        </li>
+      }
+    </ul>
+
+   <div class="text-center py-3 px-4 mt-2 border-t">
+      <p
+        (click)="goToAllNotifications()"
+        class="text-primary cursor-pointer font-medium text-sm">
+        {{ 'topBar.seeAllNotifications' | translate }}
+      </p>
+    </div>
+  </div>
+</div>

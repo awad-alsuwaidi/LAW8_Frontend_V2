@@ -1,0 +1,16 @@
+<form [formGroup]="formly" (ngSubmit)="onSubmit()">
+    <app-clients-editor-main-info [formly]="formly" [formlyModel]="formlyModel" [options]="formlyOptions" />
+    <app-clients-editor-address [formly]="formly" [formlyModel]="formlyModel" [options]="formlyOptions" />
+    <app-clients-editor-contact [formly]="formly" [formlyModel]="formlyModel" [options]="formlyOptions" />
+
+    @if(!formlyOptions.formState?.readonly){
+    <div class="flex justify-end gap-2">
+        <app-shared-button [label]="'common.cancel'|translate" [routerLink]="['/clients']"
+            routerLinkActive="router-link-active" [btnType]="'button'"
+            [styleClass]="'border border-grey500 text-grey500  !text-sm !py-1 !font-medium !leading-8 hover:border-primary hover:text-primary'" />
+        <app-shared-button [label]="'common.save'|translate" [btnType]="'submit'" [isLoading]="isLoading"
+            [styleClass]="'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'"
+            [requiredPermission]="'Add_Client'" />
+    </div>
+    }
+</form>

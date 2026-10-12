@@ -1,0 +1,19 @@
+@if(_router.url.includes('groups/add')||_router.url.includes('groups/update')||_router.url.includes('assigned-users')){
+<router-outlet />
+}@else {
+<section>
+    <div class="flex justify-between">
+        <div>
+            <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-1">
+                {{ 'menu.security' | translate }}
+            </h1>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl my-4">
+        <div class="px-6">
+            <p-tabMenu [model]="visibleTabs" [activeItem]="activeItem"></p-tabMenu>
+        </div>
+    </div>
+    <router-outlet />
+</section>
+}

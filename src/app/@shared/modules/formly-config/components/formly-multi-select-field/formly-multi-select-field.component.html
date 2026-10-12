@@ -1,0 +1,31 @@
+
+
+  @if(props['readonly']){
+    @if(field.props["selectedObj"]&&field.props["selectedObj"].length>0){
+      <div>
+       @for (item of field.props["selectedObj"]; track $index) {
+         <span class="text-textSecondary text-sm font-bold mt-3 me-2"> {{ item?.label }}</span>
+         }
+      </div>
+    }
+  
+  }@else {
+    <div class="p-fluid">
+        <p-multiSelect
+          [class]="props['class']"
+          [formlyAttributes]="field"
+          [formControl]="formControl"
+          [showClear]="props['showClear'] || true"
+          [options]="optionsArr?.length?optionsArr: props['optionsArr']"
+          [showClear]="props['showClear'] || true"
+          [filter]="props['showFilter'] ?? true"
+          [placeholder]="props['placeholder']"
+          [optionLabel]="props['optionLabel'] || 'label'"
+          [optionValue]="props['optionValue'] || 'value'"
+          (onChange)="change($event)"
+          (onClear)="change($event)"
+          appendTo="body"
+          [emptyMessage]="props['loading'] ? '' : (props['emptyMessage'] || 'لا توجد نتائج')"
+        />
+      </div>
+  }

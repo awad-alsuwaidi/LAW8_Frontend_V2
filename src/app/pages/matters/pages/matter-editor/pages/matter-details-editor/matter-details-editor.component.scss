@@ -1,0 +1,6 @@
+:host ::ng-deep {
+
+    p-skeleton:nth-child(6) {
+        @apply col-span-2;
+    }
+}

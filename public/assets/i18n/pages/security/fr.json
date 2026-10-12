@@ -1,0 +1,17 @@
+{
+  "security":{
+    "groups":"Groups",
+    "addGroup":"Add Group",
+    "available":"Available",
+    "selected":"Selected",
+    "permissions":"Permissions",
+    "searchByName":"Search By Name",
+    "calender":"Calendar",
+    "timesheet":"Timesheet",
+    "matterAccess":"Matter Access",
+    "clients":"Clients",
+    "responsibleLawyer":"Responsible Lawyer",
+    "jurisdiction":"Jurisdictions",
+    "matterInclude":"Matter Include"
+  }
+}

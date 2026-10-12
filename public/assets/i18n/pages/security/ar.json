@@ -1,0 +1,18 @@
+{
+  "security":{
+    "groups":"المجموعات",
+    "addGroup":"إضافة مجموعة",
+    "available":"القائمة المتاحة",
+    "selected":"القائمة المختارة",
+    "permissions":"Permissions",
+    "searchByName":"البحث بالاسم",
+    "calender":"التقويم",
+    "timesheet":"سجل الوقت",
+    "matterAccess":"صلاحيات القضايا",
+    "clients":"العملاء",
+    "responsibleLawyer":"Responsible Lawyer",
+    "jurisdiction":"Jurisdictions",
+    "matterInclude":"Matter Include",
+    "matterExclude":"Matter Exclude"
+  }
+}

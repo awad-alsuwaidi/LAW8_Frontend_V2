@@ -1,0 +1,20 @@
+<form [formGroup]="formly" (ngSubmit)="onSubmit()">
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" [options]="formlyOptions" />
+    <div class="flex justify-end gap-4 mt-4">
+        <app-shared-button
+            styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+            [label]="'common.cancel'|translate" (onClick)="_dynamicDialogRef.close()" />
+        @if(formlyOptions.formState.readonly){
+        <app-shared-button styleClass="text-primary border border-primary px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.edit' | translate" [btnType]="'button'" (onClick)="onEdit()" />
+        }
+        @else if(!mode){
+        <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.save'|translate" [btnType]="'submit'" />
+        }@else{
+        <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.update' | translate" [btnType]="'submit'" />
+        }
+
+    </div>
+</form>

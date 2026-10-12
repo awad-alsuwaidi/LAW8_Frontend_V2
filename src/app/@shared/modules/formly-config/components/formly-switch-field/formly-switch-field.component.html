@@ -1,0 +1,11 @@
+
+
+@if(props['readonly']){
+<p class="text-grey500 font-bold text-lg">{{ props['label'] }}</p>
+} @else {
+<label for="">{{props['label']}}</label>
+<div class="p-fluid">
+    <p-inputSwitch  [formControl]="formControl"
+    [formlyAttributes]="field" [styleClass]="props['class']" />
+</div>
+}

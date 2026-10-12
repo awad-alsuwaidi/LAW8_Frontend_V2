@@ -1,0 +1,59 @@
+<div class="grid grid-cols-6 gap-4">
+    <div class="col-span-2">
+        <div class="flex justify-between p-2 rounded-t-lg bg-white h-14 items-center">
+            <p-skeleton height="1rem" width="10rem" />
+            <div class="flex gap-1 items-center">
+                <p-skeleton shape="circle" size="1.5rem" styleClass="mr-2" />
+                <p-skeleton width="2rem" />
+            </div>
+        </div>
+        <div class="my-2">
+            <p-skeleton height="2rem" styleClass="mb-2" borderRadius="16px" />
+        </div>
+        <div class="flex flex-col gap-2">
+            @for(client of [].constructor(4); track client){
+            <div
+                class="flex justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer hover:bg-white relative before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out hover:before:h-4/6 hover:before:w-1">
+                <div class="flex justify-between gap-2">
+                    <p-skeleton shape="circle" size="4rem" styleClass="mr-2" />
+                    <div>
+                        <p-skeleton styleClass="mb-2" width="10rem" borderRadius="16px" />
+                        <p-skeleton width="5rem" styleClass="mb-2" borderRadius="16px" />
+                    </div>
+                </div>
+                <div>
+                    <p-skeleton width="5rem" styleClass="mb-2" borderRadius="16px" />
+                    <p-skeleton width="3rem" styleClass="mb-2" borderRadius="16px" />
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+    <div class="col-span-4">
+        <div class="flex justify-between items-center mb-2">
+            <p-skeleton height="2rem" width="20rem" />
+            <div class="flex gap-2">
+                <p-skeleton width="10rem" height="3rem" borderRadius="16px" />
+                <p-skeleton width="10rem" height="3rem" borderRadius="16px" />
+            </div>
+        </div>
+        <p-skeleton height="2.5rem" width="100%" styleClass="mb-2"/>
+        @for (item of [].constructor(2); track $index) {
+
+            <div class="bg-white rounded-2xl p-6 mb-4">
+                <div>
+                    <p-skeleton height="2rem" width="10rem" styleClass="mb-6"/>
+                </div>
+                <div class="grid grid-cols-3 gap-6">
+                    @for (item of [].constructor(6); track $index) {
+                        <div>
+                            <p-skeleton width="5rem" height="1rem" borderRadius="16px" styleClass="mb-3"/>
+                            <p-skeleton width="10rem" height="1.5rem" borderRadius="16px" />
+                        </div>
+                    }
+                </div>
+                
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="invalid-subdomain-page" [attr.dir]="isArabic ? 'rtl' : 'ltr'" [attr.lang]="currentLang">
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-grid"></div>
+
+  <section class="landing-card">
+    <div class="lang-switcher">
+      <button
+        type="button"
+        class="lang-btn"
+        [class.active]="currentLang === 'en'"
+        (click)="switchLanguage('en')"
+      >
+        EN
+      </button>
+
+      <button
+        type="button"
+        class="lang-btn"
+        [class.active]="currentLang === 'ar'"
+        (click)="switchLanguage('ar')"
+      >
+        AR
+      </button>
+    </div>
+
+    <div class="logo-wrapper">
+<img
+  [src]="isProduction
+    ? 'assets/images/Logo.svg'
+    : 'assets/images/Law8logoDemo.png'"
+  alt="Law8 Logo"
+  class="logo"
+/>
+    </div>
+
+    <div class="error-chip">
+      <span class="error-dot"></span>
+      <span>{{ 'invalidSubdomain.errorMessage' | translate }}</span>
+    </div>
+
+    <!-- <h1 class="title">
+      {{ 'invalidSubdomain.title' | translate }}
+    </h1> -->
+
+    <div class="text-stack">
+      <p class="main-text">
+        {{ 'invalidSubdomain.line1' | translate }}
+      </p>
+
+      <p class="sub-text">
+        {{ 'invalidSubdomain.line2' | translate }}
+      </p>
+
+      <div class="separator">
+        <span>{{ 'invalidSubdomain.or' | translate }}</span>
+      </div>
+
+      <!-- <p class="contact-text">
+        {{ 'invalidSubdomain.contactText' | translate }}
+      </p> -->
+    </div>
+
+    <div class="actions">
+      <button class="primary-btn" type="button" (click)="contactAdmin()">
+        {{ 'invalidSubdomain.contactAdmin' | translate }}
+      </button>
+
+      <button class="secondary-btn" type="button" (click)="goHome()">
+        {{ 'invalidSubdomain.goHome' | translate }}
+      </button>
+    </div>
+
+    <!-- <p class="helper-text">
+      {{ 'invalidSubdomain.helperText' | translate }}
+    </p> -->
+  </section>
+</div>

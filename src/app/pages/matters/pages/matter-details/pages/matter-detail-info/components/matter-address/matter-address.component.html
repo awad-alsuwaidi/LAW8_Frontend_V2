@@ -1,0 +1,64 @@
+<section class="bg-white p-6 rounded-2xl mb-4">
+  <div class="flex justify-between">
+    <h2 class="mb-4 text-grey500 font-bold text-lg">
+      {{ "matters.addresses" | translate }}
+    </h2>
+    @if(!_router.url.includes('inactive')){
+
+    <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [label]="'matters.addNewAddress' | translate"
+      *ngIf="hasPermission('Add_Matter_Addres')" [styleClass]="
+          'flex text-blue600  !text-sm !py-1 !px-0 !font-medium !leading-8'
+        " (onClick)="openAddressEditor()" />
+    }
+  </div>
+
+  <p-table [value]="matterAddress" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template pTemplate="body" let-address>
+      <tr class="bg-grey50 mb-2 rounded-xl border border-grey100">
+        <td class="font-medium text-sm text-textSecondary border-y border-s border-grey100 rounded-s-lg">
+          {{ address.line1 }}
+        </td>
+        <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+          {{ address.line2 }}
+        </td>
+        <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+          {{ address.city }}
+        </td>
+        <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+          {{ address.country }}
+        </td>
+        <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+          {{ address.state }}
+        </td>
+        <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+          {{ address.zipCode }}
+        </td>
+        <td
+          class="font-medium text-sm text-textSecondary border-y border-e border-grey100 rounded-e-lg flex gap-6 w-16">
+          @if(!_router.url.includes('inactive')){
+          <div class="cursor-pointer" *ngIf="hasPermission('Update_Matter_Addres')"
+            (click)="openAddressEditor(address)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              class="stroke-grey500 stroke-2">
+              <path
+                d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                stroke-linecap="round" stroke-linejoin="round" />
+              <path
+                d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015" stroke-miterlimit="10"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <div class="cursor-pointer" *ngIf="hasPermission('Delete_Matter_Addres')" (click)="onDelete(address)">
+            <i class="icon-trash text-2xl text-grey500"></i>
+          </div>
+
+          }
+
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>

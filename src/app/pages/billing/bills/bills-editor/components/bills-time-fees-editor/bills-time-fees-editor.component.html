@@ -1,0 +1,42 @@
+<p-accordion styleClass="bg-white rounded-2xl my-4 p-6" [activeIndex]=-1>
+    <p-accordionTab header="Time / Fees">
+        <div class="mb-4">
+            <formly-form [form]="formly" [fields]="fields" [model]="model()"></formly-form>
+
+        </div>
+        <div class="bg-grey50 px-4 rounded-md">
+            <app-shared-table
+  [data]="data"
+  [columns]="columns"
+  [pagination]="pagination"
+  [withPagination]="true"
+  [withCheckbox]="true"
+  [selectedRows]="defaultSelected"
+  (onPageChange)="changePage($event)"
+  (onRowSelectChange)="onRowSelect($event)"
+  (onSort)="onSort($event)"
+>
+  <ng-template #customColumn let-rowData let-field="field">
+
+    <ng-container *ngIf="field === 'taskCodeName'">
+      <span
+        class="px-3 py-1 rounded-full text-xs font-medium"
+        [ngClass]="getTaskClass(rowData.taskCodeName)">
+        {{ rowData.taskCodeName }}
+      </span>
+    </ng-container>
+
+  </ng-template>
+
+</app-shared-table>
+        </div>
+        <div class=" mt-4 mb-10">
+            <div>
+                <span class="text-xs font-medium me-12">{{ "Total Hours" | translate }} </span>
+                <span class="font-bold text-sm me-52">{{ totalHours | number : "1.0-2" }}</span>
+                <span class="text-xs font-medium  me-12">{{ "Total Amount" | translate }} </span>
+                <span class="font-bold text-sm">{{ totalAmount | number : "1.0-2" }}</span>
+            </div>
+        </div>
+    </p-accordionTab>
+</p-accordion>

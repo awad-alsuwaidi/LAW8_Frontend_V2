@@ -1,0 +1,14 @@
+@if(_router.url.includes('add')||_router.url.includes('update')){
+<router-outlet />
+
+}@else {
+  @switch (dataView) {
+    @case ('list') {
+     <app-users-view-list />
+    }
+    @default {
+      <app-users-view-card/>
+    }
+  }
+
+}

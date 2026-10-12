@@ -1,0 +1,16 @@
+:host ::ng-deep{
+    .custom{
+
+        p-skeleton:first-child {
+            @apply col-span-2 ;
+        }
+    }
+    .custom-1{
+
+        p-skeleton:nth-child(2),
+        p-skeleton:nth-child(4) {
+            @apply col-span-2 ;
+        }
+    }
+    
+}

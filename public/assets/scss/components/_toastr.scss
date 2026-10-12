@@ -1,0 +1,41 @@
+.toast-success {
+  @apply bg-green-600 text-white;
+  background-color: theme("colors.green.600") !important;
+  color: white !important;
+}
+
+.toast-error {
+  @apply bg-red-600 text-white;
+  background-color: theme("colors.red.600") !important;
+  color: white !important;
+}
+
+/* خليها fade كويس بدل ما تبقى opacity: 0 */
+.ngx-toastr.toast-error,
+.ngx-toastr.toast-success {
+  opacity: 1 !important;
+}
+
+/* مكان ال toast في النص فوق */
+.toast-container.toast-top-center .ngx-toastr {
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  padding: 12px 16px !important;
+  opacity: 1 !important;
+  width: auto !important;
+  max-width: 400px !important;
+  pointer-events: auto !important;
+}
+
+/* شيل الشفافية الخاطئة هنا */
+.toast-container.toast-top-center .ngx-toastr * {
+  background-color: transparent !important;
+  color: white !important; /* خلي النص أبيض */
+}
+
+/* النص نفسه */
+.toast-message {
+  @apply text-base font-poppins font-semibold;
+  color: #fff !important;
+  margin-left: 40px;
+}

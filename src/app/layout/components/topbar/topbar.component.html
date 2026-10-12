@@ -1,0 +1,94 @@
+<div class="mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+  <div class="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap items-center justify-between gap-2 sm:gap-4 lg:gap-6 w-full">
+
+    <!-- Mobile Navigation Menu Button -->
+    <div class="order-1 sm:order-1 lg:hidden flex-shrink-0">
+      <button
+        class="inline-flex items-center justify-center rounded-md bg-muted p-2 text-muted-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primaryColor hover:bg-muted-foreground hover:text-muted"
+        type="button" aria-expanded="false" (click)="toggleMobileMenu()">
+        <i class="icon-menu text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Search bar -->
+    <div class="order-2 sm:order-2 flex-1 min-w-0 w-full sm:w-auto lg:max-w-md">
+      <app-advanced-search />
+    </div>
+
+    <!-- Profile menu -->
+    <div class="order-3 sm:order-3 lg:order-3 flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 sm:gap-4 lg:gap-6 w-full sm:w-auto">
+      <app-notification class="flex-shrink-0" />
+      <app-topbar-timer (onStopTimer)="onStopTimer($event)" class="flex-shrink-0" />
+      <shared-language [showLabel]="false" class="flex-shrink-0" />
+      <app-user class="flex-shrink-0" />
+    </div>
+
+  </div>
+
+  <!-- Mobile menu -->
+  <app-navbar-mobile class="lg:hidden mt-2"></app-navbar-mobile>
+</div>
+
+
+
+
+
+
+<!-- طه طااهااا -->
+ 
+<!-- <div class="mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2.5">
+
+  <div class="hidden lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6 w-full">
+    
+    <div class="flex items-center h-10 rounded-full bg-white pl-1 pr-3 shadow-[0_2px_10px_rgba(16,24,40,0.08)] ring-1 ring-black/[0.03]">
+      <app-topbar-timer (onStopTimer)="onStopTimer($event)" class="flex-shrink-0" />
+      <span class="mx-1.5 h-4 w-px bg-grey200"></span>
+      <shared-language [showLabel]="true" class="flex-shrink-0" />
+    </div>
+
+    <div class="flex justify-center">
+      <div class="w-full max-w-md">
+        <app-advanced-search />
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-4">
+      <app-notification class="flex-shrink-0" />
+      <span class="h-7 w-px bg-grey200"></span>
+      <app-user class="flex-shrink-0" />
+    </div>
+  </div>
+
+  <div class="lg:hidden flex flex-col gap-2 w-full">
+    <div class="flex items-center justify-between gap-2 w-full">
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button
+          class="inline-flex items-center justify-center rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-primaryColor hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primaryColor"
+          type="button"
+          aria-expanded="false"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="icon-menu text-lg"></i>
+        </button>
+
+        <div class="flex items-center gap-2 rounded-full bg-muted/70 border border-grey200 px-2 py-1 shadow-sm">
+          <shared-language [showLabel]="false" class="flex-shrink-0" />
+          <span class="hidden sm:block h-5 w-px bg-grey200"></span>
+          <app-topbar-timer (onStopTimer)="onStopTimer($event)" class="flex-shrink-0" />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <app-notification class="flex-shrink-0" />
+        <span class="h-6 w-px bg-grey200"></span>
+        <app-user class="flex-shrink-0" />
+      </div>
+    </div>
+
+    <div class="w-full">
+      <app-advanced-search />
+    </div>
+  </div>
+
+  <app-navbar-mobile class="lg:hidden mt-2"></app-navbar-mobile>
+</div> -->

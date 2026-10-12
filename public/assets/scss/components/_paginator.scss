@@ -1,0 +1,9 @@
+.p-paginator{
+    &-current{
+        @apply text-xs
+    }
+    &-element{
+        @apply text-xs min-w-8 h-8
+    }
+    @apply p-0 bg-transparent
+}

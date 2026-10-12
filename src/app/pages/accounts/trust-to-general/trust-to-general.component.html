@@ -1,0 +1,232 @@
+<ng-container *ngIf="pageLoading; else pageContent">
+
+  <div class="sk sk-title"></div>
+  <section class="ttg-container">
+    
+    <!-- Header Skeleton -->
+    <div class="ttg-header">
+      <div class="sk sk-subtitle"></div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-12 mt-4">
+
+      <!-- LEFT SIDE -->
+      <div class="lg:col-span-8 space-y-4">
+
+        <!-- Two Cards -->
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="sk-card"></div>
+          <div class="sk-card"></div>
+        </div>
+
+        <!-- Matter Card -->
+        <div class="sk-card large"></div>
+
+      </div>
+
+      <!-- RIGHT SUMMARY -->
+      <div class="lg:col-span-4">
+        <div class="sk-card summary"></div>
+      </div>
+
+    </div>
+
+  </section>
+</ng-container>
+<ng-template #pageContent>
+  <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-5">
+         {{'menu.generalTransfer' | translate }}
+      </h1>
+<section class="ttg-container">
+  <!-- Header -->
+  <div class="ttg-header">
+    <!-- <h1>Trust → General Transfer</h1> -->
+    <p class="ttg-subtitle">Move client trust funds to general accounts against approved matter bills</p>
+  </div>
+  <div class="grid gap-4 lg:grid-cols-12 mt-4">
+    <div class="lg:col-span-8">
+
+  <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+    <formly-form
+      [form]="formly"
+      [fields]="formlyFields"
+      [model]="formlyModel"
+      [options]="formlyOptions">
+    </formly-form>
+
+  </form>
+    </div>
+
+    <!-- RIGHT SUMMARY (دايماً ظاهر) -->
+    <div class="lg:col-span-4">
+      <div class="bg-white rounded-2xl my-4 p-6 lg:sticky lg:top-4">
+        <h5 class="text-grey500 text-lg font-bold mb-4">
+          Transfer Summary
+        </h5>
+
+        <div class="ttg-summary-rows">
+          <div class="ttg-summary-row">
+            <span class="ttg-summary-label">Number of Bills:</span>
+            <span class="ttg-summary-value">{{ numberOfBills }}</span>
+          </div>
+
+          <div class="ttg-summary-row">
+            <span class="ttg-summary-label">Matter Trust Balance:</span>
+            <span class="ttg-summary-value">
+              AED {{ money(matterTrustBalance) }}
+            </span>
+          </div>
+
+          <div class="ttg-summary-total">
+            <span class="ttg-summary-label">Total Transfer:</span>
+            <span class="ttg-summary-totalval">
+              AED {{ money(totalTransfer) }}
+            </span>
+          </div>
+
+          <div
+            class="ttg-balance-after"
+            [class.ttg-balance-after-danger]="balanceAfterTransfer < 0"
+            [class.ttg-balance-after-valid]="balanceAfterTransfer >= 0 && totalTransfer > 0">
+
+            <div class="ttg-balance-after-label">
+              BALANCE AFTER TRANSFER
+            </div>
+
+            <div class="ttg-balance-after-amount">
+              AED {{ money(balanceAfterTransfer) }}
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+    <div class="ttg-actions">
+      <app-shared-button
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'common.cancel'|translate"
+        [btnType]="'button'">
+      </app-shared-button>
+
+      <app-shared-button
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5 disabled:opacity-50"
+        [label]="'Confirm Transfer'|translate"
+        [btnType]="'submit'"
+        [disabled]="!canSubmit"
+        [isLoading]="submitLoading">
+      </app-shared-button>
+    </div>
+  <!-- ===== Templates (Angular compiled) ===== -->
+
+  <!-- Matter Info -->
+  <ng-template #matterInfoTpl let-field="field">
+    <ng-container *ngIf="field?.options?.formState?.vm as vm">
+      <ng-container *ngIf="vm.matterInfo as mi">
+        <div class="ttg-matter-info">
+          <div class="ttg-info-row">
+            <span class="ttg-info-label">Matter Code:</span>
+            <span class="ttg-info-value">{{ mi.matterCode || '-' }}</span>
+          </div>
+          <div class="ttg-info-row">
+            <span class="ttg-info-label">Client:</span>
+            <span class="ttg-info-value">{{ mi.client || '-' }}</span>
+          </div>
+          <div class="ttg-info-row">
+            <span class="ttg-info-label">Responsible Lawyer:</span>
+            <span class="ttg-info-value">{{ mi.responsibleLawyer || '-' }}</span>
+          </div>
+          <div class="ttg-info-row">
+            <span class="ttg-info-label">Matter Trust Balance:</span>
+            <span class="ttg-info-value ttg-green">
+              AED {{ vm.money(vm.matterTrustBalance) }}
+            </span>
+          </div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
+
+  <!-- Bills -->
+  <ng-template #billsTpl let-field="field">
+    <ng-container *ngIf="field?.options?.formState?.vm as vm">
+      <div class="ttg-bills" *ngIf="vm.formlyModel?.matterId">
+
+        <div class="ttg-bills-head">
+          <h4>Outstanding Bills</h4>
+
+          <button
+            type="button"
+            class="ttg-payall-btn"
+            (click)="vm.payAllOldestFirst()"
+            [disabled]="!vm.bills?.length">
+            Pay All Bills (Oldest First)
+          </button>
+        </div>
+
+        <div class="ttg-alert ttg-alert-error" *ngIf="vm.totalTransfer > vm.matterTrustBalance">
+          Transfer amount exceeds available trust funds for this matter.
+        </div>
+
+        <div class="ttg-table-wrap">
+          <table class="ttg-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">Pay</th>
+                <th>Bill No</th>
+                <th>Date</th>
+                <th class="text-right">Total Bill</th>
+                <th class="text-right">Paid</th>
+                <th class="text-right">Outstanding</th>
+                <th class="text-right">Transfer Amount</th>
+                <th style="width:80px;">Action</th>
+              </tr>
+            </thead>
+
+            <tbody *ngIf="vm.bills?.length; else emptyBills">
+              <tr *ngFor="let b of vm.bills">
+                <td>
+                  <input
+                    class="ttg-check"
+                    type="checkbox"
+                    [checked]="b.selected"
+                    (change)="vm.toggleBill(b, $any($event.target).checked)" />
+                </td>
+
+                <td>{{ b.billNo }}</td>
+                <td>{{ b.date }}</td>
+
+                <td class="text-right">AED {{ vm.money(b.totalBill) }}</td>
+                <td class="text-right">AED {{ vm.money(b.paid) }}</td>
+                <td class="text-right">AED {{ vm.money(b.outstanding) }}</td>
+
+                <td class="text-right">
+                  <input
+                    class="ttg-amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    [max]="b.outstanding"
+                    [disabled]="!b.selected"
+                    [value]="b.transferAmount"
+                    (input)="vm.onTransferAmountInput(b, $any($event.target).value)" />
+                </td>
+
+                <td>
+                  <a class="ttg-link" (click)="vm.payFull(b)">Pay Full</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #emptyBills>
+            <div class="ttg-empty">No outstanding bills.</div>
+          </ng-template>
+        </div>
+      </div>
+    </ng-container>
+  </ng-template>
+
+</section></ng-template>

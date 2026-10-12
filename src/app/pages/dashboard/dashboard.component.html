@@ -1,0 +1,1686 @@
+<!-- <section>
+    <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-4">{{ 'dashboard.title' | translate }}</h1>
+    <ul class="mb-4">
+        <app-dashboard-role-editor />
+    </ul>
+    
+    @if(!isLoading){ -->
+
+<!-- <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <div class="p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px]">
+            <div class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-blue-50 rounded-xl text-blue-600 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-clients text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">{{ 'dashboard.clients' | translate }}</p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="clients" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px]">
+            <div class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-green-50 rounded-xl text-green-700 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-matters text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">{{ 'dashboard.matters' | translate }}</p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="matters" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px]">
+            <div class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-red-50 rounded-xl text-red-500 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-headphones text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">{{ 'dashboard.hearing_sessions' | translate }}</p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="hearingSessions" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+        </div>
+    </div> -->
+
+
+
+<!-- last edited section -->
+
+<!-- <div cdkDropList cdkDropListOrientation="horizontal"
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4" (cdkDropListDropped)="dropTopCards($event)">
+        @for (card of cardOrderTop; track card) {
+        <div cdkDrag class="p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px]">
+            @if (card === 'clients') {
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-blue-50 rounded-xl text-blue-600 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-clients text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.clients' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="clients" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+            } @else if (card === 'matters') {
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-green-50 rounded-xl text-green-700 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-matters text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.matters' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="matters" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+            } @else if (card === 'hearingSessions') {
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-red-50 rounded-xl text-red-500 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-headphones text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.hearing_sessions' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                <app-dashboard-chart [chartData]="hearingSessions" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+            </div>
+            }
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="grid md:grid-cols-3 gap-4 mb-4">
+        @for (item of [].constructor(3); track $index) {
+        <app-dashboard-chart-skeleton />
+        }
+    </div>
+    } -->
+
+
+<!-- <div class="grid md:grid-cols-2 gap-4 mb-4 ">
+        <div class="p-4 bg-white rounded-2xl">
+            <div class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">{{ 'dashboard.activities' | translate }} </p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/activity']" routerLinkActive="router-link-active">{{
+                    'dashboard.view_all' | translate }}</p>
+            </div>
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('activity',$event)" />
+            </div>
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': activities.length > 6 ? 500 : null }">
+                @if (activities.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of activities; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center shrink-0">
+                            <img src="assets/images/icons/calendar-tick.svg" alt="Activity">
+                        </div>
+                        <div class="grow overflow-hidden">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1 truncate w-full">
+                                {{ item.description }}
+                            </p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span>{{ item.law_ActivityType }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.mtrNo }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer icon-show text-base p-2"
+                                (click)="openActivityEditor(item, 'activity', 'view')"></div>
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'activity')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+        <div class="p-4 bg-white rounded-2xl">
+            <div class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">{{ 'dashboard.hearing_sessions' | translate }}</p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/hearing-session']" routerLinkActive="router-link-active">
+                    {{ 'dashboard.view_all' | translate }}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('session', $event)" />
+            </div>
+
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': sessions.length > 6 ? 500 : null }">
+                @if (sessions.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of sessions; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                            <img src="assets/images/icons/menu-board.svg" alt="Hearing Sessions">
+                        </div>
+
+                        <div class="grow">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1">{{ item.description }}</p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span class="text-primary">{{ item.mtrNo }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.courtNumber }}</span>
+                            </p>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'session')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" class="stroke-grey500 stroke-2">
+                                    <path
+                                        d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path
+                                        d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+
+
+    </div>
+ -->
+
+
+<!-- last edited section -->
+<!-- 
+    <div cdkDropList cdkDropListOrientation="horizontal" class="grid md:grid-cols-2 gap-4 mb-4"
+        (cdkDropListDropped)="dropMiddleCards($event)">
+        @for (block of cardOrderMiddle; track block) {
+        <div cdkDrag class="p-4 bg-white rounded-2xl">
+            @if (block === 'activities') {
+            <div cdkDragHandle class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">{{ 'dashboard.activities' | translate }} </p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/activity']" routerLinkActive="router-link-active">
+                    {{ 'dashboard.view_all' | translate }}
+                </p>
+            </div>
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('activity',$event)" />
+            </div>
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': activities.length > 6 ? 500 : null }">
+                @if (activities.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of activities; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center shrink-0">
+                            <img src="assets/images/icons/calendar-tick.svg" alt="Activity">
+                        </div>
+                        <div class="grow overflow-hidden">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1 truncate w-full">
+                                {{ item.description }}
+                            </p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span>{{ item.law_ActivityType }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.mtrNo }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer icon-show text-base p-2"
+                                (click)="openActivityEditor(item, 'activity', 'view')"></div>
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'activity')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+            } @else if (block === 'sessions') {
+            <div cdkDragHandle class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">{{ 'dashboard.hearing_sessions' | translate }}</p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/hearing-session']" routerLinkActive="router-link-active">
+                    {{ 'dashboard.view_all' | translate }}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('session', $event)" />
+            </div>
+
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': sessions.length > 6 ? 500 : null }">
+                @if (sessions.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of sessions; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                            <img src="assets/images/icons/menu-board.svg" alt="Hearing Sessions">
+                        </div>
+                        <div class="grow">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1">{{ item.description }}</p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span class="text-primary">{{ item.mtrNo }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.courtNumber }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'session')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" class="stroke-grey500 stroke-2">
+                                    <path
+                                        d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path
+                                        d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+            }
+        </div>
+        }
+    </div> -->
+
+
+
+
+
+
+
+<!-- <div class="grid md:grid-cols-3 gap-4 items-stretch">
+        <app-dashboard-timesheet [isManager]="isManager" />
+        <div class="flex-grow overflow-y-auto md:col-span-2"
+            [ngStyle]="{ 'max-height.px': tasks.length > 7 ? 500 : 'auto' }">
+            <div class="p-4 bg-white rounded-2xl flex flex-col h-full">
+                <div class="flex gap-4 items-center mb-2 justify-between">
+                    <p class="text-lg font-bold text-grey500">{{ 'dashboard.tasks' | translate }}</p>
+                    <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                        [routerLink]="['/task-management/task']">
+                        {{ 'dashboard.view_all' | translate }}
+                    </p>
+                </div>
+
+
+                <div class="mb-4">
+                    <app-dashboard-task-filter-editor (onFilter)="onFilter('task', $event)" />
+                </div>
+
+                <div class="flex-grow overflow-y-auto max-h-[500px] custom-scrollbar">
+                    @if (tasks.length === 0) {
+                    <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                    } @else {
+                    @for (item of tasks; track $index) {
+                    <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                        <div class="flex gap-2 items-center">
+                            <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                                <img src="assets/images/icons/task-square.svg" alt="Activity">
+                            </div>
+
+                            <div class="grow">
+                                <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                    {{ item.description }}
+                                </p>
+                                <p class="text-xs text-textTertairy flex gap-4">
+                                    <app-shared-status [statusConfig]="priorityConfig" [data]="item.periority"
+                                        [label]="item.periorityName" />
+
+                                    <span class="relative">
+                                        @if (item.haveAttachment) {
+                                        <img src="/assets/images/icons/attachment.svg" alt="Attachment"
+                                            class="absolute end-0 -top-1">
+                                        }
+                                        <app-shared-status [label]="item.statusName" [data]="item.status"
+                                            [statusConfig]="hearingSessionConfig" />
+                                    </span>
+                                </p>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <div class="cursor-pointer icon-show text-base p-2"
+                                    (click)="openTaskEditor(item, 'view')"></div>
+                                <div class="cursor-pointer p-2" (click)="openTaskEditor(item, 'edit')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" class="stroke-grey500 stroke-2">
+                                        <path
+                                            d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div> -->
+
+
+
+<!-- last edited section -->
+<!-- 
+    <div cdkDropList cdkDropListOrientation="horizontal" class="grid md:grid-cols-3 gap-4 items-stretch"
+        (cdkDropListDropped)="dropBottomCards($event)">
+        @for (block of cardOrderBottom; track block) {
+        @if (block === 'timesheet') {
+        <div cdkDrag class="md:col-span-1">
+            <app-dashboard-timesheet [isManager]="isManager" />
+        </div>
+        } @else if (block === 'tasks') {
+        <div cdkDrag class="flex-grow overflow-y-auto md:col-span-2"
+            [ngStyle]="{ 'max-height.px': tasks.length > 7 ? 500 : 'auto' }">
+            <div class="p-4 bg-white rounded-2xl flex flex-col h-full">
+                <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+                    <p class="text-lg font-bold text-grey500">{{ 'dashboard.tasks' | translate }}</p>
+                    <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                        [routerLink]="['/task-management/task']">
+                        {{ 'dashboard.view_all' | translate }}
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <app-dashboard-task-filter-editor (onFilter)="onFilter('task', $event)" />
+                </div>
+                <div class="flex-grow overflow-y-auto max-h-[500px] custom-scrollbar">
+                    @if (tasks.length === 0) {
+                    <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                    } @else {
+                    @for (item of tasks; track $index) {
+                    <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                        <div class="flex gap-2 items-center">
+                            <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                                <img src="assets/images/icons/task-square.svg" alt="Activity">
+                            </div>
+                            <div class="grow">
+                                <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                    {{ item.description }}
+                                </p>
+                                <p class="text-xs text-textTertairy flex gap-4">
+                                    <app-shared-status [statusConfig]="priorityConfig" [data]="item.periority"
+                                        [label]="item.periorityName" />
+
+                                    <span class="relative">
+                                        @if (item.haveAttachment) {
+                                        <img src="/assets/images/icons/attachment.svg" alt="Attachment"
+                                            class="absolute end-0 -top-1">
+                                        }
+                                        <app-shared-status [label]="item.statusName" [data]="item.status"
+                                            [statusConfig]="hearingSessionConfig" />
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="cursor-pointer icon-show text-base p-2"
+                                    (click)="openTaskEditor(item, 'view')"></div>
+                                <div class="cursor-pointer p-2" (click)="openTaskEditor(item, 'edit')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" class="stroke-grey500 stroke-2">
+                                        <path
+                                            d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+        }
+        }
+    </div>
+
+
+</section>
+@if(sidebarConfig){
+<app-dashboard-chart-list [visible]="sidebarVisible" [config]="sidebarConfig" (onHideSidebar)="onHide()" />
+} -->
+
+
+
+
+
+<!-- ---------------------------------------------------------------------------------------------------------------------------------------------- -->
+
+
+<!-- 
+<section>
+    <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-4">
+        {{ 'dashboard.title' | translate }}
+    </h1>
+
+    <ul class="mb-4">
+        <app-dashboard-role-editor />
+    </ul>
+
+    <div cdkDropList [cdkDropListData]="widgetsOrder" cdkDropListOrientation="horizontal"
+        class="grid gap-4 items-stretch md:grid-cols-6" (cdkDropListDropped)="dropWidgets($event)">
+        @for (block of widgetsOrder; track block) {
+
+        @if (block === 'clients') {
+        <div cdkDrag
+            class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px] md:col-span-2">
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-blue-50 rounded-xl text-blue-600 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-clients text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.clients' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+                } @else {
+                <app-dashboard-chart [chartData]="clients" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+                }
+            </div>
+        </div>
+
+        } @else if (block === 'matters') {
+        <div cdkDrag
+            class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px] md:col-span-2">
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-green-50 rounded-xl text-green-700 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-matters text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.matters' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+                } @else {
+                <app-dashboard-chart [chartData]="matters" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+                }
+            </div>
+        </div>
+
+        } @else if (block === 'hearingSessions') {
+        <div cdkDrag
+            class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px] md:col-span-2">
+            <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                <div class="p-2 bg-red-50 rounded-xl text-red-500 w-10 h-10 flex items-center justify-center">
+                    <i class="icon-headphones text-xl"></i>
+                </div>
+                <p class="text-lg font-bold text-gray-500 truncate">
+                    {{ 'dashboard.hearing_sessions' | translate }}
+                </p>
+            </div>
+            <div class="w-full flex-1">
+                @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+                } @else {
+                <app-dashboard-chart [chartData]="hearingSessions" (onGetData)="getSidebarData($event)"
+                    class="w-full h-full"></app-dashboard-chart>
+                }
+            </div>
+        </div>
+
+        } @else if (block === 'activities') {
+        <div cdkDrag class="dashboard-card p-4 bg-white rounded-2xl md:col-span-3">
+            <div cdkDragHandle class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">
+                    {{ 'dashboard.activities' | translate }}
+                </p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/activity']" routerLinkActive="router-link-active">
+                    {{ 'dashboard.view_all' | translate }}
+                </p>
+            </div>
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('activity',$event)" />
+            </div>
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': activities.length > 6 ? 500 : null }">
+                @if (activities.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of activities; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center shrink-0">
+                            <img src="assets/images/icons/calendar-tick.svg" alt="Activity">
+                        </div>
+                        <div class="grow overflow-hidden">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1 truncate w-full">
+                                {{ item.description }}
+                            </p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span>{{ item.law_ActivityType }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.mtrNo }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer icon-show text-base p-2"
+                                (click)="openActivityEditor(item, 'activity', 'view')"></div>
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'activity')"></div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+
+        } @else if (block === 'sessions') {
+        <div cdkDrag class="dashboard-card p-4 bg-white rounded-2xl md:col-span-3">
+            <div cdkDragHandle class="flex gap-4 items-center mb-2 justify-between">
+                <p class="text-lg font-bold text-grey500">
+                    {{ 'dashboard.hearing_sessions' | translate }}
+                </p>
+                <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                    [routerLink]="['/task-management/hearing-session']" routerLinkActive="router-link-active">
+                    {{ 'dashboard.view_all' | translate }}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <app-dashboard-duration-filter-editor (onFilter)="onFilter('session', $event)" />
+            </div>
+
+            <div class="overflow-y-auto custom-scrollbar"
+                [ngStyle]="{ 'max-height.px': sessions.length > 6 ? 500 : null }">
+                @if (sessions.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                } @else {
+                @for (item of sessions; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                    <div class="flex gap-2 items-center">
+                        <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                            <img src="assets/images/icons/menu-board.svg" alt="Hearing Sessions">
+                        </div>
+                        <div class="grow">
+                            <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                {{ item.description }}
+                            </p>
+                            <p class="text-xs text-textTertairy flex gap-4">
+                                <span class="text-primary">{{ item.mtrNo }}</span>
+                                <app-shared-status [statusConfig]="hearingSessionConfig"
+                                    [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                                <span class="text-primary font-medium">{{ item.courtNumber }}</span>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'session')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" class="stroke-grey500 stroke-2">
+                                    <path
+                                        d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path
+                                        d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                        stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+
+        } @else if (block === 'timesheet') {
+        <div cdkDrag class="dashboard-card md:col-span-2">
+            <app-dashboard-timesheet [isManager]="isManager" />
+        </div>
+
+        } @else if (block === 'tasks') {
+        <div cdkDrag class="dashboard-card flex-grow overflow-y-auto md:col-span-4"
+            [ngStyle]="{ 'max-height.px': tasks.length > 7 ? 500 : 'auto' }">
+            <div class="p-4 bg-white rounded-2xl flex flex-col h-full">
+                <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+                    <p class="text-lg font-bold text-grey500">
+                        {{ 'dashboard.tasks' | translate }}
+                    </p>
+                    <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                        [routerLink]="['/task-management/task']">
+                        {{ 'dashboard.view_all' | translate }}
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <app-dashboard-task-filter-editor (onFilter)="onFilter('task', $event)" />
+                </div>
+
+                <div class="flex-grow overflow-y-auto max-h-[500px] custom-scrollbar">
+                    @if (tasks.length === 0) {
+                    <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                    } @else {
+                    @for (item of tasks; track $index) {
+                    <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                        <div class="flex gap-2 items-center">
+                            <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                                <img src="assets/images/icons/task-square.svg" alt="Activity">
+                            </div>
+                            <div class="grow">
+                                <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                    {{ item.description }}
+                                </p>
+                                <p class="text-xs text-textTertairy flex gap-4">
+                                    <app-shared-status [statusConfig]="priorityConfig" [data]="item.periority"
+                                        [label]="item.periorityName" />
+                                    <span class="relative">
+                                        @if (item.haveAttachment) {
+                                        <img src="/assets/images/icons/attachment.svg" alt="Attachment"
+                                            class="absolute end-0 -top-1">
+                                        }
+                                        <app-shared-status [label]="item.statusName" [data]="item.status"
+                                            [statusConfig]="hearingSessionConfig" />
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="cursor-pointer icon-show text-base p-2"
+                                    (click)="openTaskEditor(item, 'view')"></div>
+                                <div class="cursor-pointer p-2" (click)="openTaskEditor(item, 'edit')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" class="stroke-grey500 stroke-2">
+                                        <path
+                                            d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                            stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+        </div>
+        }
+
+        }
+    </div>
+</section>
+
+@if (sidebarConfig) {
+<app-dashboard-chart-list [visible]="sidebarVisible" [config]="sidebarConfig" (onHideSidebar)="onHide()" />
+} -->
+
+
+
+
+<!-- <section>
+    <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-4">
+        {{ 'dashboard.title' | translate }}
+    </h1>
+
+    <ul class="mb-4">
+        <app-dashboard-role-editor />
+    </ul>
+
+    <div 
+         class="flex flex-col gap-4">
+        @for (row of rowOrder; track row) {
+
+        <div cdkDrag class="w-full">
+            <div cdkDragHandle class="flex justify-center mb-2 cursor-move select-none">
+                <div class="h-1 w-16 rounded-full bg-gray-200"></div>
+            </div>
+
+            @if (row === 'top') {
+            @if (!isLoading) {
+            <div cdkDropList [cdkDropListData]="cardOrderTop" cdkDropListOrientation="horizontal"
+                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+                (cdkDropListDropped)="dropTopCards($event)">
+                @for (card of cardOrderTop; track card) {
+                <div cdkDrag class="p-4 bg-white rounded-2xl flex flex-col overflow-hidden h-[238px]">
+                    @if (card === 'clients') {
+                    <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                        <div class="p-2 bg-blue-50 rounded-xl text-blue-600 w-10 h-10 flex items-center justify-center">
+                            <i class="icon-clients text-xl"></i>
+                        </div>
+                        <p class="text-lg font-bold text-gray-500 truncate">
+                            {{ 'dashboard.clients' | translate }}
+                        </p>
+                    </div>
+                    <div class="w-full flex-1">
+                        <app-dashboard-chart [chartData]="clients" (onGetData)="getSidebarData($event)"
+                            class="w-full h-full"></app-dashboard-chart>
+                    </div>
+
+                    } @else if (card === 'matters') {
+
+                    <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                        <div
+                            class="p-2 bg-green-50 rounded-xl text-green-700 w-10 h-10 flex items-center justify-center">
+                            <i class="icon-matters text-xl"></i>
+                        </div>
+                        <p class="text-lg font-bold text-gray-500 truncate">
+                            {{ 'dashboard.matters' | translate }}
+                        </p>
+                    </div>
+                    <div class="w-full flex-1">
+                        <app-dashboard-chart [chartData]="matters" (onGetData)="getSidebarData($event)"
+                            class="w-full h-full"></app-dashboard-chart>
+                    </div>
+
+                    } @else if (card === 'hearingSessions') {
+
+                    <div cdkDragHandle class="flex gap-4 items-center mb-2">
+                        <div class="p-2 bg-red-50 rounded-xl text-red-500 w-10 h-10 flex items-center justify-center">
+                            <i class="icon-headphones text-xl"></i>
+                        </div>
+                        <p class="text-lg font-bold text-gray-500 truncate">
+                            {{ 'dashboard.hearing_sessions' | translate }}
+                        </p>
+                    </div>
+                    <div class="w-full flex-1">
+                        <app-dashboard-chart [chartData]="hearingSessions" (onGetData)="getSidebarData($event)"
+                            class="w-full h-full"></app-dashboard-chart>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            } @else {
+            <div class="grid md:grid-cols-3 gap-4">
+                @for (item of [].constructor(3); track $index) {
+                <app-dashboard-chart-skeleton />
+                }
+            </div>
+            }
+
+            } @else if (row === 'middle') {
+
+            <div cdkDropList [cdkDropListData]="cardOrderMiddle" cdkDropListOrientation="horizontal"
+                class="grid md:grid-cols-2 gap-4" (cdkDropListDropped)="dropMiddleCards($event)">
+                <div cdkDrag  class="p-4 bg-white rounded-2xl">
+                    <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+                        <p class="text-lg font-bold text-grey500" >
+                            {{ 'dashboard.activities' | translate }}
+                        </p>
+                        <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                            [routerLink]="['/task-management/activity']" routerLinkActive="router-link-active">
+                            {{ 'dashboard.view_all' | translate }}
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <app-dashboard-duration-filter-editor (onFilter)="onFilter('activity',$event)" />
+                    </div>
+                    <div class="overflow-y-auto custom-scrollbar" [ngStyle]="{
+                  'max-height.px': activities.length > 6 ? 500 : null
+                }">
+                        @if (activities.length === 0) {
+                        <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                        } @else {
+                        @for (item of activities; track $index) {
+                        <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                            <div class="flex gap-2 items-center">
+                                <div
+                                    class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center shrink-0">
+                                    <img src="assets/images/icons/calendar-tick.svg" alt="Activity" />
+                                </div>
+                                <div class="grow overflow-hidden">
+                                    <p class="text-sm font-bold text-textSecondaryHover mb-1 truncate w-full">
+                                        {{ item.description }}
+                                    </p>
+                                    <p class="text-xs text-textTertairy flex gap-4">
+                                        <span>{{ item.law_ActivityType }}</span>
+                                        <app-shared-status [statusConfig]="hearingSessionConfig"
+                                            [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                        <span class="font-medium">
+                                            {{
+                                            item.startDate | date: 'yyyy-MM-dd'
+                                            }}
+                                        </span>
+                                        <span class="text-primary font-medium">{{ item.mtrNo }}</span>
+                                    </p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="cursor-pointer icon-show text-base p-2"
+                                        (click)="openActivityEditor(item, 'activity', 'view')"></div>
+                                    <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'activity')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+
+                <div cdkDrag class="p-4 bg-white rounded-2xl">
+                    <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+                        <p class="text-lg font-bold text-grey500">
+                            {{ 'dashboard.hearing_sessions' | translate }}
+                        </p>
+                        <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                            [routerLink]="['/task-management/hearing-session']" routerLinkActive="router-link-active">
+                            {{ 'dashboard.view_all' | translate }}
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <app-dashboard-duration-filter-editor (onFilter)="onFilter('session', $event)" />
+                    </div>
+
+                    <div class="overflow-y-auto custom-scrollbar" [ngStyle]="{
+                  'max-height.px': sessions.length > 6 ? 500 : null
+                }">
+                        @if (sessions.length === 0) {
+                        <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                        } @else {
+                        @for (item of sessions; track $index) {
+                        <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                            <div class="flex gap-2 items-center">
+                                <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                                    <img src="assets/images/icons/menu-board.svg" alt="Hearing Sessions" />
+                                </div>
+                                <div class="grow">
+                                    <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                        {{ item.description }}
+                                    </p>
+                                    <p class="text-xs text-textTertairy flex gap-4">
+                                        <span class="text-primary">{{
+                                            item.mtrNo
+                                            }}</span>
+                                        <app-shared-status [statusConfig]="hearingSessionConfig"
+                                            [data]="item.law_ActivityStatusId" [label]="item.law_ActivityStatus" />
+                                        <span class="font-medium">
+                                            {{
+                                            item.startDate | date: 'yyyy-MM-dd'
+                                            }}
+                                        </span>
+                                        <span class="text-primary font-medium">{{ item.courtNumber }}</span>
+                                    </p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <div class="cursor-pointer p-2" (click)="openActivityEditor(item, 'session')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" class="stroke-grey500 stroke-2">
+                                            <path
+                                                d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path
+                                                d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                                stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                                stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            } @else if (row === 'bottom') {
+
+            <div cdkDropList [cdkDropListData]="cardOrderBottom" cdkDropListOrientation="horizontal"
+                class="grid md:grid-cols-3 gap-4 items-stretch" (cdkDropListDropped)="dropBottomCards($event)">
+                @for (block of cardOrderBottom; track block) {
+
+                @if (block === 'timesheet') {
+                <div cdkDrag class="md:col-span-1">
+                    <app-dashboard-timesheet [isManager]="isManager" />
+                </div>
+
+                } @else if (block === 'tasks') {
+                <div cdkDrag class="flex-grow overflow-y-auto md:col-span-2" [ngStyle]="{
+                    'max-height.px': tasks.length > 7 ? 500 : 'auto'
+                  }">
+                    <div class="p-4 bg-white rounded-2xl flex flex-col h-full">
+                        <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+                            <p class="text-lg font-bold text-grey500">
+                                {{ 'dashboard.tasks' | translate }}
+                            </p>
+                            <p class="text-primary text-xs font-medium cursor-pointer hover:underline"
+                                [routerLink]="['/task-management/task']">
+                                {{ 'dashboard.view_all' | translate }}
+                            </p>
+                        </div>
+
+                        <div class="mb-4">
+                            <app-dashboard-task-filter-editor (onFilter)="onFilter('task', $event)" />
+                        </div>
+
+                        <div class="flex-grow overflow-y-auto max-h-[500px] custom-scrollbar">
+                            @if (tasks.length === 0) {
+                            <app-shared-empty-section [emptyConfig]="emptyConfig" />
+                            } @else {
+                            @for (item of tasks; track $index) {
+                            <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+                                <div class="flex gap-2 items-center">
+                                    <div class="p-2 bg-white rounded-xl text-blue600 size-10 leading-7 text-center">
+                                        <img src="assets/images/icons/task-square.svg" alt="Activity" />
+                                    </div>
+                                    <div class="grow">
+                                        <p class="text-sm font-bold text-textSecondaryHover mb-1">
+                                            {{ item.description }}
+                                        </p>
+                                        <p class="text-xs text-textTertairy flex gap-4">
+                                            <app-shared-status [statusConfig]="priorityConfig" [data]="item.periority"
+                                                [label]="item.periorityName" />
+
+                                            <span class="relative">
+                                                @if (item.haveAttachment) {
+                                                <img src="/assets/images/icons/attachment.svg" alt="Attachment"
+                                                    class="absolute end-0 -top-1" />
+                                                }
+                                                <app-shared-status [label]="item.statusName" [data]="item.status"
+                                                    [statusConfig]="hearingSessionConfig" />
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <div class="cursor-pointer icon-show text-base p-2"
+                                            (click)="openTaskEditor(item, 'view')"></div>
+                                        <div class="cursor-pointer p-2" (click)="openTaskEditor(item, 'edit')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" class="stroke-grey500 stroke-2">
+                                                <path
+                                                    d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                                <path
+                                                    d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                                                    stroke-miterlimit="10" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path
+                                                    d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                                                    stroke-miterlimit="10" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                            }
+                        </div>
+                    </div>
+                </div>
+                }
+
+                }
+            </div>
+            }
+
+        </div>
+        }
+    </div>
+</section>
+
+@if (sidebarConfig) {
+<app-dashboard-chart-list [visible]="sidebarVisible" [config]="sidebarConfig" (onHideSidebar)="onHide()" />
+} -->
+
+
+
+
+
+<section>
+  <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-4">
+    {{ 'dashboard.title' | translate }}
+  </h1>
+
+  <ul class="mb-4">
+    <app-dashboard-role-editor />
+  </ul>
+  <!-- <div class="grid-stack"> -->
+    <div class="grid-stack" [style.opacity]="gridInitialized ? 1 : 0">
+
+@for (widget of orderedWidgets; track widget.id + '-' + currentDashboardMode){
+
+      <div class="grid-stack-item"
+        [attr.gs-id]="widget.id"
+        [attr.gs-x]="widget.x"
+        [attr.gs-y]="widget.y"
+        [attr.gs-w]="widget.w"
+        [attr.gs-h]="widget.h">
+
+        <div class="grid-stack-item-content">
+
+          <!-- ─────────────────────────────── CLIENTS ─────────────────────────────── -->
+          @if (widget.id === 'clients') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+            <div class="dashboard-card-header flex gap-4 items-center mb-2">
+              <div class="p-2 bg-blue-50 rounded-xl text-blue-600 w-10 h-10 flex items-center justify-center">
+                <i class="icon-clients text-xl"></i>
+              </div>
+       <p class="text-lg font-bold text-gray-500 truncate">
+            {{(isInhouse ? 'clients.entities' : 'dashboard.clients') | translate}}
+              </p>
+            </div>
+
+            <div class="w-full flex-1">
+              @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+              } @else {
+                <app-dashboard-chart [chartData]="clients" [isManager]="isManager" (onGetData)="getSidebarData($event)"
+                  class="w-full h-full"></app-dashboard-chart>
+              }
+            </div>
+          </div>
+          }
+
+
+
+          <!-- ─────────────────────────────── Productivity ─────────────────────────────── -->
+
+@else if (widget.id === 'productivity') {
+  <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+    <div class="dashboard-card-header flex items-center justify-between mb-2">
+      <p class="text-lg font-bold text-grey500">{{ 'dashboard.productivity' | translate }}</p>
+      <!-- <p class="text-primary text-xs cursor-pointer hover:underline">View All</p> -->
+    </div>
+
+    <div class="flex-1 overflow-y-auto custom-scrollbar">
+      @for (p of productivityList; track $index) {
+        <div class="p-2 rounded-xl bg-grey100 hover:bg-blue25 flex justify-between">
+          <span class="font-medium">{{ p.name }}</span>
+          <span class="text-gray-600">{{ p.hours | number:'1.0-2' }} h</span>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+
+          <!-- ─────────────────────────────── ar ─────────────────────────────── -->
+
+@else if (widget.id === 'ar') {
+  <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+    <div class="dashboard-card-header flex items-center justify-between mb-2">
+      <p class="text-lg font-bold text-grey500">A/R</p>
+    </div>
+
+    <div class="flex gap-4 items-center">
+      <div class="ar-pie">
+        <p-chart type="pie" [data]="arPieData" [options]="arPieOptions"></p-chart>
+      </div>
+
+      <div class="text-sm w-full">
+        <div class="flex justify-between"><span><= 30</span><span>{{ arAging.sum30 | number }}</span></div>
+        <div class="flex justify-between"><span><= 60</span><span>{{ arAging.sum60 | number }}</span></div>
+        <div class="flex justify-between"><span><= 90</span><span>{{ arAging.sum90 | number }}</span></div>
+        <div class="flex justify-between"><span>> 90</span><span>{{ arAging.sum900 | number }}</span></div>
+        <hr class="my-2" />
+        <div class="flex justify-between font-bold"><span>        {{ 'dashboard.total' | translate }}
+</span><span>{{ arAging.total | number }}</span></div>
+      </div>
+    </div>
+  </div>
+}
+
+
+          <!-- ─────────────────────────────── billingByPracticeArea ─────────────────────────────── -->
+
+@else if (widget.id === 'billingByPracticeArea') {
+  <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+    <div class="dashboard-card-header flex items-center justify-between mb-2">
+      <p class="text-lg font-bold text-grey500">{{ 'dashboard.billingAmountByPracticeArea' | translate }}</p>
+    </div>
+    <div class="flex-1 chart-box">
+      <p-chart type="bar" [data]="billingByPracticeAreaData" [options]="billingByPracticeAreaOptions"></p-chart>
+    </div>
+  </div>
+}
+
+
+          <!-- ─────────────────────────────── billingByMonth ─────────────────────────────── -->
+
+@else if (widget.id === 'billingByMonth') {
+  <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+    <div class="dashboard-card-header flex items-center justify-between mb-2">
+      <p class="text-lg font-bold text-grey500">{{ 'dashboard.billingAmountbyMonth' | translate }}</p>
+    </div>
+    <div class="flex-1 chart-box">
+      <p-chart type="line" [data]="billingByMonthData" [options]="billingByMonthOptions"></p-chart>
+    </div>
+  </div>
+}
+
+          <!-- ─────────────────────────────── invoices ─────────────────────────────── -->
+
+@else if (widget.id === 'invoices') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <div class="dashboard-card-header invoices-header">
+      <div class="icon-wrap">
+        <img
+          src="../../../../../assets/images/icons8-invoices-60.png"
+          alt="Invoices"
+        />
+      </div>
+
+      <p class="title">
+        {{ 'dashboard.invoices' | translate }}
+      </p>
+    </div>
+
+    <!-- Content -->
+    <div class="invoices-body">
+
+      <div class="invoices-info">
+        <div class="row">
+          <span> {{ 'dashboard.noofInvoices' | translate }}</span>
+          <strong>{{ invoiceSummary.countInvoices }}</strong>
+        </div>
+
+        <div class="row">
+          <span>{{ 'dashboard.billed' | translate }}</span>
+          <strong>
+            {{ invoiceSummary.sumInvoices | number }}
+          </strong>
+        </div>
+
+         <div class="row">
+          <span>        {{ 'dashboard.remain' | translate }}
+</span>
+          <strong>
+            {{ invoiceSummary.sumRemain | number }}
+          </strong>
+        </div>
+
+        <div class="row">
+          <span>         {{ 'dashboard.collected' | translate }}
+</span>
+          <strong class="success">
+            {{ invoiceSummary.sumPaid | number }}
+          </strong>
+        </div>
+      </div>
+
+      <!-- Pie -->
+      <!-- <div class="invoices-pie">
+        <p-chart
+          style="bottom: 0px; position: absolute; width: 100px; right: 15px;"
+          type="pie"
+          [data]="invoicePieData"
+          [options]="invoicePieOptions">
+        </p-chart>
+      </div> -->
+<div class="invoices-pie">
+  <p-chart
+    class="invoice-chart"
+    type="pie"
+    [data]="invoicePieData"
+    [options]="invoicePieOptions">
+  </p-chart>
+</div>
+    </div>
+  </div>
+}
+
+          <!-- ─────────────────────────────── MATTERS ─────────────────────────────── -->
+          @else if (widget.id === 'matters') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+
+            <div class="dashboard-card-header flex gap-4 items-center mb-2">
+              <div class="p-2 bg-green-50 rounded-xl text-green-700 w-10 h-10 flex items-center justify-center">
+                <i class="icon-matters text-xl"></i>
+              </div>
+              <p class="text-lg font-bold text-gray-500 truncate">
+                {{ 'dashboard.matters' | translate }}
+              </p>
+            </div>
+
+            <div class="w-full flex-1">
+              @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+              } @else {
+                <app-dashboard-chart [chartData]="matters" [isManager]="isManager" (onGetData)="getSidebarData($event)"
+                  class="w-full h-full"></app-dashboard-chart>
+              }
+            </div>
+
+          </div>
+          }
+
+          <!-- ─────────────────────────────── HEARING SESSIONS TOP BOX ─────────────── -->
+          @else if (widget.id === 'hearingSessions') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col overflow-hidden">
+
+            <div class="dashboard-card-header flex gap-4 items-center mb-2">
+              <div class="p-2 bg-red-50 rounded-xl text-red-500 w-10 h-10 flex items-center justify-center">
+                <i class="icon-headphones text-xl"></i>
+              </div>
+              <p class="text-lg font-bold text-gray-500 truncate">
+                {{ 'dashboard.hearing_sessions' | translate }}
+              </p>
+            </div>
+
+            <div class="w-full flex-1">
+              @if (isLoading) {
+                <app-dashboard-chart-skeleton />
+              } @else {
+                <app-dashboard-chart [chartData]="hearingSessions" (onGetData)="getSidebarData($event)"
+                  class="w-full h-full"></app-dashboard-chart>
+              }
+            </div>
+
+          </div>
+          }
+
+          <!-- ─────────────────────────────── ACTIVITIES LIST ─────────────────────────────── -->
+          @else if (widget.id === 'activities') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col">
+
+            <div class="dashboard-card-header flex items-center justify-between mb-2">
+              <p class="text-lg font-bold text-grey500">
+                {{ 'dashboard.activities' | translate }}
+              </p>
+              <p class="text-primary text-xs cursor-pointer hover:underline" [routerLink]="['/task-management/activity']">
+                {{ 'dashboard.view_all' | translate }}
+              </p>
+            </div>
+
+            <div class="mb-4">
+              <app-dashboard-duration-filter-editor (onFilter)="onFilter('activity', $event)" />
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar"
+              [ngStyle]="{ 'max-height.px': activities.length > 6 ? 500 : null }">
+
+              @if (activities.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+              } @else {
+                @for (item of activities; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+
+                  <div class="flex gap-2 items-center">
+                    <div class="p-2 bg-white rounded-xl text-blue600 size-10 text-center">
+                      <img src="assets/images/icons/calendar-tick.svg" />
+                    </div>
+
+                    <div class="grow overflow-hidden">
+                      <p class="text-sm font-bold mb-1 truncate">{{ item.description }}</p>
+                      <p class="text-xs text-textTertairy flex gap-4">
+                        <span>{{ item.law_ActivityType }}</span>
+
+                        <app-shared-status [statusConfig]="hearingSessionConfig" [data]="item.law_ActivityStatusId"
+                          [label]="item.law_ActivityStatus" />
+
+                        <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                        <span class="text-primary font-medium">{{ item.mtrNo }}</span>
+                      </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <div class="cursor-pointer p-2 icon-show"
+                        (click)="openActivityEditor(item, 'activity', 'view')"></div>
+
+                      <div class="cursor-pointer p-2"
+                        (click)="openActivityEditor(item, 'activity')"></div>
+                    </div>
+
+                  </div>
+
+                </div>
+                }
+              }
+
+            </div>
+
+          </div>
+          }
+
+<!-- ───────────────────── EXPIRED DOCUMENTS ───────────────────── -->
+@else if (widget.id === 'documentExpired') {
+  <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col">
+
+    <div class="dashboard-card-header flex items-center mb-2">
+      <p class="text-lg font-bold text-grey500">Expired Documents</p>
+    </div>
+
+    <div class="flex-1 overflow-y-auto custom-scrollbar">
+
+      @if (isExpiredDocumentsLoading) {
+        <app-shared-skeleton-grid />
+      } @else if (expiredDocuments.length === 0) {
+        <app-shared-empty-section [emptyConfig]="emptyConfig" />
+      } @else {
+
+        @for (doc of expiredDocuments; track $index) {
+
+      <div class="flex items-center justify-between m-2 p-1 rounded-xl bg-grey100 hover:bg-blue25 border">
+
+  <!-- DESCRIPTION -->
+    <div class="flex items-center gap-3 mb-2">
+              <img [appFileIcon]="doc.filePathe" width="40" height="40" />
+              <p class="text-sm font-bold truncate">{{ doc.description }}</p>
+            </div>
+  <!-- MATTER -->
+  <p class="text-xs text-textTertairy w-32">
+    <!-- <b>Matter:</b> -->
+     {{ doc.matterCode }}
+  </p>
+
+  <!-- CLIENT -->
+  <p class="text-xs text-textTertairy w-40 truncate">
+    <!-- <b>Client:</b> -->
+     {{ doc.clientName }}
+  </p>
+
+  <!-- LAWYER -->
+  <p class="text-xs text-textTertairy w-40 truncate">
+    <!-- <b>Lawyer:</b> -->
+     {{ doc.lawyerName || ' ' }}
+  </p>
+
+  <p class="text-xs text-textTertairy w-28">
+    <!-- <b>Expiry:</b>  -->
+    {{ doc.expirationDate | date:'yyyy-MM-dd' }}
+  </p>
+
+            <!-- ACTIONS -->
+            <div class="flex gap-4 mt-2">
+              @if(extensions.includes(doc.filePathe.split('.').pop()?.toLowerCase())) {
+                <div class="cursor-pointer" title="View"
+                     (click)="_fileService.previewFileFromPath(doc.filePathe)">
+                  <img src="./assets/images/icons/view-file.svg" width="20" height="20">
+                </div>
+              }
+
+              <div class="cursor-pointer" title="Download"
+                  (click)="downloadAttachment(doc)">
+                <img src="./assets/images/icons/download-file.svg" width="20" height="20">
+              </div>
+            </div>
+
+          </div>
+
+        }
+
+      }
+
+    </div>
+  </div>
+}
+
+
+          <!-- ─────────────────────────────── SESSIONS LIST ─────────────────────────────── -->
+          @else if (widget.id === 'sessions') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col">
+
+            <div class="dashboard-card-header flex items-center justify-between mb-2">
+              <p class="text-lg font-bold text-grey500">
+                {{ 'dashboard.hearing_sessions' | translate }}
+              </p>
+              <p class="text-primary text-xs cursor-pointer hover:underline"
+                [routerLink]="['/task-management/hearing-session']">
+                {{ 'dashboard.view_all' | translate }}
+              </p>
+            </div>
+
+            <div class="mb-4">
+              <app-dashboard-duration-filter-editor (onFilter)="onFilter('session', $event)" />
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar"
+              [ngStyle]="{ 'max-height.px': sessions.length > 6 ? 500 : null }">
+
+              @if (sessions.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+              } @else {
+
+                @for (item of sessions; track $index) {
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+
+                  <div class="flex gap-2 items-center">
+                    <div class="p-2 bg-white rounded-xl size-10 text-center">
+                      <img src="assets/images/icons/menu-board.svg" />
+                    </div>
+
+                    <div class="grow">
+                      <p class="text-sm font-bold mb-1">{{ item.description }}</p>
+
+                      <p class="text-xs text-textTertairy flex gap-4">
+                        <span class="text-primary">{{ item.mtrNo }}</span>
+
+                        <app-shared-status [statusConfig]="hearingSessionConfig" [data]="item.law_ActivityStatusId"
+                          [label]="item.law_ActivityStatus" />
+
+                        <span class="font-medium">{{ item.startDate | date: 'yyyy-MM-dd' }}</span>
+                        <span class="text-primary font-medium">{{ item.courtNumber }}</span>
+                      </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <div class="cursor-pointer p-2"
+                        (click)="openActivityEditor(item, 'session')">
+
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                          viewBox="0 0 24 24" class="stroke-grey500 stroke-2">
+                          <path d="M11 2H9C4 2 2 4 2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7v-2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                          <path
+                            d="M16.04 3.02 8.16 10.9c-.3.3-.6.89-.66 1.32l-.43 3.01c-.16 1.09.61 1.85 1.71 1.69l3.01-.43c.42-.06 1.01-.36 1.31-.66l7.88-7.88c1.36-1.36 2-2.94 0-4.94-2-2-3.58-1.36-4.94 0Z"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M14.91 4.15c.67 2.39 2.54 4.27 4.94 4.94" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        </svg>
+
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+                }
+
+              }
+
+            </div>
+
+          </div>
+          }
+
+
+
+          
+          <!-- ─────────────────────────────── TIMESHEET ─────────────────────────────── -->
+          @else if (widget.id === 'timesheet') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl" style="overflow-y: hidden;">
+            <app-dashboard-timesheet [isManager]="isManager" />
+          </div>
+          }
+          <!-- ─────────────────────────────── TASKS ─────────────────────────────── -->
+          @else if (widget.id === 'tasks') {
+          <div class="dashboard-card p-4 bg-white rounded-2xl flex flex-col">
+
+            <div class="dashboard-card-header flex items-center justify-between mb-2">
+              <p class="text-lg font-bold text-grey500">
+                {{ 'dashboard.tasks' | translate }}
+              </p>
+              <p class="text-primary text-xs cursor-pointer hover:underline" [routerLink]="['/task-management/task']">
+                {{ 'dashboard.view_all' | translate }}
+              </p>
+            </div>
+
+            <div class="mb-4">
+              <app-dashboard-task-filter-editor (onFilter)="onFilter('task', $event)" />
+            </div>
+
+            <div class="flex-grow overflow-y-auto custom-scrollbar"
+              [ngStyle]="{ 'max-height.px': tasks.length > 7 ? 500 : 'auto' }">
+
+              @if (tasks.length === 0) {
+                <app-shared-empty-section [emptyConfig]="emptyConfig" />
+              } @else {
+
+                @for (item of tasks; track $index) {
+
+                <div class="flex flex-col mb-2 p-2 rounded-xl bg-grey100 hover:bg-blue25">
+
+                  <div class="flex gap-2 items-center">
+                    <div class="p-2 bg-white rounded-xl size-10 text-center">
+                      <img src="assets/images/icons/task-square.svg" />
+                    </div>
+
+                    <div class="grow">
+                      <p class="text-sm font-bold mb-1">{{ item.description }}</p>
+
+                      <p class="text-xs text-textTertairy flex gap-4">
+                        <app-shared-status [statusConfig]="priorityConfig" [data]="item.periority"
+                          [label]="item.periorityName" />
+
+                        <span class="relative">
+                          @if (item.haveAttachment) {
+                          <img src="/assets/images/icons/attachment.svg"
+                            class="absolute end-0 -top-1" />
+                          }
+
+                          <app-shared-status [statusConfig]="hearingSessionConfig"
+                            [label]="item.statusName" [data]="item.status" />
+                        </span>
+                      </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <div class="cursor-pointer p-2 icon-show" (click)="openTaskEditor(item, 'view')"></div>
+
+                      <div class="cursor-pointer p-2" (click)="openTaskEditor(item, 'edit')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" fill="none" height="16"
+                          viewBox="0 0 24 24" class="stroke-grey500 stroke-2">
+                          <path d="M11 2H9C4 2 2 4 2 9v6c0 5 2 7 7 7h6c5 0 7-2 7-7v-2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                          <path
+                            d="M16.04 3.02 8.16 10.9c-.3.3-.6.89-.66 1.32l-.43 3.01c-.16 1.09.61 1.85 1.71 1.69l3.01-.43c.42-.06 1.01-.36 1.31-.66l7.88-7.88c1.36-1.36 2-2.94 0-4.94-2-2-3.58-1.36-4.94 0Z"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                          <path d="M14.91 4.15c.67 2.39 2.54 4.27 4.94 4.94" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        </svg>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+                }
+
+              }
+
+            </div>
+
+          </div>
+          }
+
+   
+
+        </div>
+      </div>
+
+    }
+  </div>
+</section>
+
+
+<!-- <div class="floating-mode-btn" (click)="toggleModeMenu()">
+  <i class="pi pi-cog"></i>
+</div>
+
+<div class="mode-menu" *ngIf="modeMenuOpen">
+  <div
+    class="mode-item"
+    (click)="changeDashboardMode(1)"
+    [class.active]="currentDashboardMode === 1"
+  >
+   Dashboard Mode 1
+  </div>
+
+  <div
+    class="mode-item"
+    (click)="changeDashboardMode(2)"
+    [class.active]="currentDashboardMode === 2"
+  >
+    Dashboard Mode 2
+  </div>
+<div class="mode-item"
+     (click)="changeDashboardMode(3)"
+     [class.active]="currentDashboardMode === 3">
+  Dashboard Mode 3
+</div>
+
+   <div class="mode-item" (click)="goToManagerDashboard()">
+    Manager Dashboard
+  </div> 
+</div> -->
+
+
+
+  @if (sidebarConfig) {
+<app-dashboard-chart-list [visible]="sidebarVisible" [config]="sidebarConfig" (onHideSidebar)="onHide()" />
+}

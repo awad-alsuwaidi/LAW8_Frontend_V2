@@ -1,0 +1,25 @@
+.custom-breadcrumb{
+    .p-breadcrumb {
+        @apply bg-transparent border-0 py-2 px-0;
+    
+        &-list {
+            .p-menuitem-separator {
+                @apply text-borderPrimary
+            }
+    
+            li {
+                .p-menuitem-text {
+                    @apply font-medium font-poppins text-grey500 max-sm:text-sm
+                }
+    
+                &:not(:last-of-type) {
+                    .p-menuitem-text {
+                        @apply text-textTertairy
+                    }
+    
+                }
+            }
+        }
+    }
+
+}

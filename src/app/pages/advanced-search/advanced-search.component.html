@@ -1,0 +1,78 @@
+<div class="min-h-screen w-full bg-gray-50 flex flex-col">
+
+  <!-- 🔹 Header -->
+  <header class="w-full flex items-center justify-between px-6 py-4 bg-white sticky top-0 z-10">
+    <div class="flex items-center gap-3">
+<img 
+  [src]="isProduction 
+    ? 'assets/images/Logo.svg'
+    : 'assets/images/Law8logoDemo.png'"
+  class="w-[140px] h-10 object-contain" />    
+  
+    </div>
+  </header>
+
+  <!-- 🔹 Content -->
+  <main class="flex-1 w-full max-w-7xl mx-auto grid grid-cols-12 gap-6 px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- 🔍 Left Panel -->
+    <aside class="col-span-12 sm:col-span-4 lg:col-span-3 bg-white shadow-sm rounded-2xl p-4 border border-gray-100">
+
+      <!-- Title -->
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+          {{ 'topBar.advancedSearch' | translate }}
+        </h2>
+      </div>
+
+      <!-- Search Input -->
+      <div class="mb-4">
+        <app-shared-search (searchValueChange)="searchValueChange($event)" [withBtn]="true" />
+      </div>
+
+      <!-- Results List -->
+      <div class="flex flex-col gap-2 overflow-y-auto max-h-[70vh] pr-1">
+
+        <!-- 🦴 Skeleton Loader -->
+        <ng-container *ngIf="isLoading">
+          <div *ngFor="let i of [1,2,3,4,5]"
+            class="px-4 py-3 rounded-lg bg-gray-100 flex justify-between items-center gap-2 animate-pulse">
+            <div class="h-3 w-24 bg-gray-300 rounded"></div>
+            <div class="h-8 w-8 bg-gray-300 rounded-full"></div>
+          </div>
+        </ng-container>
+
+        <!-- ✅ Actual Data -->
+        <ng-container *ngIf="!isLoading">
+          @for(item of data; track $index){
+          <div
+            class="px-4 py-3 rounded-xl bg-gray-50 flex justify-between items-center gap-2 cursor-pointer border border-transparent hover:border-primary hover:bg-primary/5 transition-all duration-200 group"
+            [routerLink]="['/advanced-search', item.module, searchValue]" routerLinkActive="active">
+            <span class="text-sm font-medium text-gray-700 group-hover:text-primary">
+              {{ item.lable }}
+            </span>
+
+            <span
+              class="inline-flex items-center justify-center size-8 rounded-full bg-primary text-white text-xs font-semibold group-hover:bg-primary-dark transition">
+              {{ item.count }}
+            </span>
+          </div>
+          }
+        </ng-container>
+
+        <!-- ❌ No results -->
+        <div *ngIf="!isLoading && data.length === 0" class="text-center text-gray-400 text-sm py-6">
+          {{ 'No results found' | translate }}
+        </div>
+      </div>
+    </aside>
+
+    <!-- 🔹 Right Panel (Details) -->
+    <section
+      class="col-span-12 sm:col-span-8 lg:col-span-9 bg-white shadow-sm rounded-2xl border border-gray-100 p-4 sm:p-6">
+      <router-outlet></router-outlet>
+    </section>
+
+  </main>
+
+</div>

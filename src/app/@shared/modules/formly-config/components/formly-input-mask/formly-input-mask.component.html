@@ -1,0 +1,28 @@
+@if(props['readonly']){
+    @let value = formControl.value;
+<p class="text-textSecondary text-sm font-bold  mt-3">
+    {{ value?.substring(0, 3)  + value?.substring(3) }}
+</p>
+}@else {
+<!-- [mask]="props['mask']"  [slotChar]="props['slotChar']" [placeholder]="props['mask']"-->
+<!-- <p-inputMask [formControl]="formControl" [formlyAttributes]="field" mask="(999) 9999999999" 
+    [autoClear]="false" (onBlur)="onInputChange($event)"/> -->
+<!-- <p-inputMask 
+    [formControl]="formControl" 
+    [formlyAttributes]="field" 
+    mask="(999) 9999999999" 
+    placeholder="(999) 999999999"
+    [autoClear]="false" 
+    slotChar=" "
+    (onBlur)="onInputChange($event)"/>-->
+
+<div class="input-field w-full flex items-center"
+    [ngClass]="{'!border-borderErrorSubtle': formControl.invalid && formControl.touched,'bg-grey50':formControl.disabled}">
+
+    <input class="w-full" type="tel" pInputText [formControl]="formControl" [formlyAttributes]="field"
+        [ngClass]="props['class']" [placeholder]="props['placeholder']" />
+    @if(formControl.invalid && formControl.touched) {
+    <i class="icon-error-circle text-textErrorBase"></i>
+    }
+</div>
+}

@@ -1,0 +1,15 @@
+:host ::ng-deep {
+    .p-field {
+        @apply mb-0 h-9 bg-white rounded-lg;
+
+        .input-field {
+            @apply h-9
+        }
+    }
+    .search-input{ 
+        input {
+            @apply focus:w-[434px] #{!important}
+        }
+    }
+
+}

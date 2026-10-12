@@ -1,0 +1,85 @@
+<div class="p-4 bg-white rounded-2xl flex flex-col">
+    <div class="flex gap-4 items-center mb-2 justify-between" cdkDragHandle>
+        <p class="text-lg font-bold text-grey500">{{ 'dashboard.timesheet' | translate }}</p>
+        <p class="text-primary text-xs font-medium cursor-pointer hover:underline" [routerLink]="['/timesheet']">{{
+            'dashboard.view_all' |
+            translate }}</p>
+    </div>
+    <div class="mb-4">
+
+        <app-dashboard-durationtimesheet-filter-editor (onFilter)="onFilter($event)" />
+
+    </div>
+    @if(isLoading){
+    <app-dashboard-timesheet-skeleton />
+    }@else {
+    <div class="flex justify-center py-4">
+        @if(timesheet.length>0){
+        <app-dashboard-chart [type]="'pie'" [chartData]="timesheet" [showLabel]="false" [width]="'115px'"
+            [height]="'115px'" />
+        }
+    </div>
+    <div class="grid grid-cols-2 gap-x-2 gap-y-4 flex-grow">
+        <div class="py-2 px-3 rounded-lg bg-grey50" >
+            <p class="mb-2"><span class="inline-block w-6 h-2 bg-success600 rounded-full"></span></p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.billableCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.billable' | translate }}</span>
+            </p>
+        </div>
+        <div class="py-2 px-3 rounded-lg bg-grey50">
+            <p class="mb-2">
+                <span class="inline-block w-6 h-2 bg-success600 rounded-full me-1"></span>
+                <span class="inline-block w-6 h-2 bg-success400 rounded-full me-1"></span>
+                <span class="inline-block w-6 h-2 bg-success200 rounded-full"></span>
+            </p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.totalTakenCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.total' | translate }}</span>
+            </p>
+        </div>
+
+
+        <div class="py-2 px-3 rounded-lg bg-grey50">
+            <p class="mb-2"><span class="inline-block w-6 h-2 bg-success400 rounded-full"></span></p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.nonBillableCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.non_billable' | translate }}</span>
+            </p>
+        </div>
+
+        <div class="py-2 px-3 rounded-lg bg-grey50">
+            <p class="mb-2"><span class="inline-block w-6 h-2 bg-grey200 rounded-full"></span></p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.remainingCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.remaining' | translate }}</span>
+            </p>
+        </div>
+        <div class="py-2 px-3 rounded-lg bg-grey50">
+            <p class="mb-2"><span class="inline-block w-6 h-2 bg-success200 rounded-full"></span></p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.noChargeCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.no_charge' | translate }}</span>
+            </p>
+        </div>
+        <div class="py-2 px-3 rounded-lg bg-grey50">
+            <p class="mb-2">
+                <span class="inline-block w-6 h-2 bg-success600 rounded-full me-1"></span>
+                <span class="inline-block w-6 h-2 bg-success400 rounded-full me-1"></span>
+                <span class="inline-block w-6 h-2 bg-success200 rounded-full"></span>
+                <span class="inline-block w-6 h-2 bg-grey200 rounded-full"></span>
+            </p>
+            <p>
+                <span class="text-textSecondary text-lg font-bold me-2">{{ timesheetCounts.plannedThisMonthCount
+                    }}</span>
+                <span class="text-grey500 text-xs">{{ 'dashboard.planned_this_month' | translate }}</span>
+            </p>
+        </div>
+    </div>
+    }
+</div>

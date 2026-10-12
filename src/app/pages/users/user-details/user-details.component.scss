@@ -1,0 +1,13 @@
+ ::ng-deep  {
+    .p-tabmenu {
+        &-nav {
+            @apply px-2 rounded-lg;
+        }
+        .p-menuitem-link {
+            &-active {
+                @apply text-blue600 border-blue600;
+            }
+            @apply py-3  font-medium text-sm hover:text-blue600 hover:border-blue600;
+        }
+    }
+}

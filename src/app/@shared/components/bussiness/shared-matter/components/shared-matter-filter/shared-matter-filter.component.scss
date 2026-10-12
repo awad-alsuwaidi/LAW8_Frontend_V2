@@ -1,0 +1,14 @@
+::ng-deep{
+    .p-dialog .p-dialog-content{
+        @apply p-0
+    }
+    .p-chip{
+        @apply bg-white border border-grey200 rounded-full ;
+        &-text{
+            @apply text-xs
+        }
+        svg{
+            @apply text-grey500 rounded-full text-2xl bg-[#bbbdc1]
+        }
+    }
+}

@@ -1,0 +1,51 @@
+<!-- Header -->
+<div class="flex justify-between p-2 rounded-t-lg h-14 mb-5">
+  <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
+    {{
+      _languageService.getSelectedLanguage() == 'en'
+        ? category?.nameEn
+        : category?.nameAr
+    }}
+  </h1>
+  <div class="flex gap-2">
+    <app-shared-button
+      [label]="'lookups.updateSubItem' | translate"
+      [requiredPermission]="'MatterCategories:canUpdate'"
+      [styleClass]="'bg-white text-primary border border-primary !text-sm !py-1 !font-medium !leading-8'"
+      (onClick)="openCategoryEditor()"
+    />
+  </div>
+</div>
+
+<!-- Table -->
+<div class="p-6 bg-white rounded-2xl">
+  <div class="flex justify-between mb-4">
+    <h3 class="text-lg font-bold text-grey500">{{ 'lookups.subList' | translate }}</h3>
+    <app-shared-button
+      [label]="'lookups.addSubItem' | translate"
+      [requiredPermission]="'MatterTypes:canUpdate'"
+      [styleClass]="'bg-primary text-white !px-4 !text-sm !py-1.5 !text-xs !font-medium !leading-4 h-8'"
+      (onClick)="openSubCategoryEditor()"
+    />
+  </div>
+
+  <app-shared-table
+    [data]="data"
+    [columns]="columns"
+    [statusConfig]="statusConfig"
+    [pagination]="pagination"
+    (onPageChange)="onPageChange($event)"
+    (onSort)="onSort($event)"
+  >
+    <ng-template #columnActions let-rowData>
+      <div class="flex gap-6">
+        <div class="cursor-pointer" (click)="openSubCategoryEditor(rowData)">
+          <i class="icon-edit text-grey500"></i>
+        </div>
+        <div class="cursor-pointer" (click)="onDelete(rowData)">
+          <i class="icon-trash text-base text-grey500"></i>
+        </div>
+      </div>
+    </ng-template>
+  </app-shared-table>
+</div>

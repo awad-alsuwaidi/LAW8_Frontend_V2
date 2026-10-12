@@ -1,0 +1,18 @@
+::ng-deep {
+    .p-dialog .p-dialog-content {
+        @apply p-0
+    }
+
+    p-skeleton:first-child,
+    p-skeleton:last-child {
+        .p-skeleton {
+            @apply h-28 #{!important};
+        }
+        @apply col-span-3 ;
+    }
+    
+
+    p-skeleton:nth-child(3) {
+        @apply col-span-2;
+    }
+}

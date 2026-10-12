@@ -1,0 +1,109 @@
+@if (isLoading) {
+  <div class="bg-white rounded-2xl p-6 grid grid-cols-3">
+    <div class="col-span-2">
+      <app-shared-skeleton-grid
+        [styleClass]="'grid grid-cols-2 gap-6 p-4'"
+        [size]="4"
+      />
+    </div>
+  </div>
+} @else {
+  <section>
+    <h1 class="text-2xl font-bold text-colorsTextTextPrimary mb-4">
+      @switch (true) {
+        @case (_router.url.includes("add")) {
+          Create Task Groups
+        }
+        @case (_router.url.includes("update")) {
+          Update Task Groups
+        }
+        @default {
+          ViewTask Groups
+        }
+      }
+    </h1>
+    <div class="mb-4">
+      <app-shared-breadcrumb />
+    </div>
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+      <div class="bg-white rounded-2xl p-6">
+        <formly-form
+          [fields]="formlyFields"
+          [model]="formlyModel"
+          [options]="formlyOptions"
+        />
+        <div class="grid gap-4 md:grid-cols-3">
+          <div class="col-span-2">
+            <h6 class="text-sm text-grey500 font-medium mt-3 my-2">
+              Tasks added
+            </h6>
+            <!-- @for (item of formlyModel.tasksID; track $index) {
+                        <div class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg">
+                            <p class="text-sm text-textSecondary font-medium">{{item?.label}}</p>
+                            @if(!_router.url.includes('view')){
+                                <span class="cursor-pointer icon-trash text-grey500" (click)="deleteTask(item)"></span>
+                            }@else {
+                                <span class="cursor-pointer icon-chevron-down text-grey500 -rotate-90" [routerLink]="['/lookups/predefined-tasks/view/',item.value]"></span>
+                            }
+                            
+                        </div>
+                    } -->
+
+            @for (item of formlyModel.taskIds; track $index) {
+              <div
+                class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg"
+              >
+                <p class="text-sm text-textSecondary font-medium">
+                  {{ getTaskLabel(item) }}
+                </p>
+                @if (!_router.url.includes("view")) {
+                  <span
+                    class="cursor-pointer icon-trash text-grey500"
+                    (click)="deleteTask(item)"
+                  ></span>
+                } @else {
+                  <span
+                    class="cursor-pointer icon-chevron-down text-grey500 -rotate-90"
+                    [routerLink]="[
+                      '/lookups/predefined-tasks/view/',
+                      getIdValue(item),
+                    ]"
+                  ></span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-4 mt-4">
+        <app-shared-button
+          styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+          [label]="'common.cancel' | translate"
+          (onClick)="_router.navigate(['/lookups/task-groups'])"
+        />
+        @if (formlyOptions.formState.readonly) {
+          <app-shared-button
+            styleClass="text-primary border border-primary px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.edit' | translate"
+            [btnType]="'button'"
+            (onClick)="onEdit()"
+          />
+        } @else if (!_router.url.includes("view")) {
+          <app-shared-button
+            styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.save' | translate"
+            [btnType]="'submit'"
+            [isLoading]="isSubmitted"
+          />
+        } @else {
+          <app-shared-button
+            styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.update' | translate"
+            [btnType]="'submit'"
+            [isLoading]="isSubmitted"
+          />
+        }
+      </div>
+    </form>
+  </section>
+}

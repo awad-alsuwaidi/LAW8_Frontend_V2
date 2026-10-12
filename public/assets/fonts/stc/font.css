@@ -1,0 +1,10 @@
+
+/* stc-forward-regular */
+@font-face {
+  font-display: swap;
+  font-family: 'STC';
+  font-style: normal;
+  font-weight: 400;
+  src:
+       url('./STC-Forward-Regular.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
+}

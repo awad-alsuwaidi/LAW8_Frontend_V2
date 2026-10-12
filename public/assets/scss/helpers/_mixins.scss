@@ -1,0 +1,50 @@
+@mixin bg-opacity($color, $opacity) {
+    background: $color;
+    background: rgba($color, $opacity);
+}
+
+
+// Define your custom breakpoints
+$breakpoints: (
+    xs: 0,
+    sm: 576px,
+    md: 768px,
+    lg: 992px,
+    xl: 1200px,
+    xxl: 1400px
+);
+
+// Mixin for min-width (up)
+@mixin media-breakpoint-up($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @error "No breakpoint found for '#{$breakpoint}'";
+  }
+}
+
+// Mixin for max-width (down)
+@mixin media-breakpoint-down($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (max-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @error "No breakpoint found for '#{$breakpoint}'";
+  }
+}
+
+// Mixin for range (between two breakpoints)
+@mixin media-breakpoint-between($start, $end) {
+  @if map-has-key($breakpoints, $start) and map-has-key($breakpoints, $end) {
+    @media (min-width: map-get($breakpoints, $start)) and (max-width: map-get($breakpoints, $end)) {
+      @content;
+    }
+  } @else {
+    @error "One or both breakpoints not found for '#{$start}' and '#{$end}'";
+  }
+}
+
+

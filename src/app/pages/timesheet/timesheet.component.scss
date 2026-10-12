@@ -1,0 +1,60 @@
+:host ::ng-deep {
+  table {
+    @apply border-separate border-spacing-y-2;
+
+    tr {
+      @apply bg-grey50 mb-2 rounded-2xl;
+
+      th {
+        @apply border-0 text-start align-middle;
+      }
+
+      td {
+        @apply text-sm text-textSecondary border-0 text-start align-middle;
+
+        &:first-child {
+          @apply border-s border-grey100 rounded-s-lg;
+        }
+
+        &:last-child {
+          @apply border-e border-grey100 rounded-e-lg;
+        }
+      }
+    }
+  }
+}
+
+
+::ng-deep .p-datatable th,
+::ng-deep .p-datatable td {
+  text-align: center !important;
+}
+::ng-deep td:nth-child(5) {
+  text-align: left !important;   
+  max-width: 400px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+::ng-deep .p-datatable tbody tr:hover {
+  background-color: #eff6ff;
+  transition: 0.2s;
+}
+
+:host ::ng-deep .timesheet .gap-2 {
+  gap: 0px !important;
+}
+
+::ng-deep td:nth-last-child(2) {
+  text-align: center !important;     
+  vertical-align: middle !important; 
+}
+
+::ng-deep .p-datatable tbody tr {
+  align-items: stretch;
+}
+
+:host ::ng-deep .timesheet .px-4 {
+  padding-left: 0rem !important;
+  padding-right: 1rem !important;
+}

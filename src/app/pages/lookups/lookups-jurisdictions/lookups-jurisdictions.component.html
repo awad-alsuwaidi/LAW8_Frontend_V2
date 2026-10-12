@@ -1,0 +1,69 @@
+@if(data.length === 0 && !searchText){
+
+<app-shared-empty-section [emptyConfig]="emptyConfig" />
+}@else{
+<div class="grid grid-cols-6 gap-4">
+  <div class="col-span-2">
+    <div class="flex justify-between p-2 rounded-t-lg bg-white h-14">
+      <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
+        {{'lookups.jurisdictions'| translate}}
+      </h1>
+      <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [requiredPermission]="'Add_Jurisdiction'"
+        [label]="'lookups.newJurisdictions' | translate" [styleClass]="
+            'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'
+          " (onClick)="openJurisdictionEditor()" />
+    </div>
+    <div class="my-2">
+      <app-shared-search (searchValueChange)="searchValueChange($event)" />
+    </div>
+    @if(isLoading){
+    <div class="space-y-4 animate-pulse">
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+      <div class="h-12 bg-gray-200 rounded"></div>
+    </div>
+    }
+    @else {
+    <div class="flex flex-col gap-2">
+      @for(jurisdiction of data; track jurisdiction.id){
+      <a href="javascript:void(0)" (click)="openSubJurisdiction(jurisdiction)"
+        [class.active]="jurisdiction.id === _lookupsJurisdictionsService.getLookupJurisdictionDetails()?.id"
+        class="flex bg-grey50 justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer hover:bg-white relative before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out hover:before:h-4/6 hover:before:w-1">
+        <div class="flex justify-between gap-2">
+          <div>
+            <h1 class="font-bold text-sm text-textSecondary mb-2 transition-colors duration-300 ease-in-out">
+              {{ jurisdiction.nameEn }}
+            </h1>
+            <p class="font-medium text-grey500 text-xs">
+              {{ jurisdiction.nameAr }}
+            </p>
+          </div>
+        </div>
+        <div>
+          <p
+            class="font-bold text-xs text-colorsTextTextPrimary mb-2 transition-colors duration-300 ease-in-out text-end">
+            <app-shared-status [statusConfig]="statusConfig" [data]="jurisdiction.isActive"
+              [label]="(jurisdiction.isActive?'common.active':'common.inactive')|translate" />
+          </p>
+        </div>
+      </a>
+      }
+      <p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)" [first]="0" [rows]="10" pageLinkSize="3"
+        [totalRecords]="totalCount" [showCurrentPageReport]="true" currentPageReportTemplate="Total {totalRecords}" />
+    </div>
+    }
+  </div>
+  <div class="col-span-4">
+    <router-outlet />
+  </div>
+</div>
+}

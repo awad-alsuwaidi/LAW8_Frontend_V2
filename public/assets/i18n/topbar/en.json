@@ -1,0 +1,22 @@
+{
+    "topBar": {
+        "advancedSearch": "Advanced Search",
+        "search": "Search",
+        "welcome": "Welcome,",
+        "yourProfile": "Your Profile",
+        "settings": "Settings",
+        "logOut": "Logout",
+        "editMyProfile": "Edit My Profile",
+        "managerDashboard":"Manager",
+        "corporateDashboard":"Corporate",
+        "litigationDashboard":"Litigation",
+        "dashboard":"Dashboard",
+        "result": "Result",
+        "tryAdvancedSearch": "Try Advanced Search",
+        "seeAllNotifications": "See All Notifications",
+        "markAllAsRead": "Mark all as read",
+        "notifications": "Notifications",
+        "markAllAsReadmessage": "All notifications marked as read successfully"
+
+    }
+}

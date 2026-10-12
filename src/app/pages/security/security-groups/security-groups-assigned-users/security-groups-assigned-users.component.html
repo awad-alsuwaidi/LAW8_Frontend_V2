@@ -1,0 +1,55 @@
+<div class="flex justify-between  mb-4 items-center">
+    <div class="custom-breadcrumb">
+
+            <p-breadcrumb class="max-w-full" [model]="breadcrumbItems" />
+        </div>
+             @if(hasPermission('Assign_Security_Groups')){
+    <app-shared-button [label]="'Assign users' | translate"
+        [styleClass]="'bg-white border border-blue600 text-blue600 !text-sm !py-3 !px-8 !font-medium !leading-3 h-10'"
+        (onClick)="openAssignUsersEditor()" />}
+</div>
+<section class='bg-white rounded-2xl px-6'>
+
+    <div class="flex justify-between pt-6">
+
+        <h2 class="font-bold text-grey500 text-lg ">{{ 'Assigned users' | translate }}</h2>
+
+    </div>
+
+    <app-shared-table [columns]="columns" [data]="data" [pagination]="pagination" (onPageChange)="onPageChange($event)"
+        (onSort)="onSort($event)">
+        <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+            @for (item of rowData.assignedGroups; track $index) {
+            @if($index<=6){ <span
+                class="inline-block text-[11px] font-medium text-textTertairy mb-1 px-2 py-0.5 bg-grey200 rounded-full h-6"
+                [class]="!$last?'me-3':''">{{item}}</span>
+                }
+
+                }
+                @if(rowData.assignedGroups?.length>6){
+
+                <span
+                    class="inline-block text-[11px] font-medium text-textTertairy mb-1 px-2 py-0.5 bg-grey200 rounded-full cursor-pointer h-6">
+                    + {{rowData.assignedGroups?.length-6}}</span>
+                }
+        </ng-template>
+                     @if(hasPermission('UnAssign_Security_Groups')){
+        <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+            <div class="font-medium text-sm text-textSecondary rounded-e-lg">
+                <div class="flex gap-6">
+                    <div class="cursor-pointer" (click)="onDelete(rowData)">
+                        <i class="icon-trash text-base text-grey500"></i>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    }
+    </app-shared-table>
+</section>
+
+<div class="flex justify-end gap-4 mt-4">
+    <app-shared-button
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'Back'|translate" [routerLink]="['../../']" [relativeTo]="_route" />
+   
+</div>

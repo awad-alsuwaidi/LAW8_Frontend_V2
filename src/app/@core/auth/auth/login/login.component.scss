@@ -1,0 +1,22 @@
+::ng-deep .p-checkbox .p-checkbox-box {
+  width: 20px;       
+  height: 20px;
+  border-radius: 50%;  
+  border: 2px solid #007bff;
+  padding: 8px;
+}
+
+::ng-deep .p-checkbox .p-checkbox-box.p-highlight {
+  background-color: #007bff; 
+  border-color: #007bff;
+}
+
+::ng-deep .p-checkbox .p-checkbox-box.p-highlight::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff; 
+}

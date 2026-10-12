@@ -1,0 +1,7 @@
+::ng-deep{
+    .p-menuitem{
+        &-text{
+            @apply text-sm font-medium
+        }
+    }
+}

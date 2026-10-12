@@ -1,0 +1,42 @@
+<div class="grid grid-cols-1 md:grid-cols-2 min-h-screen">
+
+  <!-- Left Column: Login / OTP -->
+  <div class="bg-white flex flex-col">
+    <div class="px-4 sm:px-16 py-4 flex justify-between items-center">
+      <img [src]="logoPath || defaultLogoPath" [alt]="'Law8 Logo'" class="w-[120px] sm:w-[150px] h-12 object-contain"
+        (error)="onImageError($event)" />
+    </div>
+
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-0">
+      <div class="w-full sm:w-3/5">
+        <router-outlet />
+      </div>
+    </div>
+  </div>
+
+  <!-- طه طااهااا -->
+
+  <!-- Right Column: Illustration / Text -->
+  <div class="hidden md:flex bg-gradient-to-b from-primary to-yaleBlue flex-col">
+    <div class="px-4 sm:px-16 py-4 flex justify-end items-center gap-4 sm:gap-10">
+      <span class="text-sm text-white cursor-pointer">{{ "auth.help" | translate }}</span>
+      <!-- <shared-language [darkMode]="true"/> -->
+      <shared-language/>
+    </div>
+
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-0">
+      <div class="text-center w-full sm:w-3/5">
+        <div class="mb-8 sm:mb-12">
+          <img src="../../../../../assets/images/textlogo.svg" alt="" class="w-full max-w-xs mx-auto" />
+        </div>
+        <h1 class="font-bold text-white text-2xl sm:text-4xl mb-4 sm:mb-6">
+          {{ "auth.allInOneApplication" | translate }}
+        </h1>
+        <p class="text-white text-base sm:text-lg">
+          {{ "auth.authDescription" | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>

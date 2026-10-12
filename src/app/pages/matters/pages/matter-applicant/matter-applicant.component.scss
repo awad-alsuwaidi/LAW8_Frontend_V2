@@ -1,0 +1,17 @@
+::ng-deep{
+    .p-menu-overlay{
+        @apply rounded-2xl
+    }
+    .empty{
+        &-title{
+            @apply bg-transparent
+        }
+        &-body{
+            
+            img{
+                @apply w-60
+            }
+            @apply min-h-[calc(40vh)];
+        }
+    }
+}

@@ -1,0 +1,20 @@
+<section class="text-center rounded-md">
+  <div class="mb-8">
+    <i class=" text-[6rem]"
+      [ngClass]="{'icon-success-circle text-successBase500':_dynamicDialogConfig.data.type==ConfirmDialogType.Success,'icon-forbidden text-textErrorBase':_dynamicDialogConfig.data.type==ConfirmDialogType.Danger,'icon-help text-primary':_dynamicDialogConfig.data.type==ConfirmDialogType.Question}"></i>
+  </div>
+  @if(_dynamicDialogConfig.data.title){
+  <h3 class="text-2xl text-textConfirmTitle font-bold mb-4">{{_dynamicDialogConfig.data.title}}</h3>
+  }
+  <p class="text-textTertairy text-lg	mb-10">{{_dynamicDialogConfig.data.message}}</p>
+  <div class="flex justify-between gap-4">
+    @for (btn of _dynamicDialogConfig.data.btns; track btn) {
+    <div [class]="_dynamicDialogConfig.data.btns.length==2?'w-full':''">
+      <app-shared-button [label]="btn.label" [styleClass]="btn.styleClass" [requiredPermission]="btn.requiredPermission"
+        (onClick)="btn.command();" />
+    </div>
+    }
+  </div>
+
+
+</section>

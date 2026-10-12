@@ -1,0 +1,29 @@
+::ng-deep{
+    .p-dialog-content{
+        @apply bg-grey100
+    }
+
+}
+:host ::ng-deep{
+    app-formly-switch-field{
+        @apply flex gap-4 flex-row-reverse justify-end;
+        label{
+            @apply text-lg font-bold text-grey500
+        }
+        .p-inputswitch.p-inputswitch-checked:not(.p-disabled):hover .p-inputswitch-slider,
+        .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider{
+            @apply bg-successBase500
+        }
+    }
+}
+::ng-deep .p-dropdown-panel {
+  min-width: max-content !important;
+}
+
+::ng-deep .p-dropdown-items-wrapper {
+  overflow-x: auto !important;
+}
+
+::ng-deep .p-virtualscroller-content {
+  min-width: max-content !important;
+}

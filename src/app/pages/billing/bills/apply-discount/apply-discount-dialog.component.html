@@ -1,0 +1,75 @@
+<div class="p-6 space-y-6">
+
+  <h2 class="text-xl font-semibold">Bill Summary</h2>
+
+  <div class="grid grid-cols-2 gap-6 bg-gray-50 p-5 rounded-lg border">
+
+    <div>
+      <p class="text-gray-500 text-sm">Total Fees:</p>
+      <p class="font-bold text-gray-700">
+        {{ bill.totalFees ?? 0 }}
+      </p>
+    </div>
+
+    <div>
+      <p class="text-gray-500 text-sm">Total Expenses:</p>
+      <p class="font-bold text-gray-700">
+        {{ bill.totalExpenses ?? 0 }}
+      </p>
+    </div>
+
+    <div>
+      <p class="text-gray-500 text-sm">Grand Total:</p>
+      <p class="font-bold text-gray-700">
+        {{ bill.grandTotal ?? 0 }}
+      </p>
+    </div>
+
+    <div>
+      <p class="text-gray-500 text-sm">Total Hours:</p>
+      <p class="font-bold text-gray-700">
+        {{ bill.totalHours ?? 0 }}
+      </p>
+    </div>
+
+    <div>
+      <p class="text-gray-500 text-sm">Total Amount (Fees):</p>
+      <p class="font-bold text-gray-700">
+        {{ bill.totalAmount ?? 0 }}
+      </p>
+    </div>
+  </div>
+  <h3 class="font-semibold text-lg pt-4">Apply Discount</h3>
+
+  <div class="space-y-4">
+    <div>
+      <label class="block text-sm mb-1 font-medium">Discount %</label>
+      <input type="number"
+             class="w-full border rounded p-2"
+             [(ngModel)]="model.discountPercent"
+             (input)="onPercentChange()">
+    </div>
+    <div>
+      <label class="block text-sm mb-1 font-medium">Discount Value</label>
+      <input type="number"
+             class="w-full border rounded p-2"
+             [(ngModel)]="model.discountValue"
+             (input)="onValueChange()">
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-4">
+    <button
+      class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100"
+      (click)="ref.close()">
+      Cancel
+    </button>
+
+    <button
+      class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+      (click)="save()">
+      Apply
+    </button>
+  </div>
+
+</div>

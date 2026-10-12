@@ -1,0 +1,71 @@
+:host ::ng-deep {
+    .fc-button-primary {
+        @apply bg-white text-textSecondary border-grey200 #{!important}
+    }
+
+    .fc-button-active {
+        @apply bg-primary border-primary text-white #{!important};
+    }
+    .fc-button-group{
+        button{
+
+            &:first-child{
+                @apply rounded-s-lg;
+            }
+            &:last-child{
+                @apply rounded-e-lg;
+            }
+        }
+    }
+
+    .fc .fc-button:focus{
+       box-shadow: none !important;
+    }
+}
+
+  
+// :host ::ng-deep .fc-today-button {
+//     @apply bg-grey400 p-3 gap-4 m-1 text-white rounded-[8px] #{!important}
+//   }
+  :host ::ng-deep .fc-today-button {
+    @apply flex w-[60px] p-2 justify-center items-center gap-2 ml-1 mr-1 self-stretch rounded-lg bg-grey400 text-white #{!important};
+  }
+  
+
+:host ::ng-deep .fc-next-button,
+:host ::ng-deep .fc-prev-button {
+  display: flex;
+  padding: 8px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--Grey-200, #E9EAEB);
+  background: var(--Surface-Level-1, #FFF);
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+:host ::ng-deep 
+.fc-dayGridMonth-button,
+:host ::ng-deep 
+.fc-timeGridWeek-button,
+:host ::ng-deep 
+.fc-timeGridDay-button,
+:host ::ng-deep 
+.fc-listWeek-button {
+  @apply flex w-[80px] 
+   justify-center items-center gap-2 self-stretch;
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+
+//   :host ::ng-deep .fc-col-header-cell.fc-day {
+//     @apply bg-grey400 text-xs font-bold text-center #{!important};;
+//   }
+  
+  :host ::ng-deep .fc-col-header-cell.fc-day {
+    @apply text-xs font-bold text-center  items-center self-stretch rounded-lg px-0 py-2 bg-grey50;
+  }
+  
+  :host ::ng-deep thead[role="presentation"] {
+    @apply rounded-lg #{!important};;
+  }
+  

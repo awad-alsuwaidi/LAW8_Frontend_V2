@@ -1,0 +1,15 @@
+:host ::ng-deep {
+    .p-field {
+        @apply mb-0 h-9 bg-white rounded-e-lg;
+
+        .input-field {
+            @apply h-9
+        }
+    }
+    .withbtn {
+        .input-field {
+           @apply rounded-e-none #{!important}
+        }
+        
+    }
+}

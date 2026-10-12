@@ -1,0 +1,17 @@
+::ng-deep {
+    .p-accordion .p-accordion-content {
+        @apply bg-white;
+    }
+
+    .p-accordion-header-link {
+        @apply flex w-full justify-between flex-row-reverse bg-bgColor
+    }
+
+    .p-accordion-header-link, .p-accordion-content {
+        @apply px-4 py-2
+    }
+
+    .p-checkbox .p-checkbox-box {
+        @apply size-5
+    }
+}

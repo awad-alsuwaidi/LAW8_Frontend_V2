@@ -1,0 +1,43 @@
+import { MatterAddressDto } from "./matter-address.interface";
+import { MatterApplicantDto } from "./matter-applicant.interface";
+import { MatterPartyDto } from "./matter-party.interface";
+
+export interface MatterCreateDto {
+    id?: number;
+    requestTypeId?: number;
+    clientId?: number;
+    parentMatterId?: number;
+    mtrTypeId?: number;
+    practsAreaId?: number;
+    stageId?: number;
+    jurisdictionId?: number;
+    judicatureId?: number;
+    statusId?: number;
+    law_TaskCodeId?: number;
+    law_MtrCatId?: number;
+    mtrNo?: string;
+    courtNumber?: string;
+    descr?: string;
+    notes?: string;
+    openDate?: string;
+    defaultTaskTypeId?: number;
+    rateAmount?: number;
+    defaultRate?: string;
+    law_ReferralTypeId?: number;
+    law_ClientIntroducingId?: string;
+    law_MatterIntroducingLawyerId?: string;
+    law_ResponsibleLaywerId?: string;
+    wordMark?: string;
+    isCaseSensitive?: boolean;
+    tradmarkTypeId?: number;
+    law_InstructorId?: number;
+    law_BranchId?: number;
+    law_AssignedLaywerList?: string[];
+    law_OtherStaffList?: string[];
+    law_MatterParties?: MatterPartyDto[];
+    law_MatterAddresses?: MatterAddressDto[];
+    law_MatterContactss?: any[];
+    law_MatterClass?: MatterCreateDto[];
+    law_MatterApplicants?: MatterApplicantDto[];
+      isLitigation?: boolean; 
+}

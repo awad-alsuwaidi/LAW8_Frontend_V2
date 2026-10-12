@@ -1,0 +1,67 @@
+<div class="flex justify-between gap-6 items-start">
+  @if (showLabel()) {
+    <div class="flex flex-col gap-2 flex-1 min-w-0">
+      @for (item of chartData(); track $index) {
+        <div class="flex gap-2 items-start">
+          <span
+            class="inline-block size-3 rounded-full shrink-0 mt-1" style="top: 5px; position: relative;"
+            [style.backgroundColor]="'var(' + item.bgColor + ')'">
+          </span>
+
+          <div class="flex-1 min-w-0 py-1">
+<!-- <div class="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+<span class="text-textSecondary font-bold text-sm">
+  {{ item.value }}
+</span>
+              <span
+                class="text-grey500 text-xs font-medium cursor-pointer truncate"
+                (click)="getSideBarData(item)">
+                {{ item.label | translate }}
+              </span>
+
+              <span
+                class="icon-chevron-top rotate-90 rtl:-rotate-90 text-grey500 cursor-pointer shrink-0"
+                (click)="getSideBarData(item)">
+              </span>
+            </div> -->
+
+            <div class="flex items-center gap-2 w-full">
+  
+  <span class="text-textSecondary font-bold text-sm shrink-0">
+    {{ item.value }}
+  </span>
+  <div class="flex items-center gap-1 flex-1 min-w-0 cursor-pointer"
+       (click)="getSideBarData(item)">
+
+    <span class="text-grey500 text-xs font-medium truncate">
+      {{ item.label | translate }}
+    </span>
+
+    <span
+      class="icon-chevron-top rotate-90 rtl:-rotate-90 text-grey500 shrink-0">
+    </span>
+
+  </div>
+
+</div>
+      @if (item.showLast30Days) {
+  <span class="block text-[10px] text-grey400 leading-3 mt-1">
+    {{ getPeriodLabelKey() | translate }}
+  </span>
+}
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="shrink-0 chart-wrapper">
+    <p-chart
+      [type]="type()"
+      [data]="data"
+      [options]="options"
+      [width]="width()"
+      [height]="height()"
+    />
+  </div>
+</div>

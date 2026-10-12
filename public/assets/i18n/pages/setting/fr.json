@@ -1,0 +1,13 @@
+{
+  "setting": {
+    "accountSystemIntegration": "Account System Integration",
+    "sapAccountingSystem": "SAP Accounting System",
+    "serverName": "Server Name",
+    "databaseName": "Database Name",
+    "taxes": "Taxes",
+    "fees": "Fees",
+    "disbursements": "Disbursements",
+    "systemCurrency":"System Currency",
+    "defaultCurrency":"Default Currency"
+  }
+}

@@ -1,0 +1,43 @@
+{
+    "users": {
+        "Code": "الكود",
+        "User": "المستخدم",
+        "Mobiles": "أرقام الجوال",
+        "Position": "المنصب",
+        "Activation": "التفعيل",
+        "newUser": "مستخدم جديد",
+        "users": "المستخدمين",
+        "Activate": "تفعيل",
+        "Deactivate": "إلغاء التفعيل",
+        "Locked": "مغلق",
+        "UnLocked": "مفتوح",
+        "confirmActivateMessage": "هل أنت متأكد أنك تريد تفعيل هذا المستخدم؟",
+        "confirmDeactivateMessage": "هل أنت متأكد أنك تريد إلغاء تفعيل هذا المستخدم؟",
+        "confirmLockMessage": "هل أنت متأكد أنك تريد قفل هذا المستخدم؟",
+        "confirmUnlockMessage": "هل أنت متأكد أنك تريد فتح قفل هذا المستخدم؟",
+        "ResetPassword": "إعادة تعيين كلمة المرور",
+        "Details": "التفاصيل",
+        "RateTable": "جدول الأسعار",
+        "Personal": "المعلومات  الشخصية",
+        "phone": "الهاتف",
+        "mobileNumber": " الجوال ",
+        "Unlocked": "غير مقفل",
+        "ConfirmLock": "هل أنت متأكد أنك تريد قفل هذا المستخدم؟",
+        "ConfirmUnlock": "هل أنت متأكد أنك تريد فك قفل هذا المستخدم؟",
+        "Cancel": "إلغاء",
+        "goal": "عدد الساعات المستهدفة",
+        "rate": "الاختصار",
+        "rateName": "الاسم",
+        "amount": "القيمة",
+        "AddUser": "إضافة مستخدم",
+        "UpdateUser": "تعديل مستخدم",
+        "ext":"رقم التليفون الداخلي",
+        "address":"العنوان ",
+        "titleuser":"اللقب",
+        "defaultRate":"النسبة الافتراضية للمستخدم",
+
+  "deleteUserTitle": "Remove {{value}}?",
+  "deleteUserMessage": "Are you sure you want to remove this user from the role?"
+
+    }
+}

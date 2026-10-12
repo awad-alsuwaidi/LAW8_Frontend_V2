@@ -1,0 +1,205 @@
+<section>
+  @if (routeData?.title) {
+    <div class="flex justify-between items-center mb-2">
+      <h1 class="text-colorsTextTextPrimary font-bold text-2xl">
+        {{ routeData?.title | translate }}
+      </h1>
+    </div>
+  }
+  <div class="bg-white rounded-2xl">
+    <div class="py-4">
+      <app-shared-matter-filter (onFilter)="onFilter($event)" />
+    </div>
+    @if (_router.url.includes("timesheet")) {
+      <div
+        class="flex justify-start gap-6 mb-4 border-b border-gray-200 pb-2 px-6"
+      >
+        <button
+          class="pb-2 text-sm font-semibold transition-all duration-200"
+          [ngClass]="{
+            'text-primary border-b-2 border-primary': activeTab === 'all',
+            'text-gray-700 hover:text-primary': activeTab !== 'all',
+          }"
+          (click)="loadAll()"
+          [disabled]="isLoading"
+        >
+          📂 {{ "timesheet.allmatter" | translate }}
+        </button>
+
+        <button
+          class="pb-2 text-sm font-semibold transition-all duration-200"
+          [ngClass]="{
+            'text-primary border-b-2 border-primary': activeTab === 'favorites',
+            'text-gray-700 hover:text-primary': activeTab !== 'favorites',
+          }"
+          (click)="loadFavorites()"
+          [disabled]="isLoading"
+        >
+          ⭐ {{ "timesheet.favorites" | translate }}
+        </button>
+      </div>
+    }
+
+    @if (isLoading) {
+      <div class="animate-pulse space-y-4 p-4">
+        <div
+          *ngFor="let i of [1, 2, 3, 4, 5]"
+          class="flex gap-4 items-center bg-white p-3 rounded-lg shadow-sm"
+        >
+          <div class="h-8 w-8 bg-gray-200 rounded"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 w-32 bg-gray-200 rounded"></div>
+            <div class="h-3 w-48 bg-gray-200 rounded"></div>
+          </div>
+
+          <div class="h-4 w-16 bg-gray-200 rounded"></div>
+          <div class="h-4 w-16 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    } @else {
+      <app-shared-table
+        [columns]="columns"
+        [data]="data"
+        [pagination]="pagination"
+        [first]="first"
+        (onPageChange)="onPageChange($event)"
+        [selectionMode]="routeData?.selectionMode"
+        [searchValue]="searchValue"
+        (onRowSelectChange)="onRowSelectChange($event)"
+        (onSort)="onSort($event)"
+        [isLoading]="isLoading"
+        [isTimesheet]="_router.url.includes('timesheet')"
+      >
+        <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+          <div class="flex gap-4">
+            <img
+              src="assets/images/icons/open-folder.svg"
+              [style.cursor]="
+                _router.url.includes('timesheet') ? 'default' : 'pointer'
+              "
+              (click)="
+                !_router.url.includes('timesheet') && openInNewTab(rowData.id)
+              "
+            />
+            <div class="grow self-center">
+              <span
+                class="text-xs text-primary font-medium me-4"
+                [style.cursor]="
+                  _router.url.includes('timesheet') ? 'default' : 'pointer'
+                "
+                (click)="
+                  !_router.url.includes('timesheet') && openInNewTab(rowData.id)
+                "
+                [innerHTML]="rowData.mtrNo | highlight: searchValue"
+              >
+                <!-- {{rowData.mtrNo}} -->
+              </span>
+              <app-shared-status
+                [label]="rowData.law_AppStatus"
+                [data]="rowData.statusId"
+                [statusConfig]="statusConfig"
+              />
+              <app-shared-status
+                *ngIf="rowData.stage"
+                class="ms-2"
+                [label]="rowData.stage"
+                [data]="rowData.stage"
+                [statusConfig]="stageConfig"
+              />
+              <p
+                class="text-xs text-textSecondary font-medium truncate w-60"
+                [pTooltip]="rowData.descr"
+                tooltipPosition="top"
+                [innerHTML]="rowData.descr | highlight: searchValue"
+              >
+                <!-- {{rowData.descr}} -->
+              </p>
+            </div>
+          </div>
+        </ng-template>
+        @if (!this._router.url.includes("timesheet")) {
+          <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+            <div class="flex gap-4">
+              <div
+                class="cursor-pointer"
+                (click)="openInNewTab(rowData.id)"
+                title="View Details"
+                [requiredPermission]="'View_Matter'"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M15.5799 12.0002C15.5799 13.9802 13.9799 15.5802 11.9999 15.5802C10.0199 15.5802 8.41992 13.9802 8.41992 12.0002C8.41992 10.0202 10.0199 8.42017 11.9999 8.42017C13.9799 8.42017 15.5799 10.0202 15.5799 12.0002Z"
+                    stroke="#A4A7AE"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M11.9998 20.2701C15.5298 20.2701 18.8198 18.1901 21.1098 14.5901C22.0098 13.1801 22.0098 10.8101 21.1098 9.40009C18.8198 5.80009 15.5298 3.72009 11.9998 3.72009C8.46984 3.72009 5.17984 5.80009 2.88984 9.40009C1.98984 10.8101 1.98984 13.1801 2.88984 14.5901C5.17984 18.1901 8.46984 20.2701 11.9998 20.2701Z"
+                    stroke="#A4A7AE"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+
+              @if (
+                !_router.url.includes("related-matters") &&
+                !_router.url.includes("inactive")
+              ) {
+                <div
+                  class="cursor-pointer"
+                  (click)="toggleFavourite(rowData)"
+                  title="Add to Favourite"
+                >
+                  @if (rowData.isImportent) {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M13.7309 3.51014L15.4909 7.03014C15.7309 7.52014 16.3709 7.99014 16.9109 8.08014L20.1009 8.61014C22.1409 8.95014 22.6209 10.4301 21.1509 11.8901L18.6709 14.3701C18.2509 14.7901 18.0209 15.6001 18.1509 16.1801L18.8609 19.2501C19.4209 21.6801 18.1309 22.6201 15.9809 21.3501L12.9909 19.5801C12.4509 19.2601 11.5609 19.2601 11.0109 19.5801L8.02089 21.3501C5.88089 22.6201 4.58089 21.6701 5.14089 19.2501L5.85089 16.1801C5.98089 15.6001 5.75089 14.7901 5.33089 14.3701L2.85089 11.8901C1.39089 10.4301 1.86089 8.95014 3.90089 8.61014L7.09089 8.08014C7.62089 7.99014 8.26089 7.52014 8.50089 7.03014L10.2609 3.51014C11.2209 1.60014 12.7809 1.60014 13.7309 3.51014Z"
+                        fill="#FEC84B"
+                        stroke="#FEC84B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  } @else {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M13.7309 3.51014L15.4909 7.03014C15.7309 7.52014 16.3709 7.99014 16.9109 8.08014L20.1009 8.61014C22.1409 8.95014 22.6209 10.4301 21.1509 11.8901L18.6709 14.3701C18.2509 14.7901 18.0209 15.6001 18.1509 16.1801L18.8609 19.2501C19.4209 21.6801 18.1309 22.6201 15.9809 21.3501L12.9909 19.5801C12.4509 19.2601 11.5609 19.2601 11.0109 19.5801L8.02089 21.3501C5.88089 22.6201 4.58089 21.6701 5.14089 19.2501L5.85089 16.1801C5.98089 15.6001 5.75089 14.7901 5.33089 14.3701L2.85089 11.8901C1.39089 10.4301 1.86089 8.95014 3.90089 8.61014L7.09089 8.08014C7.62089 7.99014 8.26089 7.52014 8.50089 7.03014L10.2609 3.51014C11.2209 1.60014 12.7809 1.60014 13.7309 3.51014Z"
+                        fill="#FDFDFD"
+                        stroke="#A4A7AE"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  }
+                </div>
+              }
+            </div>
+          </ng-template>
+        }
+      </app-shared-table>
+    }
+  </div>
+</section>

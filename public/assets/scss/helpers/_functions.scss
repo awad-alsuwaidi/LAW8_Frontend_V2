@@ -1,0 +1,8 @@
+/* Convert px to rem */
+@use "sass:math";
+@function toRem($f-size) {
+  $remSize: math.div($f-size, 16);
+  @return #{$remSize}rem;
+}
+
+

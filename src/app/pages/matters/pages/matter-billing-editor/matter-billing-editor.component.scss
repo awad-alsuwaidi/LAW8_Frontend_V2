@@ -1,0 +1,79 @@
+:host ::ng-deep {
+  app-formly-switch-field {
+    @apply flex gap-4 flex-row-reverse justify-end;
+    label {
+      @apply text-lg font-bold text-grey500;
+    }
+    .p-inputswitch.p-inputswitch-checked:not(.p-disabled):hover
+      .p-inputswitch-slider,
+    .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+      @apply bg-successBase500;
+    }
+  }
+}
+
+.empty-label {
+  font-size: 0;
+  line-height: 24px; 
+  color: transparent;
+}
+
+:host ::ng-deep .matter-billing-form {
+  input:disabled,
+  .p-inputtext:disabled,
+  .p-inputnumber.p-disabled {
+    background-color: #f8fafc !important;
+    border-color: #e5e7eb !important;
+    color: #cbd5e1 !important;
+    opacity: 0.8 !important;
+    cursor: not-allowed;
+  }
+  .p-dropdown.p-disabled {
+    background-color: #f8fafc !important;
+    border-color: #e5e7eb !important;
+    color: #cbd5e1 !important;
+    opacity: 1 !important;
+    cursor: not-allowed;
+  }
+
+  .p-dropdown.p-disabled .p-dropdown-label {
+    color: #cbd5e1 !important;
+  }
+
+  .p-dropdown.p-disabled .p-dropdown-trigger {
+    color: #cbd5e1 !important;
+  }
+
+  .p-radiobutton.p-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed;
+  }
+
+  .p-radiobutton.p-disabled .p-radiobutton-box {
+    border-color: #e5e7eb !important;
+    background-color: #f8fafc !important;
+  }
+
+  .p-radiobutton.p-disabled + label {
+    color: #cbd5e1 !important;
+    cursor: not-allowed;
+  }
+
+  .p-inputswitch.p-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed;
+  }
+
+  .p-inputswitch.p-disabled .p-inputswitch-slider {
+    background-color: #e5e7eb !important;
+  }
+
+  label {
+    transition: color 0.2s;
+  }
+
+  .p-disabled + label,
+  .p-disabled label {
+    color: #cbd5e1 !important;
+  }
+}

@@ -1,0 +1,8 @@
+<section>
+  <h1 class="text-2xl font-bold mb-4">{{ 'lookups.title' | translate }}</h1>
+  <div class="grid grid-cols-2 gap-4">
+    @for (lookup of lookups; track lookup.routeName) {
+      <app-lookup-card [data]="lookup" />
+    }
+  </div>
+</section>

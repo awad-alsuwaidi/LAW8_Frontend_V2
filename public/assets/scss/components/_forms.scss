@@ -1,0 +1,121 @@
+.p-field {
+
+
+  label {
+    @apply text-sm font-medium text-grey500 pb-1.5;
+
+    span {
+      @apply text-textErrorBase;
+    }
+  }
+
+  .input-field,.p-inputmask {
+
+    @apply py-2.5 px-3.5 border border-borderPrimary rounded-lg h-11 bg-white;
+
+    .p-inputtext {
+      @apply focus:outline-none p-0 border-0 focus:shadow-none w-full;
+    }
+  }
+
+  .iti {
+    @apply w-full;
+
+    input.iti__tel-input {
+      @apply py-2.5 px-3.5 border border-borderPrimary rounded-lg h-11 rtl:text-end;
+    }
+  }
+
+  .ui-message-text {
+    @apply text-textErrorPrimary text-sm;
+
+  }
+
+  app-formly-radio-button-field {
+    label {
+      @apply text-sm font-medium pb-0 ms-2 text-textConfirmTitle ;
+    }
+
+    @apply flex flex-row-reverse items-center justify-end gap-1.5;
+
+    input {
+      @apply scale-150;
+    }
+  }
+  p-calendar .p-inputtext{
+    @apply py-2.5 px-3.5 leading-normal border-e-0 shadow-none focus:border-[#d1d5db];
+  }
+  .p-inputotp {
+    &-input {
+      @apply font-Manrope text-2xl font-extrabold size-14 rounded-xl border border-grey200 bg-grey50 focus:border focus:border-primary focus:shadow-none focus:bg-white
+    }
+
+    .p-filled {
+      @apply bg-blue25 border-0
+    }
+
+    @apply justify-center;
+  }
+
+  .p-dropdown,
+  .p-multiselect {
+    &-label {
+      @apply py-2.5 px-3.5 leading-normal;
+    }
+
+    &-clear-icon {
+      @apply start-[unset] end-12
+    }
+
+    &-filter {
+      @apply ms-[unset] me-2
+    }
+
+    &-close {
+      @apply me-[unset] ms-2
+    }
+
+    &-label-container {
+      @apply ps-[unset] pe-7
+    }
+
+    @apply w-full h-11;
+  }
+
+  .p-multiselect {
+    &-close {
+      @apply me-[unset] ms-2
+    }
+  }
+
+}
+
+.p-checkbox {
+  @apply ms-[unset] me-2
+}
+
+.p-dropdown-filter {
+  @apply ms-[unset] me-2 ps-2 pe-7
+}
+
+.p-dropdown-filter-icon, .p-multiselect-filter-icon {
+  @apply start-[unset] end-3
+}
+.p-multiselect-panel .p-multiselect-header .p-multiselect-filter-container .p-inputtext{
+  @apply ps-2 pe-7
+}
+
+.p-password,
+.p-inputtext {
+  @apply w-full
+}
+
+.p-datepicker-trigger{
+  @apply bg-transparent border-borderPrimary border-s-0	 text-grey500
+}
+.p-calendar{
+  @apply     h-11;
+}
+.p-dropdown-filter-icon{
+  @apply top-[35%]
+}

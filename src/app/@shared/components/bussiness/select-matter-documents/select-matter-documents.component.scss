@@ -1,0 +1,27 @@
+:host ::ng-deep .p-datatable .p-datatable-header {
+  background: #f8f9fa;
+  border: none;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #f8f9fa;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.form-check-input {
+  accent-color: #3b82f6;
+  margin: 0;
+  display: inline-block;
+
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.form-check-input:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}

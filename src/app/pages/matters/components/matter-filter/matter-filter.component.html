@@ -1,0 +1,20 @@
+<div class="px-6">
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" />
+</div>
+
+@if(additionalFilterValues&&additionalFilterValues.length>0){
+    <div class="px-6 py-2 bg-grey50 my-4 flex justify-between">
+        <div class="flex gap-2">
+            <span class="text-sm text-greyscale600 font-medium me-4 self-center">Applied filters:</span>
+            @for (item of additionalFilterValues; track $index) {
+                <p-chip [label]="item.name" [removable]="true" (onRemove)="updateFilter(item)"/>
+            }
+        </div>
+        <div>
+    
+            <app-shared-button [btnType]="'button'"
+                styleClass=" text-textSecondary !px-0 !py-0 text-xs font-medium"
+                [label]="'common.reset' | translate" (onClick)="reset()" />
+        </div>
+    </div>
+}

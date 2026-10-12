@@ -1,0 +1,24 @@
+@if(isLoading){
+<div class="space-y-4 animate-pulse">
+    <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="h-12 bg-gray-200 rounded"></div>
+    <div class="h-12 bg-gray-200 rounded"></div>
+
+</div>
+}@else {
+<app-shared-table [columns]="columns" [data]="data" [pagination]="pagination" [withCheckbox]="true"
+    (onPageChange)="onPageChange($event)" (onRowSelectChange)="onRowSelectChange($event)" [styleClass]="'custom-table'"
+    [withPagination]="true" [selectedRows]="selectedRows" (onSort)="onSort($event)" />
+}
+<div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+    <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'common.cancel'|translate" (onClick)="_dynamicDialogRef.close()" />
+    <app-shared-button [btnType]="'submit'"
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]=" 'common.add'|translate" [isLoading]="isLoading" [disabled]="selectedRows.length==0"
+        (onClick)="submit()" />
+</div>

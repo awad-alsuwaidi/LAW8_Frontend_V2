@@ -1,0 +1,90 @@
+<div class="flex justify-between px-6 py-4  items-center  mb-6">
+  <h1 class="
+    text-[22px]
+    leading-[32px]    /* line-height: 32px */
+    font-bold         /* font-weight: 700 */
+    text-black
+  ">
+    All Notification
+  </h1>
+
+  <div class="flex items-center
+    text-blue-600
+      hover:text-blue-800">
+    <i class="icon-checks text-2xl pe-2 cursor-pointer" (click)="marksAllAsRead()"></i>
+
+    <span class="
+      cursor-pointer w-[93px] h-[16px]
+      inline-flex
+      items-center
+      whitespace-nowrap
+
+      transition
+      text-sm" (click)="marksAllAsRead()">Marks all as read</span>
+
+  </div>
+
+</div>
+
+
+
+
+<div class="bg-white border border-gray-300 rounded-lg p-6 space-y-6">
+  <div class="px-6 mb-6">
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" />
+  </div>
+  <p-table [value]="staticNotiData" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[10, 15, 25]" [paginator]="true"
+    [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template pTemplate="header">
+      <tr class="font-poppins
+                    text-base
+                    leading-[16px]
+                    tracking-normal
+                    text-718096     ">
+        <th class="text-sm font-medium">
+          <i class="pi pi-check-square text-xl"></i>
+          Type
+        </th>
+
+        <th class="text-sm font-medium justify-center">
+          <p-sortIcon field="activity" styleClass="text-xs ml-1 align-middle" />
+          Activity
+        </th>
+
+        <th class="text-sm font-medium">
+          <p-sortIcon field="code" styleClass="text-xs ml-1 align-middle" /> by
+        </th>
+        <th class="text-sm font-medium"><p-sortIcon field="code" styleClass="text-xs ml-1 align-middle" />
+          DateTime
+        </th>
+        <th class="text-sm font-medium">
+          <p-sortIcon field="code" styleClass="text-xs ml-1 align-middle" />
+          Actions
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr [ngClass]="{
+        'bg-[#F9F9FF]': !item.isRead,
+        'bg-white': item.isRead
+        }" (click)="changeStatus(item.id,item.isRead)">
+        <td class="text-sm leading-5 font-bold text-textSecondary flex items-center gap-4">
+          <img [src]=" 'assets/images/icons/notification/' +
+                  (item.isRead ? 'Read' : 'Unread') +
+                  '/' +
+                  (item.type | lowercase) +
+                  '.svg'" alt="{{item.type}}" class="w-12 h-12" />
+          {{item.type}}
+        </td>
+        <td class="text-sm font-medium">{{ item.activity }}</td>
+        <td class="text-sm font-medium">{{ item.by }}</td>
+        <td class="text-sm font-medium">{{ item.dateTime }}</td>
+        <td class="text-sm font-medium flex items-center" [class.text-blue-600]="!item.isRead">
+          <i class="icon-checks text-2xl pe-2 cursor-pointer"></i>
+          <span class="w-[125px] h-[24]">{{ item.isRead ? ' Mark as unread':' Mark as read'}}</span>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</div>

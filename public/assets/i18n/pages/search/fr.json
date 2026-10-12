@@ -1,0 +1,31 @@
+{
+    "search": {
+      "matterNumber": "Numéro de l'affaire",
+      "date": "Date",
+      "task": "Tâche",
+      "lawyerInitial": "Initiale de l'avocat",
+      "rate": "Tarif",
+      "hours": "Heures",
+      "totalAmount": "Montant total",
+      "explanation": "Explication",
+      "notes": "Remarques",
+      "code": "Code",
+      "description": "Description",
+      "fullName": "Nom complet",
+      "position": "Poste",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "mobile": "Portable",
+      "fax": "Fax",
+      "remarks": "Remarques supplémentaires",
+      "courtNumber": "Numéro du tribunal",
+      "activityType": "Type d'activité",
+      "user": "Utilisateur",
+      "status": "Statut",
+      "name": "Nom",
+      "party": "Partie",
+      "partyType": "Type de partie",
+      "clientCode": "Code client",
+      "clientName": "Nom du client"
+    }
+}

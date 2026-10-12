@@ -1,0 +1,16 @@
+:host ::ng-deep {
+  ngx-dropzone {
+    @apply border-primary bg-blue25 h-32;
+  }
+  ngx-dropzone-preview {
+    @apply p-0 mx-1 h-40 min-h-40 border border-[#ddd] bg-none #{!important};
+  }
+
+  ngx-dropzone-label {
+    @apply z-0 #{!important};
+  }
+
+  ngx-dropzone-label {
+    @apply outline-none #{!important};
+  }
+}

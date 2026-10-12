@@ -1,0 +1,58 @@
+::ng-deep{
+    .p-dialog-content{
+        @apply bg-grey100
+    }
+
+}
+:host ::ng-deep{
+    app-formly-switch-field{
+        @apply flex gap-4 flex-row-reverse justify-end;
+        label{
+            @apply text-lg font-bold text-grey500
+        }
+        .p-inputswitch.p-inputswitch-checked:not(.p-disabled):hover .p-inputswitch-slider,
+        .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider{
+            @apply bg-successBase500
+        }
+    }
+}
+
+// View Mode Styling
+:host.view-mode {
+  ::ng-deep {
+    // إخفاء الـ input borders والـ styling
+    .ng-pristine,
+    .ng-untouched,
+    .ng-valid {
+      input,
+      textarea,
+      select {
+        border: none !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        color: inherit;
+        
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+    }
+
+    // إخفاء الـ disabled state styling
+    input:disabled,
+    textarea:disabled,
+    select:disabled {
+      opacity: 1 !important;
+      color: inherit !important;
+      border: none !important;
+      background-color: transparent !important;
+    }
+
+    // إخفاء الـ icons والـ arrows
+    .p-dropdown-trigger,
+    .p-calendar-trigger {
+      display: none !important;
+    }
+  }
+}

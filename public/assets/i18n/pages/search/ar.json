@@ -1,0 +1,32 @@
+{
+    "search": {
+
+      "matterNumber": "رقم القضية",
+      "date": "التاريخ",
+      "task": "المهمة",
+      "lawyerInitial": "الحرف الأول من اسم المحامي",
+      "rate": "التعريفة",
+      "hours": "عدد الساعات",
+      "totalAmount": "المبلغ الإجمالي",
+      "explanation": "الشرح",
+      "notes": "ملاحظات",
+      "code": "الرمز",
+      "description": "الوصف",
+      "fullName": "الاسم الكامل",
+      "position": "المنصب",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "mobile": "الجوال",
+      "fax": "فاكس",
+      "remarks": "ملاحظات إضافية",
+      "courtNumber": "رقم المحكمة",
+      "activityType": "نوع الإجراء",
+      "user": "المستخدم",
+      "status": "الحالة",
+      "name": "الاسم",
+      "party": "الطرف",
+      "partyType": "نوع الطرف",
+      "clientCode": "كود العميل",
+      "clientName": "اسم العميل"
+    }
+}

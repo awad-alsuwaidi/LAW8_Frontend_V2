@@ -1,0 +1,27 @@
+{
+  "timesheet": {
+    "title": "Timesheet",
+    "billable": "Billable",
+    "nonBillable": "Non-Billable",
+    "noCharge": "No Charge",
+    "total": "Total",
+    "all": "All",
+    "save": "Save",
+    "submitSheets": "Submit Sheets",
+    "notes": "Notes",
+    "clientName": "Client Name",
+    "rate": "Rate",
+    "amount": "Amount",
+     "timer": "Timer",
+      "explanation": "Explanation",
+      "matter": "Matter",
+      "endDate": "End Date",
+      "lawyer": "Lawyer",
+      "task": "Task",
+      "hours": "Hours",
+      "areYouSureYouWantDeleteThisTimeSheet": "Are you sure you want to delete This timesheet?",
+      "DeleteTimeSheet": "Delete Timesheet",
+      "cancel": "Cancel",
+      "delete": "Delete"
+  }
+}

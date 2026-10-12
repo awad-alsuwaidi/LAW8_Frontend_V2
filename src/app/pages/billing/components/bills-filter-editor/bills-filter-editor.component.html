@@ -1,0 +1,8 @@
+<div class="bg-white rounded-2xl my-4 p-6">
+    <!-- <p class="text-grey500 text-sm mb-4">Please select the billing period and relevant filters, then click "Load" to
+        view
+        your customized billing list.</p> -->
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()" class="mb-4">
+        <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" />
+    </form>
+</div>

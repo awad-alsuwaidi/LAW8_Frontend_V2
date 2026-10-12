@@ -1,0 +1,115 @@
+<div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
+  <!-- ✅ Sidebar -->
+  <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm">
+    <!-- Header -->
+    <div class="flex justify-between items-center p-4 border-b">
+      <h1 class="font-bold text-xl lg:text-2xl text-colorsTextTextPrimary">
+        {{ "users.users" | translate }}
+      </h1>
+      <app-shared-button
+        [icon]="'icon-add-circle text-primary !text-xl lg:!text-2xl'"
+        [requiredPermission]="'Add_Users'"
+        [label]="'users.newUser' | translate"
+        [styleClass]="
+          'flex text-blue600 !text-sm !py-1 !px-2 lg:!px-4 !font-medium !leading-8'
+        "
+        routerLink="add"
+      />
+    </div>
+
+    <!-- Search -->
+    <div class="p-4 border-b">
+      <app-shared-search (searchValueChange)="searchValueChange($event)" />
+    </div>
+    @if (isLoading) {
+      <div class="space-y-4 animate-pulse">
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+        <div class="h-12 bg-gray-200 rounded"></div>
+      </div>
+    } @else {
+      <!-- User List -->
+      <div class="flex flex-col gap-2 p-4">
+        @for (user of data; track user.id) {
+          <a
+            href="javascript:void(0)"
+            [routerLink]="['/users/view', user.id]"
+            routerLinkActive="active"
+            class="flex justify-between items-center p-3 rounded-lg border transition duration-300 cursor-pointer hover:bg-gray-50 hover:border-primary relative ..."
+            [ngClass]="{
+              'bg-red-50 border-red-300': user.active === false,
+              'bg-white border-gray-200': user.active === true,
+            }"
+          >
+            <div class="flex items-center gap-3">
+              <img
+                [src]="user.profileImageUrl || 'assets/images/user-avatar.svg'"
+                alt="User"
+                class="size-10 rounded-full"
+                onerror="this.src = 'assets/images/user-avatar.svg'"
+              />
+              <div>
+                <!-- ★ اسم المستخدم -->
+                <h1
+                  class="font-bold text-sm text-textSecondary mb-1 truncate max-w-[120px]"
+                  [innerHTML]="user.name | highlight: searchValue"
+                ></h1>
+
+                <!-- ★ الـ email بدل title -->
+                <p
+                  class="font-medium text-grey500 text-xs truncate max-w-[120px]"
+                  [innerHTML]="user.email | highlight: searchValue"
+                ></p>
+              </div>
+            </div>
+            <div class="text-right">
+              <h1 class="font-bold text-xs text-colorsTextTextPrimary mb-1">
+                {{ user.roleLabel }}
+              </h1>
+              <p class="font-medium text-xs text-grey500">
+                {{ user.timesheetDate | date: "dd/MM/yyyy" }}
+              </p>
+            </div>
+          </a>
+        }
+
+        <!-- Pagination -->
+        <div class="pt-4">
+          <p-paginator
+            [dir]="'ltr'"
+            (onPageChange)="onPageChange($event)"
+            [first]="first"
+            [rows]="10"
+            pageLinkSize="3"
+            [totalRecords]="pagination?.totalElements"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Total {totalRecords}"
+          ></p-paginator>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ✅ Main Content -->
+  <div class="lg:col-span-4 flex flex-col gap-4">
+    <!-- Actions -->
+    <div class="flex justify-end items-center gap-3 px-2 lg:px-0">
+      <app-users-timesheet-editor />
+      <app-users-toggle-view />
+    </div>
+
+    <!-- Content -->
+    <div class="bg-white rounded-2xl shadow-sm p-4">
+      <router-outlet />
+    </div>
+  </div>
+</div>

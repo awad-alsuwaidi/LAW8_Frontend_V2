@@ -1,0 +1,47 @@
+@if(isLoading){
+<div class="p-4">
+    <app-shared-skeleton-grid [styleClass]="'grid grid-cols-2 gap-6'" [size]="2" />
+</div>
+<div class="p-4">
+    <app-shared-skeleton-grid [styleClass]="'grid grid-cols-1 gap-6'" [size]="5" />
+</div>
+}@else {
+<div *ngIf="!isLoading">
+
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+        <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" [options]="formlyOptions" />
+        @if(!formlyOptions.formState.readonly && formlyModel.law_ActivityTypeId===4){
+        <div class="grid gap-4 md:grid-cols-3  bg-white rounded-2xl p-6">
+            <div class="col-span-2">
+                <h6 class="text-sm text-grey500 font-medium mt-3 my-2">Attendance</h6>
+                @for (item of formlyModel.users; track $index) {
+                <div class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg">
+                    <p class="text-sm text-textSecondary font-medium">{{item?.label}}</p>
+
+                    <span class="cursor-pointer icon-trash text-grey500" (click)="deleteItem(item)"></span>
+
+                </div>
+                }
+            </div>
+        </div>
+        }
+        <div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+            <app-shared-button
+                styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+                [label]="'common.cancel'|translate" (onClick)="_dynamicDialogRef.close()" />
+            @if(formlyOptions.formState.readonly){
+            <app-shared-button
+                styleClass="text-primary border border-primary px-8 py-3 text-lg	font-medium h-12 leading-5"
+                [label]="'common.edit' | translate" [btnType]="'button'" (onClick)="onEdit()" />
+            }
+            @else if(!mode){
+            <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+                [label]="'common.save'|translate" [btnType]="'submit'" />
+            }@else{
+            <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+                [label]="'common.update' | translate" [btnType]="'submit'" />
+            }
+        </div>
+    </form>
+</div>
+}

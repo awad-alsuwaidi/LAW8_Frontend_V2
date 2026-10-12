@@ -1,0 +1,164 @@
+<section class="timesheet">
+  <div class="flex justify-between mb-4">
+    <h1 class="text-2xl font-bold text-colorsTextTextPrimary">
+      {{ "timesheet.title" | translate }}
+    </h1>
+    <app-shared-button
+      [label]="'menu.addTimesheet' | translate"
+      [requiredPermission]="'Add_Timesheet'"
+      [styleClass]="
+        'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'
+      "
+      (onClick)="_router.navigate(['/timesheet/add'])"
+    />
+  </div>
+  <div class="bg-white p-6 rounded-2xl">
+    <h2 class="text-grey500 font-bold text-lg mb-4">
+      {{ "common.list" | translate }}
+    </h2>
+    <div>
+      <div class="py-4">
+        <app-timesheet-filter (onFilter)="onFilter($event)" />
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="w-full p-6 animate-pulse">
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-24 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-32 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-20 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-28 bg-gray-200 rounded"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]">
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-24 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-32 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-20 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-28 bg-gray-200 rounded"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else {
+      <app-shared-table
+        [columns]="columns"
+        [data]="data"
+        [pagination]="pagination"
+        (onPageChange)="onPageChange($event)"
+        (onSort)="onSort($event)"
+      >
+        <ng-template
+          #customColumn
+          let-rowData
+          let-rowIndex="rowIndex"
+          let-field="field"
+        >
+          <ng-container *ngIf="field === 'serial'">
+            <span
+              class="inline-block px-2 py-1 bg-gray-100 rounded text-xs font-medium text-gray-500"
+            >
+              {{ rowData.serial }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngIf="field === 'law_TaskCode'">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-medium"
+              [ngClass]="getTaskClass(rowData.law_TaskCode)"
+            >
+              {{ rowData.law_TaskCode }}
+            </span>
+          </ng-container>
+        </ng-template>
+        <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+          <div class="font-medium text-sm text-textSecondary rounded-e-lg">
+            <div class="flex gap-6">
+              <!-- <div class="cursor-pointer" (click)="openTimesheetEdit(rowData)" title="Edit"
+              [requiredPermission]="'Update_Timesheet'"> -->
+              <div
+                class="cursor-pointer"
+                pTooltip="This timesheet is invoiced and cannot be edited"
+                tooltipPosition="left"
+                [tooltipDisabled]="canEditOrDelete(rowData)"
+                [ngClass]="{
+                  'opacity-50 cursor-not-allowed': !canEditOrDelete(rowData),
+                }"
+                (click)="canEditOrDelete(rowData) && openTimesheetEdit(rowData)"
+                title="Edit"
+                [requiredPermission]="'Update_Timesheet'"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  class="stroke-grey500 stroke-2"
+                >
+                  <path
+                    title=""
+                    d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                    stroke-miterlimit="10"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                    stroke-miterlimit="10"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+
+              <!-- 
+            <div class="cursor-pointer" (click)="onDelete(rowData)" title="Delete"
+              [requiredPermission]="'Delete_Timesheet'"> -->
+              <div
+                class="cursor-pointer"
+                pTooltip="This timesheet is invoiced and cannot be deleted"
+                tooltipPosition="left"
+                [tooltipDisabled]="canEditOrDelete(rowData)"
+                [ngClass]="{
+                  'opacity-50 cursor-not-allowed': !canEditOrDelete(rowData),
+                }"
+                (click)="canEditOrDelete(rowData) && onDelete(rowData)"
+                title="Delete"
+                [requiredPermission]="'Delete_Timesheet'"
+              >
+                <i class="icon-trash text-base text-grey500"></i>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </app-shared-table>
+    }
+  </div>
+</section>

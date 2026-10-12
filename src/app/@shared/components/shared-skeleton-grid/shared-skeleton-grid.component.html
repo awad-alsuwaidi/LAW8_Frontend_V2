@@ -1,0 +1,5 @@
+<div [class]="styleClass()">
+    @for (item of [].constructor(size()); track $index) {
+        <p-skeleton height="2.75rem" [styleClass]="styleClassSkeleton()"/>
+    }
+</div>

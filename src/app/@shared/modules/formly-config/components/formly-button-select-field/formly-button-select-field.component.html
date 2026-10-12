@@ -1,0 +1,10 @@
+<p-selectButton
+  [options]="props['optionArr'] || optionArr"
+  [formControl]="formControl"
+  [formlyAttributes]="field"
+  optionLabel="label"
+  optionValue="value"
+  (onChange)="change($event)"
+  [autofocus]="false"
+  [unselectable]="true"
+/>

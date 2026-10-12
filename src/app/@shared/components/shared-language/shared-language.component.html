@@ -1,0 +1,100 @@
+<div class="relative">
+  <button clickOutside (clickOutside)="isOpen = false" (click)="toggleLangMenu()"
+    class="flex items-center bg-background" type="button">
+    <img [src]="activeLang.flag" [class]="'flag flag-' + activeLang.code.toLowerCase()" class="size-10 me-1" />
+    @if(showLabel()){
+    <span class="mx-1 text-sm text-white">{{ activeLang.label }}</span>
+    }
+    <i class="icon-arrow-down text-white ms-1"></i>
+  </button>
+
+
+  <div [@openClose]="isOpen ? 'open' : 'closed'"
+    class="absolute end-0 z-20 mt-2 size-52	 transform rounded-md bg-background ring-1 ring-transparent ring-opacity-5 transition focus:outline-none dark:bg-bodyBg">
+    <ul class="flex flex-col py-4 px-2 bg-white rounded-2xl	 shadow-lg gap-2">
+      @for (lang of listLang; track $index) {
+      <li (click)="setActiveLang(lang.code)" :key="$index"
+        class="flex cursor-pointer items-center justify-between gap-2 rounded-md  text-sm font-semibold text-textSecondary transition-all duration-200 hover:bg-bodyBg hover:text-primaryColor">
+        <div class="flex items-center gap-2">
+          <img [src]="lang.flag" [class]="'flag flag-' + activeLang.code.toLowerCase()" class="size-8" />
+          <i [class]="lang.icon"></i>
+          {{ lang.label }}
+        </div>
+        @if(lang.code === activeLang.code){
+        <i class="icon-success-circle text-xs text-successBase500"></i>
+        }
+      </li>
+      }
+    </ul>
+  </div>
+</div>
+
+
+<!-- طه طااهااا -->
+
+<!-- <div class="relative">
+  <button
+    clickOutside
+    (clickOutside)="isOpen = false"
+    (click)="toggleLangMenu()"
+    type="button"
+    class="flex items-center rounded-full py-1 pl-1 pr-3 transition-all duration-200"
+    [class]="
+      darkMode
+        ? 'bg-transparent hover:bg-white/10 text-white'
+        : 'bg-background hover:bg-primaryColor/[0.06] text-textSecondary'
+    "
+  >
+    <img
+      [src]="activeLang.flag || 'assets/images/icons/flags/en.svg'"
+      [class]="'flag flag-' + (activeLang.code || 'en').toLowerCase()"
+      style="background-color: rgba(121, 102, 159, 0.263);"
+      class="size-8 me-2 rounded-full object-cover border border-white/20 shadow-sm"
+    />
+    @if (showLabel()) {
+      <span
+        class="text-[13px] font-medium whitespace-nowrap"
+        [class]="darkMode ? 'text-white' : 'text-textSecondary'"
+      >
+        {{ activeLang.label }}
+      </span>
+    }
+    <i
+      class="icon-arrow-down text-[9px] transition-transform duration-200 ms-1"
+      [class]="darkMode ? 'text-white/70' : 'text-textTertairy/60'"
+      [class.rotate-180]="isOpen"
+    ></i>
+  </button>
+
+  <div
+    [@openClose]="isOpen ? 'open' : 'closed'"
+    class="absolute end-0 z-20 mt-2 w-52 origin-top-right rounded-2xl border border-grey200/50 bg-white p-1.5 shadow-[0_12px_35px_rgba(16,24,40,0.14)] focus:outline-none dark:bg-bodyBg"
+  >
+    <ul class="flex flex-col gap-0.5">
+      @for (lang of listLang; track lang.code) {
+        <li
+          (click)="setActiveLang(lang.code)"
+          class="flex cursor-pointer items-center justify-between gap-2 rounded-xl px-2.5 py-2.5 text-[13px] font-medium transition-colors duration-150"
+          [class]="
+            lang.code === activeLang.code
+              ? 'bg-blue-50 text-primaryColor'
+              : 'text-textSecondary hover:bg-grey100/70'
+          "
+        >
+          <div class="flex items-center gap-2.5">
+            <img
+              [src]="lang.flag"
+              class="size-7 rounded-full object-cover border border-grey200/50"
+            />
+            <i [class]="lang.icon"></i>
+            <span>{{ lang.label }}</span>
+          </div>
+
+          @if (lang.code === activeLang.code) {
+            <i class="icon-success-circle text-sm text-blue-500"></i>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+</div> -->

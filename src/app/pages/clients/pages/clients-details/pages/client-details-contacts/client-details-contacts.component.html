@@ -1,0 +1,31 @@
+<div class="flex justify-between mb-4">
+    <p class="font-poppins font-medium text-sm text-grey500 leading-9">{{contacts.length}} records</p>
+    <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [label]="'clients.addContact' | translate" [requiredPermission]="'Add_ClientContact'"
+        [styleClass]=" 
+      'flex text-blue600  !text-sm !py-1 !px-0 !font-medium !leading-8'
+    " (onClick)="onOpenContactEditor()" />
+</div>
+
+@for(contact of contacts;track contact.id){
+<div class="flex justify-between bg-white px-6 py-4 shadow-sm rounded-2xl mb-2">
+    <div class="flex gap-4">
+        <img src="assets/images/icons/contact.svg" alt="contact" class="w-14 h-14">
+        <div>
+            <p class="font-poppins font-bold text-md text-textSecondary">{{contact.fullName}}</p>
+            <p class="font-poppins font-medium text-xs text-grey500">{{contact.position}}</p>
+        </div>
+    </div>
+    <div>
+        <p class="font-poppins font-bold text-md text-textSecondary">{{contact.phone}}</p>
+        <p class="font-poppins font-medium text-xs text-grey500">{{contact.mobile}}</p>
+    </div>
+    <div>
+        <p class="font-poppins font-bold text-md text-textSecondary">{{contact.email}}</p>
+        <p class="font-poppins font-medium text-xs text-grey500 truncate max-w-64">{{contact.remarks}}</p>
+    </div>
+    <div class="self-center">
+        <p-menu #menu [model]="menuItems" [popup]="true" />
+        <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" [styleClass]="'!py-1 !px-0'" (onClick)="menu.toggle($event);onRowSelected(contact)"/>
+    </div>
+</div>
+}

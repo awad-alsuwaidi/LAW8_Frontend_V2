@@ -1,0 +1,35 @@
+<div class="flex justify-end mb-4">
+    @if(formlyOptions.formState.readonly){
+    <app-shared-button *ngIf="hasPermission('Update_Billing_Settings')" [label]="'matters.update' | translate"
+        [styleClass]="'bg-primary text-white !text-sm !py-1 !font-medium !leading-8'" (onClick)="editMode()" />
+    }
+</div>
+<form class="matter-billing-form" [formGroup]="formly" (ngSubmit)="onSubmit()">
+   
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" [options]="formlyOptions" />
+    @if(!_router.url.includes('add')){
+
+    <app-matter-billing-rate-exception [matterIdentifier]="matterIdentifier" />
+    }
+    <div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+        @if(_router.url.includes('add')){
+
+        <div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+            <app-shared-button [btnType]="'button'"
+                styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+                [label]="'common.cancel'|translate" (onClick)="matterDetailsEditorComponent.cancel()" />
+            <app-shared-button (onClick)="matterDetailsEditorComponent.onSubmit()"
+                styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+                [label]="'matters.save'| translate " [isLoading]="matterDetailsEditorComponent.isLoading" />
+        </div>
+        }
+        @if(!_router.url.includes('add') && !formlyOptions.formState.readonly){
+        <app-shared-button [btnType]="'button'"
+            styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+            [label]="'common.cancel'|translate" (onClick)="viewMode()" />
+        <app-shared-button [btnType]="'submit'"
+            styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+            [label]="'matters.updateMatter'|translate" [isLoading]="isLoading" />
+        }
+    </div>
+</form>

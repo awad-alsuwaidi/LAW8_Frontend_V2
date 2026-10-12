@@ -1,0 +1,36 @@
+<section>
+    <div class="flex flex-col gap-4 mb-4">
+        <h1 class="text-colorsTextTextPrimary font-bold text-2xl">
+            {{ (groupIdentifier() ? 'Update Group' : 'Add New Group' | translate) }}
+        </h1>
+        <div class="custom-breadcrumb">
+
+            <p-breadcrumb class="max-w-full" [model]="items" />
+        </div>
+    </div>
+
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+        <div class="bg-white p-6 rounded-2xl mb-4 ">
+
+            <h2 class="mb-4 text-grey500 font-bold text-lg">
+                {{ "Main Info" | translate }}
+            </h2>
+           
+            <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" />
+        </div>
+        <div class="my-4">
+            
+            <app-security-group-editor-permissions [permissionSections]="permissionSections"
+                [permissionSectionsDetails]="permissionSectionsDetails" (onCheck)="getCheckedPermissions($event)"
+                (onMenuItemClick)="getMenuDetailedPermissions($event)" (search)="onSearch($event)" />
+        </div>
+
+        <div class="flex justify-end gap-4">
+            <app-shared-button
+                styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+                [label]="'common.cancel'|translate" (onClick)="cancel()" />
+            <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+                [label]="'common.save'|translate" [btnType]="'submit'" [isLoading]="isSubmitted" />
+        </div>
+    </form>
+</section>

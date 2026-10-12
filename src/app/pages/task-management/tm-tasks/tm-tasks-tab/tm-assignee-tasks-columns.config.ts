@@ -1,0 +1,52 @@
+export const Matter_Assignee_Tasks_Columns = [
+  {
+    header: 'search.matterNumber',
+    field: 'mtrNo',
+    isSort: true,
+  },
+  {
+    header: 'matters.description',
+    field: 'description',
+    isLargeText: true,
+        isSort: true,
+    class: 'w-56	',
+  },
+  {
+    header: 'matters.priority',
+    field: 'periority',
+    statusLabel: 'periorityName',
+        isSort: true,
+    isStatus: true,
+  },
+  {
+    header: 'matters.startDate',
+    field: 'startDate',
+        isSort: true,
+    format: 'd MMM y',
+    isDate: true,
+    // isSort: true,
+  },
+  {
+    header: 'matters.dueDate',
+    field: 'dueDate',
+        isSort: true,
+    format: 'd MMM y',
+    isDate: true,
+    // isSort: true,
+  },
+  {
+    header: 'matters.assignee',
+    field: 'assigneeList',
+    label: 'assigneeInitial',
+        isSort: true,
+    tooltip: 'assigneeName',
+    isColumnNumber: true,
+  },
+  {
+    header: 'matters.status',
+    field: 'status',
+        isSort: true,
+    statusLabel: 'statusName',
+    isCustom: true,
+  },
+];

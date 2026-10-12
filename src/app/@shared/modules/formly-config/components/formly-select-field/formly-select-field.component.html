@@ -1,0 +1,28 @@
+@if(props['readonly']){
+<p class="text-textSecondary text-sm font-bold mt-3">
+  {{ field.props["selectedObj"]?.label }}
+</p>
+}@else{
+<div class="p-fluid">
+  <p-dropdown
+    [editable]="props['editable'] || false"
+    [formControl]="formControl"
+    [formlyAttributes]="field"
+    [options]="props['optionsArr']||optionArr"
+    [showClear]="props['showClear'] ?? true"
+    [filter]="props['showFilter'] ?? true"
+    [placeholder]="props['placeholder']"
+    [loading]="isLoading"
+    [loadingIcon]="isLoading?'icon-loading animate-spin':''"
+    appendTo="body"
+    [autoDisplayFirst]="false"
+    [class]="props['class']"
+    (onChange)="change($event)"
+    [optionLabel]="props['optionLabel'] || 'label'"
+    [optionValue]="props['optionValue'] || 'value'"
+    [virtualScroll]="props['virtualScroll'] || false"
+    [virtualScrollItemSize]="props['virtualScroll']?38:0"
+    [lazy]="true"
+  ></p-dropdown>
+</div>
+}

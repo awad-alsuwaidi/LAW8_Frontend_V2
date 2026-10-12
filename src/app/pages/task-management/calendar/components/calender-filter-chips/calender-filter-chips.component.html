@@ -1,0 +1,38 @@
+<div *ngIf="filterKeys.length > 0" class="px-6 py-2 bg-grey50 my-4 flex justify-between gap-4">
+    <div class="flex gap-2 overflow-auto">
+        @for(key of filterKeys; track $index) {
+        <!-- <span class="text-sm text-greyscale600 font-medium me-4 self-center">{{key}}:</span> -->
+        @for (item of getFilterItems(key); track $index) {
+        @if(key===coloredKey){
+        <p class="border border-grey200 rounded-full px-2 py-1 text-xs  font-medium flex items-center gap-2 mr-2 min-w-max"
+            [style.color]="generateHexColor(item.value)"
+            [style.backgroundColor]="generateLightenColor(generateHexColor(item.value))"
+            [ngClass]="{'!text-textTertairy bg-white':generateHexColor(item.value)=='#fff'}">
+            <span>{{item.label}}</span>
+
+            <span
+                class="icon-trash cursor-pointer bg-[#C1C7C8] text-grey500 size-6 rounded-full text-center !leading-6 inline-block"
+                (click)="updateFilter(key,item)"></span>
+        </p>
+        }@else {
+        <p class="border border-grey200 rounded-full px-2 py-1 text-xs  font-medium flex items-center gap-2 mr-2 min-w-max !text-textTertairy bg-white"
+            [style.color]="generateHexColor(item.value)">
+            <span>{{item.label}}</span>
+
+            <span
+                class="icon-trash cursor-pointer bg-[#C1C7C8] text-grey500 size-6 rounded-full text-center !leading-6 inline-block"
+                (click)="updateFilter(key,item)"></span>
+        </p>
+        }
+
+        }
+        }
+
+
+    </div>
+    <div class="shrink-0">
+
+        <app-shared-button [btnType]="'button'" styleClass=" text-textSecondary !px-0 !py-0 text-xs font-medium"
+           [label]="'common.reset' | translate" (onClick)="reset()" />
+    </div>
+</div>

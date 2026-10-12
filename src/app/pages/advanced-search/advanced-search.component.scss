@@ -1,0 +1,10 @@
+
+.active{
+    span{
+        &:last-of-type{
+
+            @apply bg-primary
+        }
+    }
+    @apply bg-blue50 text-primary;
+}

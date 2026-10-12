@@ -1,0 +1,17 @@
+:host ::ng-deep {
+    td:nth-of-type(1){
+        @apply min-w-36
+    }
+    .empty{
+        &-title{
+            @apply bg-transparent
+        }
+        &-body{
+            
+            img{
+                @apply w-60
+            }
+            @apply min-h-[calc(40vh)];
+        }
+    }
+}

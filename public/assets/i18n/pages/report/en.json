@@ -1,0 +1,28 @@
+{
+    "report": {
+        "activityReport": "Activity Report",
+        "dateFrom": "Date From",
+        "dateTo": "Date To",
+        "lawyer": "Lawyer",
+        "client": "Client",
+        "entity": "Entity",
+        "entities": "Entities",
+        "openDateFrom": "Date From",
+        "openDateTo": "Date To",
+        "feeEarner": "Fee Earner",
+        "dateType": "Date Type",
+        "matter": "Matter",
+        "english": "English",
+        "arabic": "Arabic",
+        "filterbydepartment": "Filter by Department",
+        "filterbybranch": "Filter by Branch",
+        "french": "Français",
+        "printLanguage": "print Language",
+        "openDate": "Open Date",
+        "creationDate": "Creation Date",
+        "generateReport": " Generate Report",
+        "printType": "Print Type",
+        "pdf": "PDF",
+        "excel": "Excel"
+    }
+}

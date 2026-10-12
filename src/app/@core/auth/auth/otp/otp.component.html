@@ -1,0 +1,36 @@
+<div class="h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-white">
+  <div class="w-full max-w-md min-w-[378px] bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-8">
+
+    <!-- Title -->
+    <h2 class="font-bold text-3xl mb-6 text-center">
+      {{ 'auth.enterVerifcationCode' | translate }}
+    </h2>
+
+    <p-messages [(value)]="messages" [enableService]="false" [closable]="false" class="mb-4" />
+
+
+    <!-- OTP Form -->
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()" (keydown.enter)="onSubmit()" class="flex flex-col gap-4">
+      <formly-form [model]="formlyModel" [fields]="formlyFields" [form]="formly"></formly-form>
+
+      <app-shared-button [btnType]="'submit'" [label]="'btn.verify' | translate"
+        [styleClass]="'bg-primary text-white mt-8 w-full'" [isLoading]="isLoading" />
+    </form>
+
+    <!-- Countdown timer -->
+    <div *ngIf="counterInSeconds > 0" class="px-4 py-2 font-bold text-center text-primary text-lg mt-4">
+      {{ counterInSeconds | secondsToTime }}
+    </div>
+
+    <!-- Resend OTP button -->
+    <div class="flex justify-center mt-4">
+      <app-shared-button [label]="'auth.sendCodeAgain' | translate"
+        [styleClass]="'text-primary disabled:text-greyScale300 w-full sm:w-auto sm:px-6 sm:py-2 text-center'"
+        (onClick)="resendOtp()" [disabled]="isLoading || counterInSeconds > 0" />
+    </div>
+
+
+    <!-- Footer -->
+    <h2 class="font-bold text-xs mb-10 mt-4 text-center">{{ 'Powered by LAW8' | translate }}</h2>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+{
+  "auth":{
+    "help":"Aide",
+    "allInOneApplication":"Tout En Une Application",
+    "authDescription":" Créez un site Web de commerce électronique soutenu par des outils puissants qui vous aident à trouver des clients, à augmenter les ventes et à gérer votre quotidien.",
+    "loginToYourAccount":"Connectez-vous à votre compte",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgetPassword": "Mot de passe oublié",
+    "userNamePlaceholder": "Veuillez saisir votre nom d'utilisateur",
+    "passwordPlaceholder": "Veuillez saisir votre mot de passe",
+    "enterVerifcationCode": "Entrez le code de vérification",
+    "sendCodeAgain": "Envoyer le code à nouveau",
+    "forgotYourPassword": "Mot de passe oublié?",
+    "forgetPasswordDescription": "Entrez l'adresse e-mail associée à votre compte et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+    "email": "Email",
+    "ErorrOTP": "Invalid Otp",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "backToLogin": "Retour à la connexion",
+    "emailPlaceholder":"Veuillez saisir votre email",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmez le mot de passe",
+    "createNewPassword": "Créer un nouveau mot de passe?",
+    "createNewPasswordDescription": "Veuillez saisir un nouveau mot de passe. Votre nouveau mot de passe doit être différent du mot de passe précédent.",
+    "yourSuccessfullyChangedYourPassword": "Votre mot de passe a été modifié avec succès",
+    "youCanLoginNow": "Vous pouvez maintenant vous connecter",
+    "weHaveJustSentAVerificationCodeTo":"Nous venons d'envoyer un code de vérification à"
+  }
+}

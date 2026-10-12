@@ -1,0 +1,62 @@
+<section class='bg-white rounded-2xl px-6 pb-6 mb-6'>
+    <div class="flex justify-between pt-6">
+
+        <h2 class="font-bold text-grey500 text-lg ">{{ 'Calendar' | translate }}</h2>
+        
+    </div>
+    <app-security-timesheet-filter-editor (onFilter)="onFilter($event)"/>
+    
+    @if(isLoading){
+    <div class="w-full h-screen p-6 animate-pulse">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3">
+                            <div class="h-6 w-24 bg-gray-200 rounded"></div>
+                        </th>
+                        <th class="px-4 py-3">
+                            <div class="h-6 w-32 bg-gray-200 rounded"></div>
+                        </th>
+                        <th class="px-4 py-3">
+                            <div class="h-6 w-20 bg-gray-200 rounded"></div>
+                        </th>
+                        <th class="px-4 py-3">
+                            <div class="h-6 w-28 bg-gray-200 rounded"></div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                    <tr>
+                        <td class="px-4 py-4 border-t">
+                            <div class="h-5 w-24 bg-gray-200 rounded"></div>
+                        </td>
+                        <td class="px-4 py-4 border-t">
+                            <div class="h-5 w-32 bg-gray-200 rounded"></div>
+                        </td>
+                        <td class="px-4 py-4 border-t">
+                            <div class="h-5 w-20 bg-gray-200 rounded"></div>
+                        </td>
+                        <td class="px-4 py-4 border-t">
+                            <div class="h-5 w-28 bg-gray-200 rounded"></div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    }
+    @else {
+    <app-shared-table [columns]="columns" [data]="data" [pagination]="pagination" (onPageChange)="onPageChange($event)" [isLoading]="isLoading" (onCheck)="onCheck($event)">
+    </app-shared-table>
+    }
+</section>
+
+<div class="flex justify-end">
+<app-shared-button (onClick)="onSubmit()"
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5" [label]="'common.save'| translate "
+        [isLoading]="isSubmitted" />
+</div>

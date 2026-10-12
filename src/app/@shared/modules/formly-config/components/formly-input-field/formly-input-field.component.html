@@ -1,0 +1,21 @@
+
+@if(props['readonly']){
+<p class="text-textSecondary text-sm font-bold  mt-3">{{formControl.value}}</p>
+}@else {
+  <div class="input-field w-full flex items-center"
+  [ngClass]="{'!border-borderErrorSubtle': formControl.invalid && formControl.touched,'bg-grey50':formControl.disabled}">
+  @if(props['icon']){
+  <i [ngClass]="props['icon']" class="pe-3"></i>
+  }
+  <input class="w-full" [type]="inputType" pInputText [formControl]="formControl" [formlyAttributes]="field"
+    [ngClass]="props['class']" [placeholder]="props['placeholder']" (input)="onInput($event)" (keyup)="onKeyUp($event)"/>
+  <i class="icon-close text-xl text-borderPrimary cursor-pointer" (click)="formControl.reset();formControl.setValue('')"
+    [ngClass]="{'invisible':!(props['withClear'] && formControl.value)}"></i>
+  @if(formControl.invalid && formControl.touched) {
+  <i class="icon-error-circle text-textErrorBase"></i>
+  } @else if(props['type'] === 'password') {
+  <i [ngClass]="showPassword ? 'icon-show' : 'icon-hide'" class="cursor-pointer" (click)="togglePassword()">
+  </i>
+  }
+</div>
+}

@@ -1,0 +1,70 @@
+<!-- @if(props.readonly){
+    <div>
+        <img [src]="formControl.value" alt="" class="lg:size-32 w-20 rounded-full object-cover" onerror="this.src='assets/images/user-avatar.svg'">
+    </div>
+
+}@else{
+    <small class="text-xs text-grey400 ">{{props['hint']}} </small>
+    <div>
+        <img [src]="uploadedImage||formControl.value" alt="" (click)="fileInput.click()" class="lg:size-32 w-20 rounded-full object-cover cursor-pointer" onerror="this.src='assets/images/user-avatar.svg'">
+    </div>
+
+    <input type="file" (change)="onFileChange($event)" style="display: none;" #fileInput>
+} -->
+
+<!-- طه طااهااا -->
+
+@if (props.readonly) {
+  <div>
+    <img
+      [src]="formControl.value"
+      alt=""
+      class="lg:size-32 w-20 rounded-full object-cover"
+      onerror="this.src = 'assets/images/user-avatar.svg'"
+    />
+  </div>
+} @else {
+  <small class="text-xs text-grey400">{{ props["hint"] }} </small>
+  <div>
+    <div class="relative inline-block leading-none">
+      <img
+        [src]="uploadedImage || formControl.value"
+        alt=""
+        (click)="fileInput.click()"
+        class="lg:size-32 w-20 rounded-full object-cover cursor-pointer"
+        onerror="this.src = 'assets/images/user-avatar.svg'"
+      />
+
+      @if (uploadedImage || formControl.value) {
+        <button
+          type="button"
+          style="margin: 15px"
+          class="absolute top-0 end-0 -translate-y-1/2 translate-x-1/2 bg-white border border-grey400 rounded-full w-6 h-6 flex items-center justify-center text-grey500 hover:text-textErrorBase hover:border-textErrorBase shadow-sm"
+          (click)="removeImage($event)"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="stroke-current stroke-[3]"
+          >
+            <path
+              d="M18 6L6 18M6 6L18 18"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      }
+    </div>
+  </div>
+
+  <input
+    type="file"
+    (change)="onFileChange($event)"
+    style="display: none"
+    #fileInput
+  />
+}

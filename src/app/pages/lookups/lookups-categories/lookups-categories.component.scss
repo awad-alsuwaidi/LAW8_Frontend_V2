@@ -1,0 +1,16 @@
+
+:host ::ng-deep .p-menu {
+    min-width: 200px;
+}
+
+:host ::ng-deep .p-menu .p-menuitem {
+    margin: 5px 0;
+}
+
+:host ::ng-deep .p-radiobutton .p-radiobutton-box {
+    width: 18px;
+    height: 18px;
+}
+.active {
+    @apply bg-white relative before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out before:h-4/6 before:w-1
+}

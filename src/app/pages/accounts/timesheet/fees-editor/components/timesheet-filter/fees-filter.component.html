@@ -1,0 +1,22 @@
+<div>
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" />
+</div>
+
+@if((formlyModel|objToArrWithValues).length>0){
+<div class="px-6 py-2 bg-grey50 my-4 flex justify-between">
+    <div class="flex gap-2">
+        <span class="text-sm text-greyscale600 font-medium me-4 self-center">
+            {{ 'common.applied' | translate }}
+        </span>
+
+        @for (item of formlyModel|objToArrWithValues; track $index) {
+        <p-chip [label]="item['label']||item" [removable]="true" (onRemove)="updateFilter(item)" />
+        }
+    </div>
+    <div>
+
+        <app-shared-button [btnType]="'button'" styleClass=" text-textSecondary !px-0 !py-0 text-xs font-medium"
+            [label]="'common.reset' | translate" (onClick)="reset()" />
+    </div>
+</div>
+}

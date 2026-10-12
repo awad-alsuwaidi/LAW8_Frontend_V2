@@ -1,0 +1,75 @@
+//base
+@import "helpers/variables";
+@import "helpers/mixins";
+@import "helpers/functions";
+
+//base
+@import "./base/reset";
+@import "./base/typography";
+@import "./base/general";
+
+// Layout
+@import "layout/layout";
+@import "layout/topbar";
+@import "layout/navigation";
+@import "layout/sidebar";
+
+// Components
+@import "components/buttons";
+@import "components/carousel";
+@import "components/forms";
+@import "components/slider";
+@import "components/scrollbar";
+@import "components/table";
+@import "components/confirmation";
+@import "components/modal";
+@import "components/accordion";
+@import "components/status";
+@import "components/steps";
+@import "components/dropdown";
+@import "components/paginator";
+@import "components/inputSwitch";
+@import "components/messages";
+@import "components/toastr";
+@import "components/breadcrumb";
+
+// Plugins
+@import "ngx-toastr/toastr";
+@import "../../../node_modules/quill/dist/quill.core";
+@import "../../../node_modules/quill/dist/quill.snow";
+@import "../../../node_modules/intl-tel-input/build/css/intlTelInput";
+@import "../icons/style";
+
+@layer tailwind-base, primeng, tailwind-utilities;
+
+@layer tailwind-base {
+  @tailwind base;
+}
+
+@layer primeng {
+  @import "../../../node_modules/primeng/resources/themes/lara-light-blue/theme";
+
+  @import "../../../node_modules/primeng/resources/primeng.min";
+}
+
+@layer tailwind-utilities {
+  @tailwind components;
+  @tailwind utilities;
+}
+
+html {
+  @apply font-poppins;
+  // @apply font-STC
+}
+app-shared-table.text-center table th,
+app-shared-table.text-center table td {
+  text-align: center;
+}
+
+body {
+  @apply bg-bgColor;
+  user-select: none;
+}
+body.page-matter {
+  user-select: text !important;
+}

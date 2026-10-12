@@ -1,0 +1,13 @@
+::ng-deep {
+    .p-dropdown-sm{
+        .p-dropdown{
+            &-label{
+                @apply text-sm py-1.5 px-2.5;
+            }
+            &-trigger{
+                @apply w-6
+            }
+            @apply h-8;
+        }
+    }
+}

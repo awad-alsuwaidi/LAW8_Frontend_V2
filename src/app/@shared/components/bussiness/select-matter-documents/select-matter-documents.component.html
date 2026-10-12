@@ -1,0 +1,105 @@
+<div class="p-4">
+  <!-- HEADER -->
+
+  <div class="flex justify-between items-center mb-3">
+    <h5 class="text-base font-semibold text-grey700 m-0">{{ "common.documents" | translate }}</h5>
+
+    <span class="text-sm text-primary font-medium">
+      {{ selectedDocs.length }} {{ "common.select" | translate }}
+    </span>
+  </div>
+
+  <!-- TABLE -->
+
+  <p-table
+    [value]="documents"
+    dataKey="documentId"
+    [paginator]="false"
+    [rowTrackBy]="trackByDocumentId"
+  >
+    <!-- HEADER -->
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">
+          <input
+            type="checkbox"
+            [checked]="isAllSelected()"
+            (click)="$event.stopPropagation()"
+            (change)="toggleAll($event)"
+            class="form-check-input"
+          />
+        </th>
+
+        <th>File Name</th>
+
+        <th>Document Date</th>
+
+        <th>Received Date</th>
+      </tr>
+    </ng-template>
+
+    <!-- BODY -->
+
+    <ng-template pTemplate="body" let-doc>
+      <tr (click)="toggleSelection(doc)" class="cursor-pointer">
+        <td (click)="$event.stopPropagation()">
+          <input
+            type="checkbox"
+            [checked]="isSelected(doc)"
+            (click)="$event.stopPropagation(); toggleSelection(doc)"
+            class="form-check-input"
+          />
+        </td>
+
+        <td>
+          {{ getFileName(doc) }}
+        </td>
+
+        <td>
+          {{
+            doc?.documentDate ? (doc.documentDate | date: "dd/MM/yyyy") : "-"
+          }}
+        </td>
+
+        <td>
+          {{
+            doc?.receivedDate ? (doc.receivedDate | date: "dd/MM/yyyy") : "-"
+          }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- EMPTY TABLE -->
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4" class="text-center">
+          No documents found for this matter.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- BUTTONS -->
+
+  <div class="flex justify-end mt-4 gap-2">
+    <button
+      pButton
+      type="button"
+      [label]="'common.cancel'|translate"
+      class="p-button-outlined"
+      (click)="close()"
+      style="width: auto;"
+    ></button>
+
+    <button
+      pButton
+      type="button"
+      [label]="'common.addToSession'|translate"
+      [disabled]="selectedDocs.length === 0"
+      (click)="addSelected()"
+      style="width: auto;"
+    ></button>
+  </div>
+</div>

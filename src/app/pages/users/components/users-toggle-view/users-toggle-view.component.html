@@ -1,0 +1,10 @@
+<div class="flex gap-2 rounded-lg border border-grey200 p-2 bg-white shadow-custom">
+    <app-shared-button [icon]="'icon-cards !text-base'" (onClick)="setView('card')" [styleClass]="selectedView==='card'?
+        'bg-blue50 text-primary !p-1 !rounded-[4px] !size-6 flex justify-center items-center':
+        'bg-grey100 text-textTertairy !p-1 !rounded-[4px] !size-6 flex justify-center items-center'
+        " />
+    <app-shared-button [icon]="'icon-list !text-base'" (onClick)="setView('list')" [styleClass]="selectedView==='list'?
+        'bg-blue50 text-primary !p-1 !rounded-[4px] !size-6 flex justify-center items-center':
+        'bg-grey100 text-textTertairy !p-1 !rounded-[4px] !size-6 flex justify-center items-center'
+        " />
+</div>

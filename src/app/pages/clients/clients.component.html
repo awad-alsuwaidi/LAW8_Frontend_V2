@@ -1,0 +1,128 @@
+@if (_router.url.includes("add") || _router.url.includes("update")) {
+  <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9 mb-4">
+    @if (_router.url.includes("add")) {
+      {{ _languageService.getTransValue("clients.addNewClient") }}
+    } @else {
+      {{ _languageService.getTransValue("clients.updateClient") }}
+    }
+  </h1>
+
+  <router-outlet />
+} @else {
+  @if (isLoading && isFirstLoad) {
+    <app-client-skeleton></app-client-skeleton>
+  } @else {
+    @if (data.length === 0 && !searchText) {
+      <app-shared-empty-section [emptyConfig]="emptyConfig" />
+    } @else {
+      <div class="grid md:grid-cols-6 gap-4">
+        <div class="md:col-span-2">
+          <div class="flex justify-between p-2 rounded-t-lg lg:bg-white h-14">
+            <h1
+              class="font-bold lg:text-2xl text-lg text-colorsTextTextPrimary leading-9"
+            >
+              {{ titleKey | translate }}
+            </h1>
+
+            <!-- <h1 class="font-bold lg:text-2xl text-lg text-colorsTextTextPrimary leading-9">
+        {{ _router.url.includes('inactive') ? ('clients.inactiveClients' | translate) : ('clients.clients' | translate)
+        }}
+      </h1> -->
+
+            @if (!_router.url.includes("inactive")) {
+              <!-- <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [requiredPermission]="'Add_Client'"
+        [label]="'menu.clientAdd' | translate" [styleClass]="
+                  'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'
+                " [routerLink]="['/clients/add']" /> -->
+              <app-shared-button
+                [icon]="'icon-add-circle text-primary !text-2xl '"
+                [requiredPermission]="'Add_Client'"
+                [label]="
+                  isInhouse
+                    ? ('menu.newEntity' | translate)
+                    : ('menu.clientAdd' | translate)
+                "
+                [styleClass]="
+                  'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'
+                "
+                [routerLink]="['/clients/add']"
+              />
+            }
+          </div>
+          <div class="my-2">
+            <app-shared-search
+              (searchValueChange)="searchValueChange($event)"
+            />
+          </div>
+          <div class="flex flex-col gap-2">
+            @for (client of data; track client.id) {
+              <a
+                [routerLink]="
+                  _router.url.includes('inactive')
+                    ? ['/clients/inactive/view', client.id]
+                    : ['/clients/view', client.id]
+                "
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: false }"
+                class="flex justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer hover:bg-white relative before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out hover:before:h-4/6 hover:before:w-1 [&.active]:bg-blue-100 [&.active]:border-blue-500"
+              >
+                <div class="flex justify-between gap-2">
+                  <img
+                    [src]="client.imagePath"
+                    alt="client"
+                    class="size-10 rounded-full"
+                    onerror="this.src = 'assets/images/user-avatar.svg'"
+                  />
+                  <div>
+                    <h1
+                      class="font-bold text-sm text-textSecondary mb-2 truncate max-w-[250px]"
+                      [innerHTML]="client.name | highlight: searchValue"
+                    >
+                      <!-- {{ client.name }} -->
+                    </h1>
+                    <p
+                      class="font-medium text-grey500 text-xs truncate max-w-[120px]"
+                      [innerHTML]="client.email | highlight: searchValue"
+                    >
+                      <!-- {{ client.email }} -->
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <h1
+                    class="font-bold text-xs text-colorsTextTextPrimary mb-2"
+                    [innerHTML]="client.clntNo | highlight: searchValue"
+                  >
+                    <!-- {{ client.clntNo }} -->
+                  </h1>
+                  <p
+                    class="font-medium text-xs text-grey500"
+                    [innerHTML]="client.balance | highlight: searchValue"
+                  >
+                    <!-- {{ client.balance }} -->
+                  </p>
+                </div>
+              </a>
+            }
+
+            <p-paginator
+              [dir]="'ltr'"
+              (onPageChange)="onPageChange($event)"
+              [first]="first"
+              [rows]="10"
+              pageLinkSize="3"
+              [totalRecords]="totalCount"
+              [showCurrentPageReport]="true"
+              currentPageReportTemplate="Total {totalRecords}"
+            ></p-paginator>
+          </div>
+        </div>
+        @if (!isSmallScreen()) {
+          <div class="md:col-span-4">
+            <router-outlet />
+          </div>
+        }
+      </div>
+    }
+  }
+}

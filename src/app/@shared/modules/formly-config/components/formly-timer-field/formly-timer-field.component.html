@@ -1,0 +1,8 @@
+<div class="flex gap-2 items-center">
+    <p class="cursor-pointer text-2xl" (click)="toggleTimer()" [class]="isPlay?'icon-pause-circle text-textErrorBase':'icon-play-circle text-primary'"></p>
+    <p class="text-sm font-medium" [class]="isPlay?'text-textErrorBase':'text-textTertairy'">
+        <span>{{(hours>9)?hours:'0'+hours}}</span> : 
+        <span>{{(minutes>9)?minutes:'0'+minutes }}</span> : 
+        <span>{{(seconds>9)?seconds:'0'+seconds }}</span>
+    </p>
+</div>

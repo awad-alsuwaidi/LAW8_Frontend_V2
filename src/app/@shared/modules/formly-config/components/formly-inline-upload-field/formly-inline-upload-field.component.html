@@ -1,0 +1,19 @@
+<input type="file" class="hidden" #uploadFile (change)="onFileSelected($event)">
+
+@if(fileUrl){
+    <div class="size-32 relative">
+        <img [src]="fileUrl" alt="Upload Image" class="size-32 rounded-2xl object-cover">
+        <div (click)="reset()" class="cursor-pointer bg-error50 size-8 rounded-full left-1/2 transform -translate-x-1/2 -bottom-4 text-center absolute leading-8">
+
+            <i class="icon-trash text-textErrorBase" ></i>
+        </div>
+    </div>
+
+}@else {
+    <div class="border border-dashed border-primary rounded-md py-1.5 px-3.5 leading-normal bg-blue25 flex gap-4 cursor-pointer h-[42.4px] items-center" (click)="uploadFile.click()">
+        <div>
+            <img src="assets/images/icons/document-upload.svg" alt="Upload Image">
+        </div>
+        <p class="text-primary text-sm truncate">Upload Image</p>
+    </div>
+}

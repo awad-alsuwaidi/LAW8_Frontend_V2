@@ -1,0 +1,15 @@
+@if(props['readonly']){
+<p class="text-textSecondary text-sm font-bold mt-3">{{props['optionLabel']}}</p>
+
+}@else {
+@for (option of optionsArr||props['optionsArr']; track $index) {
+<div class="border border-borderPrimary rounded-md px-3 py-2 bg-grey50"
+  [ngClass]="{'!border-primary !bg-blue50':formControl.value==option.value}">
+
+  <label class="m-0 me-2 font-medium text-sm" [ngClass]="{'!font-bold':formControl.value==option.value}">{{ option.label
+    }}</label>
+  <p-radioButton [inputId]="field.key?.toString()" [formControl]="formControl" [value]="option.value"
+    [name]="field.key?.toString()" [formlyAttributes]="field" (onClick)="onChange($event)" />
+</div>
+}
+}

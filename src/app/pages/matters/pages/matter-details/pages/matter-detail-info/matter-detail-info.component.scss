@@ -1,0 +1,9 @@
+::ng-deep {
+    .p-chip {
+        @apply bg-grey100 text-sm me-2 mb-2
+    }
+
+    table {
+        @apply border-separate border-spacing-y-2
+    }
+}

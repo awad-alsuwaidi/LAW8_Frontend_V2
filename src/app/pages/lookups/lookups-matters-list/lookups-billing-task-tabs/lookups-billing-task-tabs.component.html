@@ -1,0 +1,10 @@
+<div class="bg-white rounded-2xl my-4">
+  <div class="px-6">
+    <p-tabMenu [model]="tabs" [(activeItem)]="activeItem" />
+  </div>
+</div>
+
+<app-lookups-sub-matter-list
+  *ngIf="selectedGroupId"
+  [subMatterListId]="selectedGroupId.toString()"
+/>

@@ -1,0 +1,103 @@
+<section class="space-y-4">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h1 class="text-colorsTextTextPrimary font-bold text-xl sm:text-2xl">
+            {{"users.users" | translate}}
+        </h1>
+
+        <app-shared-button [label]="'users.newUser' | translate" [styleClass]="
+        'flex bg-primary text-white !text-sm sm:!text-base !py-2 !px-6 !font-medium !leading-7 rounded-lg shadow-md hover:shadow-lg transition-all duration-300'
+      " [routerLink]="['/users/add']" [requiredPermission]="'Add_Users'" />
+    </div>
+
+    <!-- Table Container -->
+    <div class="bg-white py-6 rounded-2xl shadow-md">
+        <div class="px-4 sm:px-6 space-y-4">
+            <!-- Filters Row -->
+            <div class="flex flex-col sm:flex-row justify-between gap-3">
+                <app-shared-search class="flex-1" (searchValueChange)="searchValueChange($event)" />
+                <div class="flex gap-3 justify-end">
+                    <app-users-timesheet-editor />
+                    <app-users-toggle-view />
+                </div>
+            </div>
+
+            <!-- Table -->
+            <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination"
+                (filterChange)="onFilterChange($event)" (onPageChange)="onPageChange($event)"
+                (onSort)="onSortChange($event)" (onToggleSwitch)="onToggleSwitch($event)">
+
+
+                <!-- Custom Column -->
+                <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+                    <div class="flex items-center gap-3">
+                        <img [src]="'assets/images/user-avatar.svg'" alt="User"
+                            class="w-10 h-10 rounded-full border border-gray-200"
+                            onerror="this.src='assets/images/user-avatar.svg'" />
+                        <div class="grow">
+                            <p class="text-sm sm:text-base text-textSecondary font-semibold truncate w-32 sm:w-44 mb-1">
+                                {{ rowData.name }}
+                            </p>
+                            <span class="text-xs sm:text-sm text-grey500 font-medium">{{
+                                rowData.email
+                                }}</span>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <!-- Actions Column -->
+                <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+                    <div class="font-medium text-sm text-textSecondary">
+                        <div class="flex gap-4 sm:gap-6">
+                            <!-- View -->
+                            <div class="cursor-pointer hover:scale-110 transition-transform" title="View Details"
+                                [requiredPermission]="'View_Users'" [routerLink]="['/users/view-list', rowData.id]">
+                                <!-- Eye Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M15.58 12c0 1.98-1.6 3.58-3.58 3.58-1.98 0-3.58-1.6-3.58-3.58s1.6-3.58 3.58-3.58c1.98 0 3.58 1.6 3.58 3.58Z"
+                                        stroke="#717680" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path
+                                        d="M12 20.27c3.53 0 6.82-2.08 9.11-5.68 0.9-1.41 0.9-3.78 0-5.19C18.82 5.8 15.53 3.72 12 3.72 8.47 3.72 5.18 5.8 2.89 9.4c-.9 1.41-.9 3.78 0 5.19C5.18 18.19 8.47 20.27 12 20.27Z"
+                                        stroke="#717680" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </div>
+
+                            <!-- Edit -->
+                            <div class="cursor-pointer hover:scale-110 transition-transform" title="Edit User"
+                                [requiredPermission]="'Update_Users'" [routerLink]="['/users/update', rowData.id]">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                    viewBox="0 0 24 24" class="stroke-grey500 stroke-2">
+                                    <path d="M11 2h-2c-5 0-7 2-7 7v6c0 5 2 7 7 7h6c5 0 7-2 7-7v-2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path
+                                        d="m16.04 3.02-7.88 7.88c-.3.3-.6.89-.66 1.32l-.43 3c-.16 1.09.61 1.85 1.7 1.7l3-.43c.42-.06 1.01-.36 1.31-.66l7.88-7.88c1.36-1.36 2-2.94 0-4.94s-3.6-1.64-4.94 0Z"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+
+                            <!-- Reset Password -->
+                            <div class="cursor-pointer hover:scale-110 transition-transform" title="Reset Password"
+                                [requiredPermission]="'Change_password_Users'"
+                                (click)="openResetPasswordEditor(rowData)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path d="M9 22h6c5 0 7-2 7-7V9c0-5-2-7-7-7H9C4 2 2 4 2 9v6c0 5 2 7 7 7Z"
+                                        stroke="#717680" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                    <path
+                                        d="M16.28 13.61c-1.13 1.13-2.75 1.48-4.18 1.03L9.51 17.22c-.18.19-.55.31-.82.27l-1.2-.16c-.4-.05-.76-.44-.82-.82l-.16-1.2c-.04-.27.08-.64.27-.82l2.58-2.58c-.44-1.44-.1-3.06 1.03-4.18 1.62-1.62 4.26-1.62 5.88 0 1.62 1.62 1.62 4.26 0 5.88Z"
+                                        stroke="#717680" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </ng-template>
+            </app-shared-table>
+        </div>
+    </div>
+</section>

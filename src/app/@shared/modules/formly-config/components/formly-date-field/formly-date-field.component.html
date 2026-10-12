@@ -1,0 +1,23 @@
+<div class="p-fluid">
+  @if(props['readonly']){
+    <p class="text-textSecondary text-sm font-bold  mt-3">{{formControl.value|date:'d MMMM yyyy'}}</p>
+  }@else {
+    <p-calendar
+    [formControl]="formControl"
+    [formlyAttributes]="field"
+    dataType="string"
+    [dateFormat]="props['formate'] || 'yy-mm-dd'"
+    appendTo="body"
+    [timeOnly]="props['timeOnly'] || false"
+    [selectionMode]="props['selectionMode'] || 'single'"
+    [showTime]="props['showTime']"
+    hourFormat="12"
+    [minDate]="props['minDate']"
+    [maxDate]="props['maxDate']"
+    [autoZIndex]="true"
+    [showIcon]="true"
+    icon="icon-calendar"
+    (onSelect)="onSelect($event)"
+  />
+  }
+</div>

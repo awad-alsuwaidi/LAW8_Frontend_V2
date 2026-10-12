@@ -1,0 +1,9 @@
+::ng-deep {
+
+
+    p-skeleton:first-child,
+    p-skeleton:nth-child(2) {
+
+        @apply col-span-2;
+    }
+}

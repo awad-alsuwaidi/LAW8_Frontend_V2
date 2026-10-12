@@ -1,0 +1,26 @@
+<div class="mb-3">
+  <ngx-dropzone (change)="onSelect($event)" [compress]="true" [multiple]="props['multiple']">
+    <ngx-dropzone-label>
+      <div class="flex flex-col items-center">
+        <img
+          width="28"
+          height="28"
+          [src]="'assets/images/icons/document-upload.svg'"
+        />
+        <p class="py-2 text-xs">{{ "messages.uploadFile" | translate }}</p>
+
+        <p-button styleClass="bg-white text-primary py-1.5 py-4 border-primary h-8	rounded-md text-xs font-medium">{{
+          "btn.upload" | translate
+        }}</p-button>
+      </div>
+    </ngx-dropzone-label>
+    <ngx-dropzone-preview
+      *ngFor="let f of files"
+      [removable]="true"
+      (removed)="onRemove(f)"
+    >
+      <ngx-dropzone-label>{{ f.name }} ({{ f.type }})</ngx-dropzone-label>
+    </ngx-dropzone-preview>
+  </ngx-dropzone>
+</div>
+

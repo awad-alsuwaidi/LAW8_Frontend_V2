@@ -1,0 +1,58 @@
+<section class='bg-white rounded-2xl px-6 pb-6 mb-6'>
+    <!-- <div class="flex justify-between pt-6 mb-4">
+
+        <h2 class="font-bold text-grey500 text-lg ">{{ 'Timesheet' | translate }}</h2>
+        <app-security-matter-filter (onFilter)="onFilter($event)"/>
+    </div> -->
+    <div class="flex justify-between pt-6 mb-4">
+        <h2 class="font-bold text-grey500 text-lg ">{{ 'Matters' | translate }}</h2>
+
+        <div class="w-1/4 text-sm">
+            <app-security-matter-filter (onFilter)="onFilter($event)" />
+        </div>
+    </div>
+
+    <p-accordion body [multiple]="true">
+        <p-accordionTab>
+            <ng-template pTemplate="header">
+                <h5 class="font-bold text-sm text-textSecondary">
+                    {{(isInhouse ? 'clients.entities' : 'security.clients') | translate}}
+                </h5>
+            </ng-template>
+            <app-security-matter-clients [userId]="userId" />
+        </p-accordionTab>
+        <p-accordionTab>
+            <ng-template pTemplate="header">
+                <h5 class="font-bold text-sm text-textSecondary">
+                    {{'security.responsibleLawyer'|translate}}
+                </h5>
+            </ng-template>
+            <app-security-matter-responsable-lawyers [userId]="userId" />
+        </p-accordionTab>
+        <p-accordionTab>
+            <ng-template pTemplate="header">
+                <h5 class="font-bold text-sm text-textSecondary">
+                    {{'security.jurisdiction'|translate}}
+                </h5>
+            </ng-template>
+            <app-security-matter-jurisdiction [userId]="userId" />
+        </p-accordionTab>
+        <p-accordionTab>
+            <ng-template pTemplate="header">
+                <h5 class="font-bold text-sm text-textSecondary">
+                    {{'security.matterInclude'|translate}}
+                </h5>
+            </ng-template>
+            <app-security-matter-include [userId]="userId" />
+        </p-accordionTab>
+        <p-accordionTab>
+            <ng-template pTemplate="header">
+                <h5 class="font-bold text-sm text-textSecondary">
+                    {{'security.matterExclude'|translate}}
+                </h5>
+            </ng-template>
+            <app-security-matter-exclude [userId]="userId" />
+        </p-accordionTab>
+    </p-accordion>
+
+</section>

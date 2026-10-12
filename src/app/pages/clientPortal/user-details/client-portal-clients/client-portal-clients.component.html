@@ -1,0 +1,21 @@
+<section class='bg-white rounded-2xl px-6 pb-6 mb-6'>
+    <div class="flex justify-between pt-6 mb-4">
+        <h2 class="font-bold text-grey500 text-lg ">{{ 'common.clients' | translate }}</h2>
+
+        <!-- <div class="w-1/4 text-sm">
+            <app-security-matter-filter (onFilter)="onFilter($event)" />
+        </div> -->
+    </div>
+    <!-- <p-accordion>
+    <p-accordionTab>
+        <ng-template pTemplate="header">
+            <h5 class="font-bold text-sm text-textSecondary">
+                {{'security.clients'|translate}}
+            </h5>
+        </ng-template>
+        <app-security-matter-clients [userId]="userId" />
+    </p-accordionTab>
+</p-accordion> -->
+        <app-security-matter-clients [userId]="userId" />
+
+</section>

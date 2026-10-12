@@ -1,0 +1,20 @@
+<p-accordion styleClass="bg-white rounded-2xl my-4 p-6" [activeIndex]=-1>
+    <p-accordionTab header="Expenses">
+        <div class="mb-4">
+            <formly-form [form]="formly" [fields]="fields" [model]="model"></formly-form>
+
+        </div>
+        <div class="bg-grey50 px-4 rounded-md">
+              <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination" [withPagination]="true"
+                [withCheckbox]="true" [selectedRows]="defaultSelected" (onRowSelectChange)="onRowSelect($event)" (onSort)="onSort($event)"
+                (onPageChange)="changePage($event)">
+            </app-shared-table>
+        </div>
+        <div class=" mt-4 mb-10">
+            <div>
+                <span class="text-xs font-medium  me-12">{{ "Total Amount" | translate }} </span>
+                <span class="font-bold text-sm">{{ totalAmount | number : "1.0-2" }}</span>
+            </div>
+        </div>
+    </p-accordionTab>
+</p-accordion>

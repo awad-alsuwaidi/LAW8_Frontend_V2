@@ -1,0 +1,50 @@
+<section>
+  <div class="flex justify-between">
+    <h1 class="font-bold text-grey500 text-lg mb-4">{{ 'matters.taskGroup' | translate }}</h1>
+
+  </div>
+  <form class="mt-2 p-lg-2  mb-4" [formGroup]="formly" body (ngSubmit)="onSubmit()">
+    <div class="bg-white p-6 rounded-2xl">
+      <div class="mb-3">
+        <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel"></formly-form>
+      </div>
+      <app-shared-table [columns]="columns" [withPagination]="false" [data]="data" [statusConfig]="priorityConfig"
+        [withCheckbox]="true" (onRowSelectChange)="onRowSelectChange($event)" [selectedRows]="selectedTasks">
+        <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+          <div class="relative inline-block">
+            @if (rowData.isHaveAttachment) {
+            <img src="/assets/images/icons/attachment.svg" alt="Attachment" class="absolute end-0 -top-1" />
+            }
+            <app-shared-status [label]="rowData.statusName" [data]="rowData.status" [statusConfig]="statusConfig" />
+          </div>
+        </ng-template>
+        <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+          <div class="font-medium text-sm text-textSecondary rounded-e-lg w-14">
+            <div class="flex gap-6 w-14">
+              <div class="cursor-pointer" (click)="openTaskDetails(rowData)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M15.5799 12.0002C15.5799 13.9802 13.9799 15.5802 11.9999 15.5802C10.0199 15.5802 8.41992 13.9802 8.41992 12.0002C8.41992 10.0202 10.0199 8.42017 11.9999 8.42017C13.9799 8.42017 15.5799 10.0202 15.5799 12.0002Z"
+                    stroke="#A4A7AE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M11.9998 20.2701C15.5298 20.2701 18.8198 18.1901 21.1098 14.5901C22.0098 13.1801 22.0098 10.8101 21.1098 9.40009C18.8198 5.80009 15.5298 3.72009 11.9998 3.72009C8.46984 3.72009 5.17984 5.80009 2.88984 9.40009C1.98984 10.8101 1.98984 13.1801 2.88984 14.5901C5.17984 18.1901 8.46984 20.2701 11.9998 20.2701Z"
+                    stroke="#A4A7AE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </app-shared-table>
+    </div>
+    <div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+      <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'common.cancel'|translate" (onClick)="back()" />
+      <app-shared-button [btnType]="'submit'"
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"[label]="'common.save'|translate"
+        [isLoading]="isLoading" />
+    </div>
+  </form>
+
+
+</section>

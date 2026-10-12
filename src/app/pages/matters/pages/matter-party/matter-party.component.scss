@@ -1,0 +1,20 @@
+::ng-deep {
+    table {
+        @apply border-separate border-spacing-y-2
+    }
+    .empty{
+        &-title{
+            @apply bg-transparent
+        }
+        &-body{
+            
+            img{
+                @apply w-60
+            }
+            @apply min-h-[calc(40vh)];
+        }
+    }
+        .p-datatable .p-datatable-tbody > tr > td{
+        @apply text-start
+    }
+}

@@ -1,0 +1,11 @@
+<form [formGroup]="formly" (ngSubmit)="onSubmit()">
+    <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel"></formly-form>
+    <div class="flex gap-4 justify-end mt-4 pb-4">
+        <app-shared-button [btnType]="'button'"
+            styleClass="border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+            [label]="'common.reset'|translate" (onClick)="_dynamicDialogRef.close()" />
+        <app-shared-button [btnType]="'submit'"
+            styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+            [label]="'common.save'|translate" [isLoading]="isLoading" />
+    </div>
+</form>

@@ -1,0 +1,12 @@
+:host ::ng-deep {
+    input {
+        @apply h-10 w-full bg-white border border-gray-300;
+    }
+
+    .iti__dropdown-content{
+        @apply w-max #{!important}
+    }
+    li{
+        @apply text-xs #{!important}
+    }
+}

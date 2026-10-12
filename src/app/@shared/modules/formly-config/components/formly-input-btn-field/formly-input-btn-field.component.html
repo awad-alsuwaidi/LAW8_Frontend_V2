@@ -1,0 +1,29 @@
+@if(props['readonly']){
+<p class="text-textSecondary text-sm font-bold  mt-3">
+  {{ formControl.value }}
+</p>
+}@else {
+<div
+  class="input-field flex items-center transition-all duration-300 ease-in-out"
+  [ngClass]="{
+    '!border-borderErrorSubtle': formControl.invalid && formControl.touched,
+    '!w-14': !fullWidth,
+    '!w-full': fullWidth
+  }"
+>
+  <input
+    type="text"
+    pInputText
+    [formControl]="formControl"
+    [formlyAttributes]="field"
+    [class]="props['class']"
+    [placeholder]="props['placeholder']"
+    (input)="onInput($event)"
+  />
+  <app-shared-button
+    [icon]="props['btnIcon']"
+    [styleClass]="props['btnClass']"
+    (onClick)="toggleWidth()"
+  />
+</div>
+}

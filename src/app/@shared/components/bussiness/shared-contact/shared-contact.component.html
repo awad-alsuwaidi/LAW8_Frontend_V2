@@ -1,0 +1,173 @@
+<!-- @if(contacts.length==0){
+<app-shared-empty-section [emptyConfig]="emptyConfig" />
+}@else {
+
+<div class="flex justify-between mb-4">
+    <p class="font-poppins font-medium text-sm text-grey500 leading-9">{{totalRecords}} {{ 'matters.records' | translate
+        }}</p>
+    @if(!_router.url.includes('matters/inactive')){
+    <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [label]="'clients.addNewContact' | translate"
+        [styleClass]="
+          'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'"
+        [requiredPermission]="routeData['addPermission']" (onClick)="onOpenContactEditor()" />
+    }
+</div>
+
+@for(contact of contacts;track contact.id){
+<div class="flex justify-between bg-white px-6 py-4 shadow-sm rounded-2xl mb-2">
+    <div class="grid md:grid-cols-3 gap-4 w-full">
+        <div class="flex gap-4">
+            <img src="assets/images/icons/contact.svg" alt="contact" class="w-14 h-14">
+            <div>
+                <p class="font-poppins font-bold text-md text-textSecondary">{{contact.fullName}}</p>
+                <p class="font-poppins font-medium text-xs text-grey500">{{contact.position}}</p>
+            </div>
+        </div>
+        <div>
+            <p class="font-poppins font-bold text-md text-textSecondary">{{contact.phone}}</p>
+            <p class="font-poppins font-medium text-xs text-grey500">{{contact.mobile}}</p>
+        </div>
+        <div>
+            <p class="font-poppins font-bold text-md text-textSecondary">{{contact.email}}</p>
+            <p class="font-poppins font-medium text-xs text-grey500 truncate max-w-64">{{contact.fax}}</p>
+        </div>
+    </div>
+    @if(!_router.url.includes('matters/inactive')){
+
+    <div class="self-center">
+        <p-menu #menu [model]="menuItems" [popup]="true" />
+        <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" [styleClass]="'!py-1 !px-0'"
+            (onClick)="menu.toggle($event);onRowSelected(contact)" />
+    </div>
+    }
+</div>
+}
+}
+
+@if(totalRecords > 5&&!_router.url.includes('add')){
+<p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)" [first]="0" [rows]="5" pageLinkSize="2"
+    [totalRecords]="totalRecords" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" />
+
+}
+@if(_router.url.includes('add')){
+
+<div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+    <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'common.cancel'|translate" (onClick)="matterDetailsEditorComponent.cancel()" />
+    <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-primary text-primary px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'matters.next' | translate" (onClick)="nextPage()" />
+    <app-shared-button (onClick)="matterDetailsEditorComponent.onSubmit()"
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'matters.save'| translate " [isLoading]="matterDetailsEditorComponent.isLoading"
+        [requiredPermission]="routeData['addPermission']" />
+</div>
+} -->
+
+
+@if(contacts.length==0){
+  <app-shared-empty-section [emptyConfig]="emptyConfig" />
+}
+@else {
+
+<div class="flex justify-between mb-4">
+  <p class="font-poppins font-medium text-sm text-grey500 leading-9">
+    {{ totalRecords }} {{ 'matters.records' | translate }}
+  </p>
+
+  @if(!_router.url.includes('matters/inactive')){
+    <app-shared-button
+      [icon]="'icon-add-circle text-primary !text-2xl '"
+      [label]="'clients.addNewContact' | translate"
+      [styleClass]="'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'"
+      [requiredPermission]="routeData['addPermission']"
+      (onClick)="onOpenContactEditor()"
+    />
+  }
+</div>
+
+<p-table
+  [value]="contacts"
+  [lazy]="true"
+  (onLazyLoad)="loadData($event)"
+  [paginator]="false"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+>
+
+  <!-- HEADER -->
+  <ng-template pTemplate="header">
+    <tr>
+      @for (col of contactColumns; track $index) {
+        <th
+          [pSortableColumn]="col.field"
+          class="text-sm text-greyscale600 font-medium bg-grey50"
+        >
+          <div class="flex items-center gap-2">
+            {{ col.header | translate }}
+            <p-sortIcon [field]="col.field"></p-sortIcon>
+          </div>
+        </th>
+      }
+
+      <th class="text-sm text-greyscale600 font-medium bg-grey50 text-right w-20">
+        {{ 'common.actions' | translate }}
+      </th>
+    </tr>
+  </ng-template>
+
+  <!-- BODY -->
+  <ng-template pTemplate="body" let-contact>
+    <tr>
+      <td class="font-medium text-sm text-textSecondary">
+        {{ contact.fullName }}
+      </td>
+
+      <td class="font-medium text-sm text-textSecondary">
+        {{ contact.phone }}
+      </td>
+
+      <td class="font-medium text-sm text-textSecondary">
+        {{ contact.email }}
+      </td>
+
+      <td class="text-right">
+        @if(!_router.url.includes('matters/inactive')){
+          <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+          <app-shared-button
+            [icon]="'icon-more-square text-grey500 !text-base'"
+            [styleClass]="'!py-1 !px-0'"
+            (onClick)="menu.toggle($event);onRowSelected(contact)"
+          />
+        }
+      </td>
+    </tr>
+  </ng-template>
+
+</p-table>
+
+}
+
+@if(totalRecords > 10&&!_router.url.includes('add')){
+<p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)" [first]="0" [rows]="10" pageLinkSize="2"
+    [totalRecords]="totalRecords" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" />
+
+}
+@if(_router.url.includes('add')){
+
+<div class="flex gap-4 justify-end mt-4 px-4 pb-4">
+    <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'common.cancel'|translate" (onClick)="matterDetailsEditorComponent.cancel()" />
+    <app-shared-button [btnType]="'button'"
+        styleClass="bg-white border border-primary text-primary px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'matters.next' | translate" (onClick)="nextPage()" />
+    <app-shared-button (onClick)="matterDetailsEditorComponent.onSubmit()"
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="'matters.save'| translate " [isLoading]="matterDetailsEditorComponent.isLoading"
+        [requiredPermission]="routeData['addPermission']" />
+</div>
+}

@@ -1,0 +1,10 @@
+::ng-deep{
+    shared-language{
+        button{
+
+            i,span{
+                @apply text-textTertairy
+            }
+        }
+    }
+}

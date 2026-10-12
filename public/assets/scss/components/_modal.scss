@@ -1,0 +1,15 @@
+.p-dialog {
+    @apply max-sm:w-[95%] #{!important}
+}
+
+.p-dialog {
+    @apply rounded-2xl #{!important};
+}
+
+.p-dialog .p-dialog-header {
+    @apply p-4 rounded-t-2xl #{!important};
+}
+
+.p-dialog .p-dialog-content:last-of-type {
+    @apply rounded-b-2xl #{!important};
+}

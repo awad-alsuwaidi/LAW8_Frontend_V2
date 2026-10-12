@@ -1,0 +1,339 @@
+@if(!isAlsuwaidi){
+ @if(data){
+<section class="bg-white p-6 rounded-2xl mb-4">
+  @if(!_router.url.includes('inactive')){
+  <div class="flex justify-end mb-4" >
+    <app-shared-button
+  *ngIf="hasPermission('Update_Matter')"
+  [label]="'matters.update' | translate"
+  [styleClass]="'bg-primary text-white !text-sm !py-1 !font-medium !leading-8'"
+  [routerLink]="['/matters/edit', data.id]" />
+
+
+  </div>
+  }
+  <h2 class="mb-4 text-grey500 font-bold text-lg">{{ 'matters.matterDetails' | translate }}</h2>
+  <div class="flex p-2 gap-4 items-start">
+    <img src="assets/images/icons/open-folder.svg" alt="" />
+    <div class="grow grid gap-6 grid-cols-3">
+      <div class="col-span-3">
+        <span class="text-primary font-bold text-sm me-3">{{ data.mtrNo }}</span>
+        @if(![practiceArea.Corporate, practiceArea.IntelecturualProperty].includes(data.practsAreaId)){
+        <span class="text-xs me-3">{{ data.stage }}</span>
+        }
+        @if(data.practsAreaId != practiceArea.IntelecturualProperty){
+        <app-shared-status [data]="data.statusId" [label]="data.status" [statusConfig]="statusConfig" />
+        }
+      </div>
+      <div class="col-span-3">
+        <p class="font-bold text-textSecondary text-sm">{{ data.descr }}</p>
+      </div>
+      <div class="col-span-3">
+        <p class="text-sm text-grey500 mb-3.5">
+           {{
+    isInhouse
+      ? ('matters.entity' | translate)
+      : ('matters.client' | translate)
+  }}
+         </p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.client }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.openDate' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.openDate | date : "MMMM d, y" }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.closeDate' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.closeDate | date : "MMMM d, y" }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.branch' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.law_Branch }}</p>
+      </div>
+      <div class="border border-grey100 col-span-3"></div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.practiceArea' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.practsArea }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.matterCategory' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.law_MtrCat }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.matterType' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.mtrType }}</p>
+      </div>
+      @if(data.practsAreaId != practiceArea.IntelecturualProperty){
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.jurisdiction' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.jurisdiction }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.court' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.judicature }}</p>
+      </div>
+      }
+      @if(![practiceArea.Corporate, practiceArea.IntelecturualProperty].includes(data.practsAreaId)){
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.courtNumber' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.courtNumber }}</p>
+      </div>
+      }
+      @if(data.practsAreaId == practiceArea.IntelecturualProperty){
+      @if(data.law_MtrCatId == 8){
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.trademarkType' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">
+          {{ MatterTradeMarkLabels[data.tradmarkTypeId ?? ''] | translate }}
+        </p>
+      </div>
+      }
+      @if(data.tradmarkTypeId == MatterTradeMark.Logo){
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.logoImage' | translate }}</p>
+        <img [src]="data.logoFilePath" alt="" class="size-32 rounded-2xl" />
+      </div>
+      } @else {
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.wordMark' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.wordMark }}</p>
+      </div>
+      <div>
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.caseSensitive' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">
+          {{ (data.isCaseSensitive ? 'common.yes' : 'common.no') | translate }}
+        </p>
+      </div>
+      }
+      }
+      <div class="col-span-3">
+        <p class="text-sm text-grey500 mb-3.5">{{ 'matters.notes' | translate }}</p>
+        <p class="font-bold text-textSecondary text-sm">{{ data.notes }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white p-6 rounded-2xl mb-4">
+  <h2 class="mb-4 text-grey500 font-bold text-lg">{{ 'matters.teamWork' | translate }}</h2>
+  <div class="grow grid gap-6 grid-cols-3">
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">{{ 'matters.responsibleLawyer' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ResponsibleLaywer }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">{{ 'matters.assignedLawyer' | translate }}</p>
+      <div>
+        @for (item of data.law_AssignedLaywerList; track $index) {
+        <p-chip [label]="item.name" />
+        }
+      </div>
+    </div>
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">{{ 'matters.otherStaff' | translate }}</p>
+      <div>
+        @for (item of data.law_OtherStaffList; track $index) {
+        <p-chip [label]="item.name" />
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white p-6 rounded-2xl mb-4">
+  <h2 class="mb-4 text-grey500 font-bold text-lg">{{ 'matters.referrals' | translate }}</h2>
+  <div class="grow grid gap-6 grid-cols-3">
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">  {{
+    isInhouse
+      ? ('matters.entityIntroducing' | translate)
+      : ('matters.clientIntroducing' | translate)
+  }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ClientIntroducing }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">{{ 'matters.matterIntroducingLawyer' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_MatterIntroducingLawyer }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey500 mb-3.5">{{ 'matters.referralType' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ReferralType }}</p>
+    </div>
+  </div>
+</section>
+
+<app-matter-address [matterIdentifier]="matterIdentifier" />
+}
+}
+
+
+@if(isAlsuwaidi){
+@if(data){
+<section class="bg-white p-6 rounded-2xl mb-4">
+
+  @if(!_router.url.includes('inactive')){
+  <div class="flex justify-end mb-4">
+    <app-shared-button
+      *ngIf="hasPermission('Update_Matter')"
+      [label]="'matters.update' | translate"
+      [styleClass]="'bg-primary text-white !text-sm !py-1 !font-medium !leading-8'"
+      [routerLink]="['/matters/edit', data.id]" />
+  </div>
+  }
+
+  <h2 class="mb-4 text-grey500 font-bold text-lg">
+    {{ 'matters.matterDetails' | translate }}
+  </h2>
+
+  <div class="flex p-2 gap-4 items-start">
+    <img src="assets/images/icons/open-folder.svg" alt="" />
+
+    <div class="grow grid gap-4 grid-cols-3 text-sm">
+
+      <div class="col-span-3 flex items-center gap-3">
+        <span class="text-primary font-bold">{{ data.mtrNo }}</span>
+
+        @if(![practiceArea.Corporate, practiceArea.IntelecturualProperty].includes(data.practsAreaId)){
+          <span class="text-xs">{{ data.stage }}</span>
+        }
+
+        @if(data.practsAreaId != practiceArea.IntelecturualProperty){
+          <app-shared-status
+            [data]="data.statusId"
+            [label]="data.status"
+            [statusConfig]="statusConfig" />
+        }
+      </div>
+
+      <div class="col-span-3 flex items-start gap-2">
+        <span class="text-grey1000">
+          {{ 'matters.description' | translate }}:
+        </span>
+        <span class="font-bold text-textSecondary">
+          {{ data.descr }}
+        </span>
+      </div>
+
+      <div class="col-span-3 flex items-center gap-2">
+        <span class="text-grey1000">
+          {{ 'matters.client' | translate }}:
+        </span>
+        <span class="font-bold text-textSecondary">
+          {{ data.client }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.openDate' | translate }}:</span>
+        <span class="font-bold text-textSecondary">
+          {{ data.openDate | date : "MMMM d, y" }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.closeDate' | translate }}:</span>
+        <span class="font-bold text-textSecondary">
+          {{ data.closeDate | date : "MMMM d, y" }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.branch' | translate }}:</span>
+        <span class="font-bold text-textSecondary">
+          {{ data.law_Branch }}
+        </span>
+      </div>
+
+      <div class="border border-grey100 col-span-3"></div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.practiceArea' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.practsArea }}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.matterCategory' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.law_MtrCat }}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.matterType' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.mtrType }}</span>
+      </div>
+
+      @if(data.practsAreaId != practiceArea.IntelecturualProperty){
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.jurisdiction' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.jurisdiction }}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.court' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.judicature }}</span>
+      </div>
+      }
+
+      @if(![practiceArea.Corporate, practiceArea.IntelecturualProperty].includes(data.practsAreaId)){
+      <div class="flex items-center gap-2">
+        <span class="text-grey1000">{{ 'matters.courtNumber' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.courtNumber }}</span>
+      </div>
+      }
+
+      <div class="col-span-3 flex items-start gap-2">
+        <span class="text-grey1000">{{ 'matters.notes' | translate }}:</span>
+        <span class="font-bold text-textSecondary">{{ data.notes }}</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="bg-white p-6 rounded-2xl mb-4">
+  <h2 class="mb-4 text-grey500 font-bold text-lg">{{ 'matters.teamWork' | translate }}</h2>
+  <div class="grow grid gap-6 grid-cols-3">
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.responsibleLawyer' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ResponsibleLaywer }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.assignedLawyer' | translate }}</p>
+      <div>
+        @for (item of data.law_AssignedLaywerList; track $index) {
+        <p-chip [label]="item.name" />
+        }
+      </div>
+    </div>
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.otherStaff' | translate }}</p>
+      <div>
+        @for (item of data.law_OtherStaffList; track $index) {
+        <p-chip [label]="item.name" />
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white p-6 rounded-2xl mb-4">
+  <h2 class="mb-4 text-grey500 font-bold text-lg">{{ 'matters.referrals' | translate }}</h2>
+  <div class="grow grid gap-6 grid-cols-3">
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.clientIntroducing' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ClientIntroducing }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.matterIntroducingLawyer' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_MatterIntroducingLawyer }}</p>
+    </div>
+    <div>
+      <p class="text-sm text-grey1000 mb-3.5">{{ 'matters.referralType' | translate }}</p>
+      <p class="font-bold text-textSecondary text-sm">{{ data.law_ReferralType }}</p>
+    </div>
+  </div>
+</section>
+
+<app-matter-address [matterIdentifier]="matterIdentifier" /> 
+
+} 
+} 

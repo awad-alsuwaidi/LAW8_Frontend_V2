@@ -1,0 +1,28 @@
+<section>
+    <div class="flex justify-between  mb-4">
+        <h1 class="text-2xl font-bold">{{ 'Settings' | translate }}</h1>
+        <!-- <div class="flex gap-2">
+            <app-shared-button [label]="'Add G/L Account'|translate"
+                [styleClass]="'bg-white  text-primary border border-primary  !text-sm !py-1 !font-medium !leading-8'" />
+            <app-shared-button [label]="'Add Bank Account'|translate"
+                [styleClass]="'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'" />
+        </div> -->
+    </div>
+    <div class="flex gap-4">
+        <aside class="bg-white w-60 rounded-lg py-4 md:h-[calc(100vh-12rem)]">
+            <nav>
+                <ul class="flex flex-col gap-3">
+                    @for (item of menu; track $index) {
+                        <li>
+                            <a href="" [routerLink]="item.routerLink" routerLinkActive="active" class="block px-4 py-3 border-s-2 border-transparent hover:bg-blue25 hover:text-primary hover: hover:border-primary transition-colors duration-300 ease-in-out">{{item.label|translate}}</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </aside>
+        <div class="grow">
+
+            <router-outlet />
+        </div>
+    </div>
+</section>

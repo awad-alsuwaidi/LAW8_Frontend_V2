@@ -1,0 +1,42 @@
+.custom-table {
+    th {}
+}
+
+:host ::ng-deep {
+    .p-datatable .p-datatable-thead>tr>th {
+        @apply bg-blue25
+    }
+
+    .p-checkbox .p-checkbox-box.p-highlight {
+        @apply bg-successBase500 border-successBase500
+    }
+
+}
+
+::ng-deep {
+    .p-datatable>.p-datatable-wrapper{
+        @apply overflow-hidden
+    }
+    .p-dialog .p-dialog-content {
+        @apply p-0
+    }
+
+    p-tableCheckbox {
+        @apply px-6 py-4 rounded-xl bg-white
+    }
+
+    td:nth-of-type(2){
+        @apply min-w-36 font-bold border-e border-e-grey100
+    }
+
+    .p-datatable .p-datatable-tbody>tr.row-highlight {
+        .p-checkbox {
+            @apply m-0
+        }
+
+        @apply bg-blue50;
+
+    }
+}
+
+// .p-datatable.p-datatable-sm .p-datatable-tbody > tr > td 

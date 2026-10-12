@@ -1,0 +1,74 @@
+<div class="relative w-full max-w-full">
+  <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+
+    <!-- Form -->
+    <div class="flex-1 w-full min-w-0">
+      <formly-form [model]="formlyModel" [fields]="formlyFields" [form]="formly" />
+    </div>
+
+    <!-- Button -->
+    <div *ngIf="!isOpen" class="flex-shrink-0">
+      <app-shared-button [btnType]="'button'" [label]="'topBar.advancedSearch'|translate"
+        [styleClass]="'font-large text-primary !text-sm !px-4 !py-1.5 w-full sm:w-auto'" (click)="openInNewTab()" />
+      <!-- (onClick)="_router.navigate(['/advanced-search'])" -->
+    </div>
+
+  </div>
+
+  <!-- Dropdown -->
+  <div [@openClose]="isOpen ? 'open' : 'closed'"
+    class="absolute z-20 mt-2 w-full sm:w-[513px] max-w-full origin-top-right transform rounded-2xl bg-white px-3.5 py-4 shadow-lg ring-1 ring-transparent ring-opacity-5 transition focus:outline-none">
+
+    <!-- Header -->
+    <div class="flex justify-between mb-2 py-1">
+      <span class="text-xs text-textSecondary font-bold">{{'topBar.result'|translate}} :</span>
+      <i class="icon-close cursor-pointer text-xl" (click)="isOpen=false"></i>
+    </div>
+
+    <ul
+      class="flex flex-col gap-1 border-y py-2 border-grey200 max-h-80 overflow-y-auto scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
+      @if(loading){
+      <li class="animate-pulse flex flex-col gap-2 py-2">
+        <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+        <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+        <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+      </li>}@else {
+      <!-- Results -->
+
+      <li *ngIf="searchResult.length === 0"
+        class="flex justify-between items-center gap-4 rounded-md p-2 text-sm font-medium text-textTertairy transition-all duration-200 hover:bg-grey100">
+        <p>No Result</p>
+      </li>
+
+      <li *ngFor="let item of searchResult; let i = index" (click)="selectItem(item)"
+        class="flex justify-between items-center gap-4 rounded-md p-2 text-sm font-medium text-textTertairy transition-all duration-200 hover:bg-grey100">
+
+        <div class="flex-1 min-w-0">
+          <p class="mb-1 truncate">
+            <span class="font-bold text-sm text-textSecondary pe-2 border-e border-grey400"
+              [innerHTML]="item.code|highlight:searchValue"></span>
+            <span class="font-medium text-xs text-textTertairy ps-2 truncate"
+              [innerHTML]="item.name|highlight:searchValue"></span>
+          </p>
+          <p class="text-textTertairy text-xs truncate" [innerHTML]="item.desc|highlight:searchValue"></p>
+        </div>
+
+        <div class="flex-shrink-0">
+          <span
+            class="py-0.5 px-2 border border-blue200 rounded-full bg-blue50 text-xs text-blue600">{{item.category}}</span>
+        </div>
+
+      </li>
+      }
+    </ul>
+
+    <!-- Footer -->
+
+    <div class="text-center py-1.5 px-4 mt-2">
+      <p class="text-primary cursor-pointer font-medium text-xs" (click)="openInNewTab()">
+        {{'topBar.tryAdvancedSearch'|translate}}
+      </p>
+    </div>
+
+  </div>
+</div>

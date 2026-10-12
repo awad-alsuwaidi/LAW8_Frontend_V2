@@ -1,0 +1,19 @@
+<div class="border rounded-lg border-grey200 p-2 bg-white shadow-custom" [requiredPermission]="'Update_Users'">
+    <app-shared-button [icon]="'icon-calendar !text-base'"
+        [styleClass]="'hover:bg-grey100 text-textTertairy !p-1 !rounded-[4px] !size-6 flex justify-center items-center'"
+        (onClick)="op.toggle($event)" />
+</div>
+<p-overlayPanel #op>
+    <form class="mt-2 p-lg-2" [formGroup]="formly" body (ngSubmit)="onSubmit()" >
+        <h2 class="mb-4">{{'menu.calendar'|translate}}</h2>
+        <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel"></formly-form>
+        <div class="flex gap-2 justify-end mt-4">
+            <app-shared-button
+                styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+              [label]="'common.cancel' | translate" (onClick)="op.hide()" />
+            <app-shared-button styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.save' | translate" [btnType]="'submit'" [isLoading]="isLoading" />
+        </div>
+    </form>
+
+</p-overlayPanel>

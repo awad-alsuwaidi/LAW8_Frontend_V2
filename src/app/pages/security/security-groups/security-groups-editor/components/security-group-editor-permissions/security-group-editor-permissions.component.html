@@ -1,0 +1,73 @@
+<div class="grid grid-cols-3 gap-4 bg-white p-6 rounded-2xl">
+
+  <div class="flex flex-col gap-4">
+    <h1 class="text-colorsTextTextPrimary font-bold text-2xl"> Security Group Permissions
+    </h1>
+    <app-shared-search (searchValueChange)="onSearch($event)" />
+    <p-scrollPanel [style]="{ width: '100%', height: '300px' }">
+
+      <div class="flex flex-col gap-2">
+
+        @for(item of permissionSections(); track $index){
+        <div
+          class="px-4 py-3 rounded-lg bg-white flex justify-between items-center gap-2 cursor-pointer hover:bg-blue50 hover:text-primary min-w-max group"
+          [routerLinkActive]="'active'" (click)="onMenuItemClick.emit(item.id);selectedItem=item"
+          [class]="item.id==selectedItem?.id?'bg-blue50 text-primary':''">
+          
+          <span class="text-sm font-medium">{{ item.name }}</span>
+          @if(!_router.url.includes('add')){
+
+          <span
+            class="inline-block size-8 leading-8 rounded-full text-greyScale100 bg-grey500 font-medium text-xs text-center group-hover:bg-primary">
+            {{ item.count }}
+          </span>
+          }
+        </div>
+        }
+      </div>
+    </p-scrollPanel>
+  </div>
+  <div class="col-span-2">
+    <div>
+      <p-accordion [multiple]="true" [activeIndex]="activeIndexes()">
+
+        @for (section of permissionSectionsDetails(); track section.id; let i = $index) {
+        <p-accordionTab>
+          <!-- Custom Header -->
+          <ng-template pTemplate="header">
+            <div class="bg-bgColor flex w-full items-center gap-2">
+              <div [class]="section.mainChecked==false?'tri-checkbox':''">
+                <p-triStateCheckbox [(ngModel)]="section.mainChecked" [inputId]="section.id + '-main'"
+                  (onChange)="onMainCheckboxChange(i, $event)"
+                  [checkboxFalseIcon]="'icon-Checkbox text-grey500 text-xl'" (click)="stopPropagation($event)" />
+              </div>
+              <label [for]="section.id + '-main'" class="text-sm font-bold cursor-pointer"
+                (click)="stopPropagation($event)">
+                {{ section.name }}
+              </label>
+            </div>
+          </ng-template>
+
+          <!-- Accordion Content -->
+          @if (section.roleModulesItems && section.roleModulesItems.length > 0) {
+          <div class="flex w-full flex-wrap gap-6 py-2">
+            @for (permission of section.roleModulesItems; track permission.id; let j = $index) {
+            <div class="flex items-center gap-2">
+              <p-checkbox [binary]="true" [(ngModel)]="permission.isSelected"
+                [inputId]="section.id + '-' + permission.id" (onChange)="onPermissionChange(i, j, $event)"
+                (click)="stopPropagation($event)">
+              </p-checkbox>
+              <label [for]="section.id + '-' + permission.id" class="text-sm font-medium cursor-pointer"
+                (click)="stopPropagation($event)">
+                {{ permission.name }}
+              </label>
+            </div>
+            }
+          </div>
+          }
+        </p-accordionTab>
+        }
+      </p-accordion>
+    </div>
+  </div>
+</div>

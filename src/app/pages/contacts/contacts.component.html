@@ -1,0 +1,29 @@
+ <section>
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-colorsTextTextPrimary font-bold text-2xl">{{'common.contacts' |translate}}</h1>
+       
+        <app-shared-button [label]="'clients.addNewContact'|translate"
+        [icon]="'icon-add-circle text-white !text-2xl'"
+        [styleClass]="'bg-primary text-white !text-sm !py-1 !font-medium !leading-8 !px-3 flex'" (onClick)="openContactEditor()" [requiredPermission]="'Add_Contacts'" />
+    </div>
+
+    <div class='bg-white rounded-2xl px-6'>
+        <app-contact-filter (onFilter)="onFilter($event)"/>
+        <app-shared-table [columns]="columns" [data]="data" [pagination]="pagination"
+            (onPageChange)="onPageChange($event)" (onSort)="onSort($event)">
+            <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+                <div class="inline-flex gap-2 bg-grey100 p-1.5 rounded items-center">
+                    <span class="font-bold text-sm text-textSecondary" [ngClass]="{'!text-grey400':rowData.attachment.length==0}">{{rowData.attachment.length}}</span>
+                    <span class="icon-attachment text-base text-primary" [ngClass]="{'!text-grey400':rowData.attachment.length==0}"></span>
+                </div>
+            </ng-template>
+            <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+                <div class="self-center ">
+                <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+                <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" [styleClass]="'!py-1 !px-0'" (onClick)="menu.toggle($event);onRowSelected(rowData)"/>
+            </div>
+              </ng-template>
+        </app-shared-table>
+
+    </div>
+</section>

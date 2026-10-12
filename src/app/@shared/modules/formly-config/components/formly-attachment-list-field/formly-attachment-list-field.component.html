@@ -1,0 +1,83 @@
+<div class="mb-3">
+@if (
+  (props["showSelectFromMatterBtn"] && !props["readonly"]) ||
+  (props["showLabelInReadonly"] && props["readonly"])
+) {
+  <div class="flex justify-between items-center mb-2">
+
+    <span class="text-sm text-grey500 font-medium">
+      {{ "lookups.attachDocument" | translate }}
+    </span>
+
+    @if (props["showSelectFromMatterBtn"] && !props["readonly"]) {
+      <button
+        type="button"
+        class="p-button p-component p-button-outlined p-button-sm w-50"
+        style="color: #2d61f5; border: none; padding: 3px;"
+        (click)="props['onSelectFromMatterClick']?.()"
+      >
+        <img
+          src="./assets/images/icons/attachment-svgrepo-com1.png"
+          alt="download file"
+          width="24"
+          height="24"
+          style="padding: 3px;"
+        />
+
+        {{ "matters.selectFromMatter" | translate }}
+      </button>
+    }
+
+  </div>
+  }
+  @if (!props["readonly"]) {
+    <ngx-dropzone (change)="onSelect($event)" [multiple]="true">
+      <ngx-dropzone-label>
+        <div class="flex flex-col items-center">
+          <img
+            width="28"
+            height="28"
+            [src]="'assets/images/icons/document-upload.svg'"
+          />
+          <p class="py-2 text-xs">{{ "messages.uploadFile" | translate }}</p>
+          <p-button
+            styleClass="bg-white text-primary py-1.5 py-4 border-primary h-8 rounded-md text-xs font-medium"
+          >
+            {{ "btn.upload" | translate }}
+          </p-button>
+        </div>
+      </ngx-dropzone-label>
+    </ngx-dropzone>
+  }
+  @if (files.length > 0) {
+    <div class="mt-3 p-2">
+      @for (file of files; track $index) {
+        <div class="flex justify-between items-center p-2 mb-2">
+          <span class="text-sm font-medium text-textSecondary">{{
+            file.name
+          }}</span>
+          <div class="flex gap-2">
+            @if (props["readonly"]) {
+              <div
+                class="pt-1.5 cursor-pointer"
+                (click)="downloadFile($index, file)"
+              >
+                <img
+                  src="./assets/images/icons/download-file.svg"
+                  alt="download file"
+                  width="24"
+                  height="24"
+                />
+              </div>
+            }
+            @if (!props["readonly"]) {
+              <button (click)="onRemove(file)" type="button">
+                <img src="/assets/images/icons/delete.svg" alt="Delete" />
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

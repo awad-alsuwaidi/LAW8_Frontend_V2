@@ -1,0 +1,64 @@
+@if(data.length === 0 && !searchText){
+
+<app-shared-empty-section [emptyConfig]="emptyConfig" />
+}@else{
+<div class="grid grid-cols-6 gap-4">
+  <div class="col-span-2">
+    <div class="flex justify-between p-2 rounded-t-lg bg-white h-14">
+      <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
+        {{ 'lookups.categories' | translate }}
+      </h1>
+
+      <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [requiredPermission]="'Add_MatterCategory'"
+        [label]="'lookups.newCategory' | translate"
+        [styleClass]="'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'"
+        (onClick)="openCategoryEditor()" />
+    </div>
+    <div class="my-2">
+      <app-shared-search (searchValueChange)="searchValueChange($event)" />
+    </div>
+    <div class="flex flex-col gap-2">
+      @for(category of data; track category.id){
+
+      <a href="javascript:void(0)" (click)="openSubCategory(category)"
+        [class.active]="category.id === selectedCategory?.id" class="flex justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer 
+         hover:bg-white relative 
+         before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute 
+         before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out 
+         hover:before:h-4/6 hover:before:w-1 
+         [&.active]:bg-blue-100 [&.active]:border-blue-500">
+
+
+
+        <div class="flex justify-between gap-2">
+          <div>
+            <h1 class="font-bold text-sm text-textSecondary mb-2 transition-colors duration-300 ease-in-out">
+              {{ category.nameEn }}
+            </h1>
+            <p class="font-medium text-grey500 text-xs">
+              {{ category.nameAr }}
+            </p>
+          </div>
+        </div>
+        <div>
+          <p
+            class="font-bold text-xs text-colorsTextTextPrimary mb-2 transition-colors duration-300 ease-in-out text-end">
+            <app-shared-status [statusConfig]="statusConfig" [data]="category.active"
+              [label]="(category.active?'common.active':'common.inactive')|translate" />
+          </p>
+          <p class="font-medium text-xs text-grey500">
+            {{ category.practsArea }}
+          </p>
+        </div>
+      </a>
+      }
+
+      <p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)" [first]="0" [rows]="10" pageLinkSize="3"
+        [totalRecords]="totalCount" [showCurrentPageReport]="true" currentPageReportTemplate="Total {totalRecords}" />
+    </div>
+  </div>
+  <div class="col-span-4">
+    <router-outlet />
+  </div>
+</div>
+}

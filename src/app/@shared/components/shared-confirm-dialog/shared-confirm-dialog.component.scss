@@ -1,0 +1,12 @@
+::ng-deep{
+  .p-dialog{
+    &-header{
+      @apply rounded-t-3xl pb-0;
+    }
+
+    &-content{
+      @apply rounded-b-3xl;
+    }
+    @apply rounded-3xl
+  }
+}

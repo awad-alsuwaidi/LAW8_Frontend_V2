@@ -1,0 +1,8 @@
+.p-message{
+    &-error{
+        @apply border-0
+    }
+    &-wrapper{
+        @apply px-4 py-2 text-sm text-textErrorPrimary h-12
+    }
+}

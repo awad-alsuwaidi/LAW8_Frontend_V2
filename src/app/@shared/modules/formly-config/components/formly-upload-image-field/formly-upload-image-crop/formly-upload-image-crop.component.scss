@@ -1,0 +1,38 @@
+:host ::ng-deep {
+
+    // image-cropper {
+    //     display: block;
+    //     margin: 0 auto;
+    //     max-width: 300px;
+    //     border-radius: 10px;
+    // }
+
+    .crop-container {
+        border-radius: 50%;
+        overflow: hidden;
+        width: 70%;
+        margin: 0 auto;
+    }
+    .slider-container {
+        @apply w-2/3 mx-auto;
+    }
+    .ngx-ic-source-image{
+        @apply w-full h-96
+    }
+    .p-slider{
+        &-range{
+            @apply bg-white
+        }
+    }
+
+}
+::ng-deep {
+    .p-dialog { 
+        &-header {
+            @apply rounded-tl-2xl rounded-tr-2xl;
+        }
+        &-content {
+            @apply rounded-bl-2xl rounded-br-2xl;
+        }
+    }
+}

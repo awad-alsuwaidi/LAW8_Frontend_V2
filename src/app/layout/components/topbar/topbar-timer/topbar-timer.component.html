@@ -1,0 +1,54 @@
+@if(isPlay){
+<div class="flex gap-2 items-center w-[125px] bg-white rounded-3xl p-2">
+    <p class="cursor-pointer text-2xl" (click)="stopTimer()"
+        [class]="isPlay?'icon-pause-circle text-textErrorBase':'icon-play-circle text-primary'"></p>
+    <p class="text-sm font-medium" [class]="isPlay?'text-textErrorBase':'text-textTertairy'">
+        <span>{{(hours>9)?hours:'0'+hours}}</span> :
+        <span>{{(minutes>9)?minutes:'0'+minutes }}</span> :
+        <span>{{(seconds>9)?seconds:'0'+seconds }}</span>
+    </p>
+
+
+</div>
+}@else {
+<div class="cursor-pointer" (click)="startTimer()">
+    <img src="assets/images/icons/timer-start.svg" alt="">
+</div>
+}
+
+
+<!-- طه طااهااا -->
+<!-- 
+@if(isPlay){
+  <button
+    (click)="stopTimer()"
+    type="button"
+    class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-all duration-200 hover:bg-textErrorBase/[0.06]"
+  >
+    <span class="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-textErrorBase to-red-400 shadow-sm">
+      <i class="icon-pause-circle text-[13px] text-white"></i>
+    </span>
+    <span class="relative flex size-1.5">
+      <span class="absolute inline-flex size-full animate-ping rounded-full bg-textErrorBase opacity-60"></span>
+      <span class="relative inline-flex size-1.5 rounded-full bg-textErrorBase"></span>
+    </span>
+    <p class="font-mono text-[13px] font-bold tracking-wide text-textSecondary">
+      {{(hours>9)?hours:'0'+hours}}<span class="text-textTertairy/40">:</span>
+      {{(minutes>9)?minutes:'0'+minutes}}<span class="text-textTertairy/40">:</span>
+      {{(seconds>9)?seconds:'0'+seconds}}
+    </p>
+  </button>
+} @else {
+  <button
+    (click)="startTimer()"
+    type="button"
+    class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition-all duration-200 hover:bg-primaryColor/[0.06]"
+  >
+    <img
+      src="assets/images/icons/timer-start.svg"
+      alt=""
+      class="size-6 object-contain"
+    />
+    <span class="text-[13px] font-medium text-textSecondary whitespace-nowrap">{{ 'common.starttimer' | translate }}</span>
+  </button>
+} -->

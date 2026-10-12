@@ -1,0 +1,23 @@
+::ng-deep{
+    
+    .p-tabmenu {
+        &-nav{
+            @apply border-transparent
+        }
+        .p-menuitem-link{
+            @apply border-transparent font-poppins font-medium 
+        }
+        .p-tabmenuitem.p-highlight{
+            .p-menuitem-link{
+                @apply border-primary text-blue600 #{!important}
+            }
+            
+        }
+        .p-tabmenuitem{
+            @apply me-3
+        }
+        .p-menuitem-link{
+            @apply py-3 px-1
+        }
+    }
+}

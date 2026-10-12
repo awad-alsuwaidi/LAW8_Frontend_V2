@@ -1,0 +1,14 @@
+@if(props['readonly']){
+<p class="text-textSecondary text-sm font-bold mt-3">{{ formControl.value }}</p>
+} @else {
+<div class="p-fluid">
+  <textarea
+    [rows]="props['rows']||3"
+    [cols]="props['cols']"
+    [formControl]="formControl"
+    [formlyAttributes]="field"
+    [class]="props['class']||'py-2.5 px-3.5 border border-borderPrimary rounded-lg'"
+    class="w-full"
+  ></textarea>
+</div>
+}

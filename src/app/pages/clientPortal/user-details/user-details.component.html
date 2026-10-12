@@ -1,0 +1,14 @@
+<div class="flex justify-between p-2 rounded-t-lg h-14">
+    <h1 class=" font-bold text-2xl text-colorsTextTextPrimary leading-9">
+        {{ _languageService.getSelectedLanguage() == 'en'
+        ? user?.nameEn
+        : user?.nameAr
+        }}
+    </h1>
+    <!-- <app-users-toggle-view/> -->
+
+</div>
+<div class="my-4">
+  <p-tabMenu *ngIf="items.length" [model]="items" [activeItem]="activeItem"></p-tabMenu></div>
+
+<router-outlet />

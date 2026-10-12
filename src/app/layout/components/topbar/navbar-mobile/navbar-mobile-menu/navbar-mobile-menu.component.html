@@ -1,0 +1,89 @@
+<div class="pt-4" *ngFor="let menu of menuService.pagesMenu">
+  <ul class="flex flex-col space-y-1">
+    <!-- List items -->
+    <li *ngFor="let item of menu.items">
+      <!-- Menu List -->
+      <div
+        (click)="toggleMenu(item)"
+        class="group relative text-muted-foreground hover:text-foreground"
+      >
+        <!-- Icon -->
+        <div
+          [ngClass]="
+            item.active && !menuService.showSideBar
+              ? 'text-primaryColor'
+              : 'text-headerTitle'
+          "
+          class="pointer-events-none absolute m-2"
+        >
+          <i [class]="item.icon"></i>
+        </div>
+
+        <!-- Condition -->
+        <ng-container
+          [ngTemplateOutlet]="item.children ? childMenu : parentMenu"
+          [ngTemplateOutletContext]="{ item: item }"
+        >
+        </ng-container>
+
+        <!-- Workaround:: Enable routerLink -->
+        <ng-template #parentMenu let-item="item">
+          <div
+            routerLink="{{ item.route }}"
+            class="flex h-9 cursor-pointer items-center justify-start rounded hover:bg-bodyBg"
+          >
+            <a
+              routerLinkActive="text-primaryColor"
+              (click)="closeMenu()"
+              class="ms-10 truncate text-xs font-semibold tracking-wide text-headerTitle focus:outline-none"
+            >
+              {{ item.label | translate }}
+            </a>
+          </div>
+        </ng-template>
+
+        <!-- Workaround:: Disable routerLink -->
+        <ng-template #childMenu let-item="item">
+          <div
+            class="flex h-9 cursor-pointer items-center justify-start rounded hover:bg-bodyBg"
+          >
+            <a
+              class="ms-10 truncate text-xs font-semibold tracking-wide text-headerTitle focus:outline-none"
+            >
+              {{ item.label | translate }}
+            </a>
+          </div>
+        </ng-template>
+
+        <!-- Arrow Icon -->
+        <button
+          *ngIf="item.children"
+          [ngClass]="{
+            hidden: !menuService.showSideBar,
+            'rotate-90': item.expanded
+          }"
+          class="pointer-events-none absolute right-0 top-2 flex items-center p-1 text-subtitle transition-all duration-500"
+        >
+          <i class="icon-arrow-right text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Submenu items -->
+      <app-navbar-mobile-submenu [submenu]="item"></app-navbar-mobile-submenu>
+    </li>
+    <div
+      class="flex h-[50px] cursor-pointer items-center rounded font-medium text-[#CC5F5F] transition-all duration-200 hover:rounded-lg hover:bg-primaryColor hover:text-white"
+    >
+      <div class="ms-3 flex items-center">
+        <i class="icon-logout"></i>
+      </div>
+      <div>
+        <div
+          class="ms-3 truncate text-base font-medium tracking-wide focus:outline-none"
+        >
+          {{ "menu.logOut" | translate }}
+        </div>
+      </div>
+    </div>
+  </ul>
+</div>

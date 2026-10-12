@@ -1,0 +1,43 @@
+<!-- <div class="flex h-screen w-full overflow-hidden" *ngIf="showLayout"> -->
+  <!-- Sidebar -->
+
+
+
+  <!-- <app-sidebar />
+
+  <div *ngIf="showLayout" class=" flex grow flex-col content-start overflow-hidden text-lg py-4 ">
+ -->
+
+
+    <!-- Header -->
+    <!-- <div class="lg:mb-10 mb-6 md:px-12 px-4">
+      <app-topbar />
+    </div> -->
+
+
+    <!-- main content -->
+    <!-- <div id="main-content"
+      class="grow md:px-12 px-4 overflow-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-track-rounded scrollbar-track-transparent scrollbar-thumb-muted">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div> -->
+
+
+<div class="flex h-screen w-full overflow-hidden" *ngIf="showLayout">
+
+  <app-sidebar />
+
+  <div class="flex grow flex-col content-start overflow-hidden text-lg py-4">
+
+    <!-- <div class="lg:mb-10 mb-6 md:px-12 px-4">
+      <app-topbar />
+    </div> -->
+
+    <div id="main-content"
+      class="grow md:px-12 px-4 overflow-auto">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+</div>

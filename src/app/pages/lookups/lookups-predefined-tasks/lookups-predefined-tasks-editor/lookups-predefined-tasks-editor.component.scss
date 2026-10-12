@@ -1,0 +1,17 @@
+::ng-deep {
+ 
+
+    p-skeleton:first-child,
+    p-skeleton:nth-child(2) {
+       
+        @apply col-span-2 ;
+    }
+    
+
+    p-skeleton:last-child {
+         .p-skeleton {
+            @apply h-28 #{!important};
+        }
+        @apply col-span-2;
+    }
+}

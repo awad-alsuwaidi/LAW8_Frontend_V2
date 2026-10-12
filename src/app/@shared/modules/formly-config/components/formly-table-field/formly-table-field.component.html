@@ -1,0 +1,45 @@
+
+<div class="table-responsive ">
+    <table class="p-datatable w-full form-table">
+      <thead class="p-datatable-thead">
+        <tr>
+          <th *ngFor="let col of props['columns']" style="white-space: nowrap;">
+            {{ col?.header | translate}}
+          </th>
+        </tr>
+      </thead>
+  
+      <tbody class="p-datatable-tbody">
+        <tr *ngFor="let f of pagedFieldGroup; let i = index;">
+          <ng-container *ngIf="f">
+            <ng-container *ngFor="let f2 of f?.fieldGroup;">
+              <td   [attr.class]="f2?.className">
+                <div class="position-relative">
+                    @if(f2['props']?.readonly){
+                        {{f2.formControl?.value }}
+                    }@else {
+                        <formly-field [field]="f2" ></formly-field>
+                    }
+                </div>
+              </td>
+  
+            </ng-container>
+          </ng-container>
+        </tr>
+      </tbody>
+  
+    </table>
+  </div>
+
+  @if(!pagedFieldGroup?.length){
+    <div class="flex justify-center mt-4">
+      {{ "messages.noRecordsFound" | translate }}
+    </div>
+  }
+  
+
+
+<!-- {{pagedFieldGroup|json}} -->
+<p-paginator *ngIf="props['withClientPaginator']" [rows]="pageSize" [totalRecords]="field.fieldGroup?.length"
+    [rowsPerPageOptions]="PAGE_SIZE_OPTION" (onPageChange)="paginate($event)">
+</p-paginator>

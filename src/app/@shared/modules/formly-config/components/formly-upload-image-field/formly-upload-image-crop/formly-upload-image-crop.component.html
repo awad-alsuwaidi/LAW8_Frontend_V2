@@ -1,0 +1,38 @@
+<image-cropper
+    [imageChangedEvent]="imageChangedEvent"
+    [maintainAspectRatio]="true"
+    [containWithinAspectRatio]="true"
+    [roundCropper]="true"
+    format="png"
+    [output]="'base64'"
+    [transform]="transform"
+    [alignImage]="'center'"
+    (imageCropped)="imageCropped($event)"
+></image-cropper>
+<!-- شريط التمرير -->
+<div class="slider-container border-8 border-textSecondaryHover rounded-full">
+    <!-- <input
+      type="range"
+      min="1"
+      max="3"
+      step="0.1"
+      [(ngModel)]="scale"
+      class="w-full"
+      (input)="onScaleChange()"
+    /> --> 
+    <p-slider [(ngModel)]="scale" styleClass="w-full" (ngModelChange)="onScaleChange()"  [min]="1"
+    [max]="3"
+    [step]="0.1"/>
+</div>
+
+<div class="flex justify-end gap-4 mt-4">
+    <app-shared-button
+    styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+    [label]="'common.cancel'|translate"
+    (onClick)="dynamicDialogRef.close()"/>
+    <app-shared-button
+    styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+    [label]="'common.save'|translate"
+    (onClick)="dynamicDialogRef.close(croppedBase64)"/>
+   
+</div>

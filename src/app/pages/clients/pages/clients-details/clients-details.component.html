@@ -1,0 +1,44 @@
+<div class="flex justify-between items-center p-2 rounded-t-lg h-14 mb-4">
+    <div>
+
+        <h1 class=" font-bold lg:text-2xl text-lg text-colorsTextTextPrimary leading-9">
+            {{ _languageService.getSelectedLanguage() == 'en'
+            ? client?.nameEn
+            : client?.nameAr
+            }}
+        </h1>
+        <div class="custom-breadcrumb">
+
+            <p-breadcrumb class="max-w-full" [model]="breadcrumbItems" />
+        </div>
+    </div>
+    <div class="flex gap-2 max-sm:hidden">
+
+
+        <app-shared-button
+            [label]="(_router.url.includes('inactive') ? 'matters.activate' : 'matters.deactivate') | translate"
+            [requiredPermission]="_router.url.includes('inactive') ? 'Activate_InactiveClient' : 'Deactivate_Client'"
+            [styleClass]="'border border-grey500 text-grey500 !text-sm !py-1 !font-medium !leading-8 hover:border-primary hover:text-primary'"
+            (onClick)="toggleStatus()" />
+
+
+
+        @if(!_router.url.includes('inactive')){
+        <app-shared-button [label]="'clients.edit'|translate" [requiredPermission]="'Update_Client'"
+            [styleClass]="'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'"
+            (onClick)="_router.navigate(['/clients/update',client.id])" />
+        }
+
+    </div>
+    <div class="md:hidden">
+        <p-menu #menu [model]="menuItems" [popup]="true" />
+        <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" [styleClass]="'!py-1 !px-0'"
+            (onClick)="menu.toggle($event)" />
+    </div>
+
+</div>
+<div class="my-4">
+    <p-tabMenu [model]="items" [activeItem]="activeItem" />
+</div>
+
+<router-outlet />

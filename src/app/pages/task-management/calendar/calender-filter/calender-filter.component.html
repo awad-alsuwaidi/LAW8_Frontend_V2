@@ -1,0 +1,6 @@
+<div  class="flex gap-4">
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+        <formly-form [model]="formlyModel" [fields]="formlyFields" [form]="formly" />
+    </form>
+    <app-shared-button [label]="'Activity'" [styleClass]="'bg-primary text-white !h-8 !leading-[0.5] !text-xs'" />
+</div>

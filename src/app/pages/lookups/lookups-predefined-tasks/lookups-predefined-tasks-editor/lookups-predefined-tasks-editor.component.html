@@ -1,0 +1,80 @@
+@if (isLoading) {
+  <div class="bg-white rounded-2xl p-6 grid grid-cols-3">
+    <div class="col-span-2">
+      <app-shared-skeleton-grid
+        [styleClass]="'grid grid-cols-2 gap-6 p-4'"
+        [size]="7"
+      />
+    </div>
+  </div>
+} @else {
+  <section>
+    <!-- <h1 class="text-2xl font-bold text-colorsTextTextPrimary mb-4">
+            @switch (true) {
+                @case (_router.url.includes('add')) {
+                    Create Predefined Task
+                }
+                @case (_router.url.includes('update')) {
+                    Update Predefined Task
+                }
+                @default {
+                    View Predefined Task
+                }
+              }
+        </h1> -->
+    <h1 class="text-2xl font-bold text-colorsTextTextPrimary mb-4">
+      @switch (true) {
+        @case (_router.url.includes("add")) {
+          Create Predefined Task
+        }
+        @case (!formlyOptions.formState.readonly) {
+          Update Predefined Task
+        }
+        @default {
+          View Predefined Task
+        }
+      }
+    </h1>
+    <div class="mb-4">
+      <app-shared-breadcrumb />
+    </div>
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+      <div class="bg-white rounded-2xl p-6">
+        <formly-form
+          [fields]="formlyFields"
+          [model]="formlyModel"
+          [options]="formlyOptions"
+        />
+      </div>
+      <div class="flex justify-end gap-4 mt-4">
+        <app-shared-button
+          styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+          [label]="'common.cancel' | translate"
+          (onClick)="_router.navigate(['/lookups/predefined-tasks'])"
+        />
+        @if (formlyOptions.formState.readonly) {
+          <app-shared-button
+            styleClass="text-primary border border-primary px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.edit' | translate"
+            [btnType]="'button'"
+            (onClick)="onEdit()"
+          />
+        } @else if (!_router.url.includes("view")) {
+          <app-shared-button
+            styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.save' | translate"
+            [btnType]="'submit'"
+            [isLoading]="isSubmitted"
+          />
+        } @else {
+          <app-shared-button
+            styleClass="bg-primary text-white px-8 py-3 text-lg	font-medium h-12 leading-5"
+            [label]="'common.edit' | translate"
+            [btnType]="'submit'"
+            [isLoading]="isSubmitted"
+          />
+        }
+      </div>
+    </form>
+  </section>
+}

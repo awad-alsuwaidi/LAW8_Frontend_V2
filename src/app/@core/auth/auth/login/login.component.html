@@ -1,0 +1,9 @@
+<h2 class="font-bold text-3xl mb-10">{{'auth.loginToYourAccount'|translate}}</h2>
+<p-messages [(value)]="messages" [enableService]="false" [closable]="false" />
+<form [formGroup]="formly" (ngSubmit)="onSubmit()">
+  <formly-form [model]="formlyModel" [fields]="formlyFields" [form]="formly" />
+  <app-shared-button [btnType]="'submit'" [label]="'btn.signIn'|translate" [styleClass]="'bg-primary text-white'"
+    [isLoading]="isLoading" />
+</form>
+
+<h2 class="font-bold text-xs mb-10 mt-4">{{' Powered by LAW8 '|translate}}</h2>

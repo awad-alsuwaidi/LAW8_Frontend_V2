@@ -1,0 +1,28 @@
+{
+  "report": {
+    "activityReport": "تقرير الجلسات المتداولة",
+    "dateFrom": "تاريخ البدء",
+    "dateTo": "تاريخ الانتهاء",
+    "lawyer": "المحامى",
+    "client": "العميل",
+    "entity": "الجهة",
+    "entities": "الجهات",
+    "openDateFrom": "من تاريخ",
+    "openDateTo": "الى تاريخ",
+    "feeEarner": "Fee Earner",
+    "dateType": "النوع",
+    "matter": "القضايا",
+    "english": "الانجليزية",
+    "arabic": "العربية",
+    "filterbydepartment": "تصفية حسب القسم",
+    "filterbybranch": "تصفية حسب الفرع",
+    "french": "الفرنسية",
+    "printLanguage": "لغة الطباعة",
+    "generateReport": "إنشاء التقرير",
+    "openDate": "تاريخ الفتح",
+    "creationDate": "تاريخ الإنشاء",
+    "printType": "نوع الطباعة",
+    "pdf": "PDF",
+    "excel": "Excel"
+  }
+}

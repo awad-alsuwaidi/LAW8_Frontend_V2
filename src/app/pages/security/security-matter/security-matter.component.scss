@@ -1,0 +1,8 @@
+::ng-deep{
+    .p-accordion-header-link{
+        @apply flex justify-between flex-row-reverse p-4 bg-grey50 border-grey100 rounded-lg
+    }
+    .p-accordion-content{
+        @apply bg-grey50 border-grey100 rounded-lg
+    }
+}

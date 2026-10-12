@@ -1,0 +1,271 @@
+@if (isLoading) {
+  <div class="w-full h-screen p-6 animate-pulse">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="px-4 py-3">
+              <div class="h-6 w-24 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-32 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-20 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-28 bg-gray-200 rounded"></div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]">
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-24 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-32 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-20 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-28 bg-gray-200 rounded"></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+} @else {
+  <div class="flex justify-between">
+    <p class="font-poppins font-medium text-sm text-grey500 leading-9">
+      {{ totalRecords }} {{ "matters.records" | translate }}
+    </p>
+    @if (!_router.url.includes("inactive")) {
+      <app-shared-button
+        [icon]="'icon-add-circle text-primary !text-2xl '"
+        [requiredPermission]="'Add_Matter_Documents'"
+        [label]="'matters.addAttachment' | translate"
+        [styleClass]="
+          'flex text-blue600  !text-sm !py-1 !px-0 !font-medium !leading-8'
+        "
+        (onClick)="openAttachmentEditor()"
+      />
+    }
+  </div>
+
+  <p-table
+    [value]="data"
+    [lazy]="true"
+    [loading]="isLoading"
+    [sortField]="sortField"
+    [sortOrder]="sortOrder"
+    (onSort)="onSort($event)"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        @for (col of matterAttachmentColumns; track $index) {
+          <th
+            [pSortableColumn]="col.field"
+            class="text-sm text-greyscale600 font-medium bg-grey50 border-b-0"
+            [ngClass]="{
+              'w-40':
+                col.field.includes('partyType') ||
+                col.field.includes('position'),
+            }"
+          >
+            <div class="flex">
+              {{ col.header | translate }}
+              <p-sortIcon [field]="col.field" />
+            </div>
+          </th>
+        }
+        <th class="text-sm text-greyscale600 font-medium bg-grey50 border-b-0">
+          {{ "common.actions" | translate }}
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-attachment>
+      <tr class="bg-white mb-2 rounded-2xl border border-grey100">
+        <td
+          class="text-sm text-textSecondary border-y border-s border-grey100 rounded-s-lg w-80"
+        >
+          <div class="flex gap-4">
+            <img
+              [appFileIcon]="attachment.filePathe"
+              width="44"
+              height="44"
+              alt="File Icon"
+            />
+            <!-- <p class="font-bold truncate w-40 self-center">{{ attachment.description }}</p> -->
+            <!-- <p class="font-bold truncate w-40 self-center" [pTooltip]="attachment.description" tooltipPosition="top">
+                      {{ attachment.description }}</p> -->
+            <p
+              class="font-bold truncate w-40 self-center"
+              [class.text-primary]="
+                attachment.matterDocumentSourceType === 'Link'
+              "
+              [class.cursor-pointer]="
+                attachment.matterDocumentSourceType === 'Link'
+              "
+              [pTooltip]="attachment.description"
+              tooltipPosition="top"
+              (click)="
+                attachment.matterDocumentSourceType === 'Link'
+                  ? openLink(attachment)
+                  : null
+              "
+            >
+              {{ attachment.description }}
+            </p>
+          </div>
+        </td>
+        <td
+          class="font-medium text-sm text-textSecondary border-y border-grey100"
+        >
+          <span class="bg-grey100 font-bold">
+            {{ attachment.receivedDate | date: "longDate" }}</span
+          >
+        </td>
+        <td
+          class="font-medium text-sm text-textSecondary border-y border-grey100"
+        >
+          <span class="bg-grey100 font-bold">
+            {{ attachment.documentDate | date: "longDate" }}</span
+          >
+        </td>
+        <td
+          class="font-medium text-sm text-textSecondary border-y border-grey100"
+        >
+          <span class="bg-grey100 font-bold">{{
+            attachment.expirationDate | date: "longDate"
+          }}</span>
+        </td>
+        <td
+          class="font-medium text-sm text-textSecondary border-y border-e border-grey100 rounded-e-lg"
+        >
+          <div class="flex gap-6 justify-end">
+            <!-- @if(extensions.includes(attachment.filePathe.split('.').pop()?.toLowerCase())){ -->
+
+            <!-- <div
+              class="pt-1.5 cursor-pointer"
+              title="View Details"
+              [requiredPermission]="'View_Matter_Documents'"
+              (click)="openAttachment(attachment)"
+            > -->
+            <!-- (click)="_fileService.previewFileFromPath(attachment?.filePathe)" -->
+            <!-- <img
+                src="./assets/images/icons/view-file.svg"
+                alt="view file"
+                width="24"
+                height="24"
+              />
+            </div> -->
+            <!-- } -->
+            <!-- <div
+              class="pt-1.5 cursor-pointer"
+              title="Download"
+              [requiredPermission]="'Download_Matter_Documents'"
+              (click)="downloadAttachment(attachment)"
+            >
+              <img
+                src="./assets/images/icons/download-file.svg"
+                alt="download file"
+                width="24"
+                height="24"
+              />
+            </div> -->
+
+            @if (attachment.matterDocumentSourceType === "Link") {
+              <!-- Open Link -->
+              <div
+                class="pt-1.5 cursor-pointer"
+                title="Open Link"
+                (click)="openLink(attachment)"
+              >
+                <img
+                  src="./assets/images/icons/open-in-new-window.png"
+                  alt="Open link"
+                  width="20"
+                  height="20"
+                />
+              </div>
+
+              <!-- Copy Link -->
+              <div
+                class="pt-1.5 cursor-pointer"
+                title="Copy Link"
+                (click)="copyLink(attachment)"
+              >
+                <img
+                  src="./assets/images/icons/copy.png"
+                  alt="Copy link"
+                  width="20"
+                  height="20"
+                />
+              </div>
+            } @else {
+              <!-- View -->
+              <div
+                class="pt-1.5 cursor-pointer"
+                title="View Details"
+                [requiredPermission]="'View_Matter_Documents'"
+                (click)="openAttachment(attachment)"
+              >
+                <img
+                  src="./assets/images/icons/view-file.svg"
+                  alt="view file"
+                  width="24"
+                  height="24"
+                />
+              </div>
+
+              <!-- Download -->
+              <div
+                class="pt-1.5 cursor-pointer"
+                title="Download"
+                [requiredPermission]="'Download_Matter_Documents'"
+                (click)="downloadAttachment(attachment)"
+              >
+                <img
+                  src="./assets/images/icons/download-file.svg"
+                  alt="download file"
+                  width="24"
+                  height="24"
+                />
+              </div>
+            }
+
+            @if (!_router.url.includes("inactive")) {
+              <app-shared-button
+                [icon]="'icon-more-square text-grey500 !text-base'"
+                [styleClass]="'!py-1 !px-0'"
+                (onClick)="menu.toggle($event); onRowSelected(attachment)"
+              />
+              <p-menu
+                #menu
+                [model]="menuItems"
+                [popup]="true"
+                appendTo="body"
+              />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  @if (totalRecords > 0) {
+    <p-paginator
+      [dir]="'ltr'"
+      (onPageChange)="onPageChange($event)"
+      [first]="(filterOptions.pageNum - 1) * filterOptions.pagSize"
+      [rows]="filterOptions.pagSize"
+      [totalRecords]="totalRecords"
+      [showCurrentPageReport]="true"
+      pageLinkSize="2"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+    >
+    </p-paginator>
+  }
+}

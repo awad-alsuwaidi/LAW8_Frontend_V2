@@ -1,0 +1,16 @@
+<section class="bg-white p-4 rounded-2xl">
+    <div class="flex gap-4">
+        <div class="p-2 rounded-xl bg-blue50 text-primary text-2xl size-10 leading-4">
+            <i (click)="data()?.command()" [class]="data()?.icon "></i>
+        </div>
+        <div class="grow">
+            <h2 (click)="data()?.command()" class="text-sm font-bold text-textSecondary mb-2 cursor-pointer">{{data()?.title}}</h2>
+            <p class="text-xs text-grey500">{{data()?.description}}</p>
+        </div>
+    </div>
+    <div class="my-4 border-t border-grey100"></div>
+    <div class="flex justify-between cursor-pointer" (click)="data()?.command()">
+        <span class="text-primary text-xs font-medium">{{'lookups.viewDetails'|translate}}</span>
+        <span class="icon-right-arrow text-primary text-base"></span>
+    </div>
+</section>

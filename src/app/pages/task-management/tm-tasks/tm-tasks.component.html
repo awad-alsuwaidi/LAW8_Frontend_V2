@@ -1,0 +1,30 @@
+<section>
+    <div class="flex justify-between items-center">
+        <h1 class="text-colorsTextTextPrimary font-bold text-2xl">{{'Tasks'|translate}}</h1>
+        <div>
+            @if(_router.url.includes('my-tasks')){
+            <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '"
+                [label]="'matters.addTask' | translate" [requiredPermission]="'Add_TaskManagement'"
+                [styleClass]="'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'"
+                (onClick)="openTaskEditor()" />
+            }@else {
+            <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '"
+                [label]="'matters.addTask' | translate" [requiredPermission]="'Add_TaskManagement'"
+                [styleClass]="'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'"
+                (onClick)="openTaskEditor()" />
+            }
+
+        </div>
+    </div>
+    <div class="my-2 bg-white py-6 rounded-2xl">
+        <div class="px-6">
+            <p-tabMenu [model]="items" [activeItem]="activeItem" />
+        </div>
+        <router-outlet />
+    </div>
+
+</section>
+
+
+
+<!-- [requiredpermission]="Add_TaskManagement" -->

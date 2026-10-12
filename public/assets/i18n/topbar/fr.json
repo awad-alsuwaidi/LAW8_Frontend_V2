@@ -1,0 +1,16 @@
+{
+    "topBar": {
+        "advancedSearch": "Recherche avancée",
+        "search": "Rechercher",
+        "welcome": "Bienvenue,",
+        "yourProfile": "Votre profil",
+        "settings": "Paramètres",
+        "logOut": "Se déconnecter",
+        "editMyProfile": "Modifier mon profil",
+        "result": "Résultat",
+        "tryAdvancedSearch": "Essayez la recherche avancée",
+        "seeAllNotifications": "Voir toutes les notifications",
+        "markAllAsRead": "Marquer tout comme lu",
+        "notifications": "Notifications"
+    }
+}

@@ -1,0 +1,153 @@
+<section class="bg-white rounded-2xl my-4 p-6">
+    <h5 class="mb-4 text-grey500 text-lg font-bold">Summary</h5>
+
+    <!-- DISCOUNT SECTION -->
+    <!-- *ngIf="data()?.feesLoaded" -->
+    <div>
+        <button type="button" *ngIf="data()?.totalFees > 0" class="discount-btn mb-4" (click)="toggleDiscount()">
+            {{ showDiscount ? 'Close Discount Form' : '+ Add Discount' }}
+        </button>
+
+        <div *ngIf="showDiscount" class="bg-blue25 rounded-2xl p-6 mb-6">
+
+            <h3 class="text-lg font-bold mb-4">Discount</h3>
+
+            <div class="grid grid-cols-3 gap-4 items-center">
+
+                <!-- Percentage -->
+                <div>
+                    <label class="text-xs text-grey500 font-medium mb-1 block">Percentage (%)</label>
+                    <input type="number" class="input-special" [(ngModel)]="discountPercentage"
+                        (input)="onPercentageInput()" placeholder="%">
+
+                </div>
+
+                <!-- OR -->
+                <div class="text-center text-grey500 font-semibold">OR</div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="text-xs text-grey500 font-medium mb-1 block">Amount</label>
+                    <input type="number" class="input-special" [(ngModel)]="discountAmount" (input)="onAmountInput()"
+                        placeholder="Amount">
+                </div>
+
+            </div>
+            <div class="mt-4">
+                <label class="text-xs text-grey500 font-medium mb-1 block">Explanation</label>
+                <textarea [(ngModel)]="discountExplanation" (input)="emitDiscount()" class="input-special h-20 resize-none"
+                    placeholder="Write explanation..."></textarea>
+
+            </div>
+
+            <!-- Discount Info -->
+            <!-- <div class="mt-4 bg-red-200 px-4 py-2 rounded-xl text-sm font-medium">
+                {{ discountAmount ? ('Discount Amount: ' + discountAmount) : '' }}
+                <br>
+                {{ discountPercentage ? ('Discount Percentage ' + discountPercentage + '%') : '' }}
+            </div> -->
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+
+        <!-- LEFT TABLE -->
+        <div class="bg-blue25 rounded-2xl p-6">
+            <!-- <h6 class="mb-4 text-grey500 text-sm font-bold">Calculation</h6> -->
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Total Fees</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">
+                    {{ data()?.totalFees | number:'1.0-2' }}
+                </span>
+            </div>
+            <!-- *ngIf="discountValue > 0" -->
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Discount</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">
+                    - {{ discountValue | number:'1.0-2' }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Total After Discount</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">
+                    {{ totalAfterDiscount | number:'1.0-2' }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">
+                    Tax ({{ data()?.taxesFees }}%)
+                </span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">
+                    {{ taxValue | number:'1.0-2' }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <span class="text-textTertairy text-xs font-medium">Total After Tax</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">
+                    {{ totalAfterTax | number:'1.0-2' }}
+                </span>
+            </div>
+        </div>
+
+
+        <!-- RIGHT TABLE -->
+        <div class="bg-blue25 rounded-2xl p-6">
+            <!-- <h6 class="mb-4 text-grey500 text-sm font-bold">Account Wallet Balance</h6> -->
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Previous Balance</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">{{ data()?.previousBalance }}</span>
+            </div>
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Trust Account</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">{{ data()?.trustBankAccount }}</span>
+            </div>
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">Expenses</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">{{ data()?.totalExpenses | number:'1.0-2' }}</span>
+            </div>
+
+            <div class="flex items-center gap-6 mb-4">
+                <span class="text-textTertairy text-xs font-medium">
+                    Expense Tax ({{ data()?.taxesExpenses }}%)
+                </span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">{{ data()?.taxe | number:'1.0-2' }}</span>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <span class="text-textTertairy text-xs font-medium">Total Expenses After Tax</span>
+                <span class="inline-block h-px grow bg-grey200"></span>
+                <span class="text-textTertairy text-sm font-bold">{{ totalExpensesAfterTax | number:'1.0-2' }}</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- GRAND TOTAL -->
+    <div class="bg-blue25 rounded-2xl p-6 mt-6">
+        <div class="flex items-center gap-6">
+            <h6 class="text-grey500 text-sm font-bold col">Grand Total</h6>
+            <span class="inline-block h-px grow bg-grey200"></span>
+            <span class="text-textTertairy text-sm font-bold">
+                {{ grandTotal | number:'1.0-2' }}
+            </span>
+        </div>
+    </div>
+
+
+</section>

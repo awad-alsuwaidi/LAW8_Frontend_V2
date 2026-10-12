@@ -1,0 +1,213 @@
+<section>
+    <div class="flex justify-between items-center">
+
+        <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-1">
+            {{ 'Expenses' | translate }}
+        </h1>
+        <div class="flex gap-3">
+
+            <div class="flex gap-2 rounded-lg border border-grey200 p-2 bg-white shadow-custom">
+                <app-shared-button [icon]="'icon-cards !text-base'" (onClick)="setView('card')" [styleClass]="selectedView()==='card'?
+            'bg-blue50 text-primary !p-1 !rounded-[4px] !size-6 flex justify-center items-center':
+            'bg-grey100 text-textTertairy !p-1 !rounded-[4px] !size-6 flex justify-center items-center'
+            " />
+                <app-shared-button [icon]="'icon-list !text-base'" (onClick)="setView('list')" [styleClass]="selectedView()==='list'?
+            'bg-blue50 text-primary !p-1 !rounded-[4px] !size-6 flex justify-center items-center':
+            'bg-grey100 text-textTertairy !p-1 !rounded-[4px] !size-6 flex justify-center items-center'
+            " />
+            </div>
+            <app-shared-button [label]="'menu.createExpenses'|translate" [requiredPermission]="'Add_Expenses'"
+                [styleClass]="'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'" 
+                (onClick)="_router.navigate(['accounts/expenses/add'])" />
+        </div>
+    </div>
+
+    <app-bills-filter-editor [loading]="isLoading" (onFilter)="onFilter($event)" />
+  @if (isLoading) {
+  <div class="w-full h-screen p-6 animate-pulse">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr>
+            <th class="px-4 py-3">
+              <div class="h-6 w-24 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-32 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-32 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-32 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-20 bg-gray-200 rounded"></div>
+            </th>
+            <th class="px-4 py-3">
+              <div class="h-6 w-28 bg-gray-200 rounded"></div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of [1,2,3,4,5,6,7,8]">
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-24 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-32 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-20 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-28 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-28 bg-gray-200 rounded"></div>
+            </td>
+            <td class="px-4 py-4 border-t">
+              <div class="h-5 w-28 bg-gray-200 rounded"></div>
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+  }
+  @if (!isLoading && selectedView() === 'card') {
+    <p-table [value]="data" [styleClass]="'w-full card-table'" dataKey="id">
+        <ng-template pTemplate="header">
+            <tr>
+                @for (col of columns; track $index) {
+
+                <th [pSortableColumn]="col.field" class='text-xs text-greyscale600 font-medium  border-b-0 '>
+                    <div class="flex">
+                        {{col.header|translate}}
+                        <p-sortIcon [field]="col.field" />
+                    </div>
+                </th>
+                }
+
+                <th class='text-xs text-greyscale600 font-medium  border-b-0 '>{{'common.actions'|translate}}</th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-data let-expanded="expanded" let-rowIndex="rowIndex">
+            <tr class="bg-white mb-2 rounded-2xl border border-grey100">
+                <td class=" text-sm text-textSecondary border-y border-s border-grey100 rounded-s-lg">
+                    <span class="bg-grey100 font-medium text-textSecondary"> {{ data.date | date:'yyyy-MM-dd'}}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100 ">
+                    <span class="bg-grey100 font-medium"> {{ data.paidToReceivedFrom }}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+                    <span class="bg-grey100 font-medium"> {{ data.typeName }}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+                    <span class="bg-grey100 font-medium"> {{ data.invoiceNo }}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+                    <span class="bg-grey100 font-medium text-textSecondary cursor-pointer"
+                        [routerLink]="['/matters',data.matterNo]"> {{ data.matterNo }}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100">
+                    <span class="bg-grey100 font-medium">
+                        {{ data.amount | number:'1.2-2':'en-EG' }}
+                    </span>
+                </td>
+
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100 ">
+                    <span class="bg-grey100 font-medium"> {{ data.lawyerName }}</span>
+                </td>
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100 ">
+                    <span class="bg-grey100 font-medium"> {{ data.holdName }}</span>
+                </td>
+
+
+                <td class="font-medium text-sm text-textSecondary border-y border-grey100 flex">
+                    <div class="self-center">
+                        <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+                        <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" pTooltip="This expense is invoiced and cannot be edited or deleted"
+                [tooltipDisabled]="!data?.invoiceNo" tooltipPosition="left"
+                            [styleClass]="'!py-1 !px-0'" (onClick)="menu.toggle($event);onRowSelected(data)" />
+
+                    </div>
+         
+                        <button type="button" class="p-2 rounded-lg hover:bg-grey200 transition" [pRowToggler]="data">
+                  <i [ngClass]="{
+                                      'icon-chevron-down text-xl': expanded,
+                                     'icon-chevron-top text-xl rotate-90': !expanded
+                                       }" class="flex rtl-flip"></i>
+                </button>
+                </td>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="rowexpansion" let-data let-rowIndex="rowIndex" >
+            <tr>
+                <td >
+                    <span class="text-grey500 text-xs">User</span>
+                    <p class="text-sm text-textSecondary mt-2 text-bold">{{data.userName||'-'}}</p>
+                </td>
+                <td>
+                    <span class="text-grey500 text-xs">Check/ Receipt</span>
+                    <p class="text-sm text-textSecondary mt-2 text-bold">{{data.check_Receipt}}</p>
+                </td>
+                <td>
+                    <span class="text-grey500 text-xs">Quantity</span>
+                    <p class="text-sm text-textSecondary mt-2 text-bold">{{data.quantity}}</p>
+                </td>
+                <td>
+                    <span class="text-grey500 text-xs">Price</span>
+                    <p class="text-sm text-textSecondary mt-2 text-bold">{{data.price}}</p>
+                </td>
+               
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td [attr.colspan]="columns.length+1" class="!p-0 !border-none !bg-transparent">
+                    <app-shared-empty-section [emptyConfig]="emptyConfig" [withImage]="false"
+                        [styleClass]="'!bg-transparent'" />
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    }@else {
+    <div class="p-4 bg-white rounded-2xl">
+        <app-shared-table [columns]="columns" [data]="data" [withPagination]="false"
+            (onPageChange)="onPageChange($event)" [styleClass]="'list-table'">
+            <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
+                <div class="self-center">
+                    <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" />
+                    <app-shared-button [icon]="'icon-more-square text-grey500 !text-base'" [styleClass]="'!py-1 !px-0'"
+                        (onClick)="menu.toggle($event);onRowSelected(rowData)" />
+                </div>
+            </ng-template>
+        </app-shared-table>
+    </div>
+    }
+    @if(totalRecords > 10){
+    <!-- <p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)" [first]="0" [rows]="10" pageLinkSize="2"
+        [totalRecords]="totalRecords" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" /> -->
+        <p-paginator 
+    [dir]="'ltr'" 
+    (onPageChange)="onPageChange($event)"
+    [first]="0"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 50]"  
+    pageLinkSize="5"
+    [totalRecords]="totalRecords"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Total {totalRecords}"
+    class="flex-shrink-0">
+</p-paginator>
+
+    }
+</section>

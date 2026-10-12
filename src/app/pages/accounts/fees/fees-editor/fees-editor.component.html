@@ -1,0 +1,94 @@
+<!-- <section>
+  <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-1">
+    {{ (feesIdentifier() ? 'Update Fees' : 'Create Fees') | translate }}
+  </h1>
+
+  <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+    <formly-form
+      [form]="formly"
+      [fields]="formlyFields"
+      [model]="formlyModel"
+    ></formly-form>
+
+    <div class="flex justify-end gap-4 mt-4">
+    <app-shared-button
+  styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+  [label]="'common.cancel' | translate"
+  [btnType]="'button'"
+  (onClick)="cancel()"
+/>
+
+      <app-shared-button
+        styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+        [label]="
+          (feesIdentifier() ? 'Update Fees' : 'Create Fees') | translate
+        "
+        [btnType]="'submit'"
+        [isLoading]="isSubmitted"
+      />
+    </div>
+  </form>
+</section> -->
+
+
+<section>
+  <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-1">
+    {{ (feesIdentifier() ? 'Update Fees' : 'Create Fees') | translate }}
+  </h1>
+
+  <!-- Skeleton -->
+<ng-container *ngIf="!isPageReady; else formContent">
+
+  <div class="grid gap-4 md:grid-cols-2 bg-surfaceLevel2 rounded-2xl my-4 p-6 animate-pulse">
+
+    <!-- Title -->
+    <div class="col-span-2 h-6 w-40 bg-grey200 rounded mb-4"></div>
+
+    <!-- Card 1 -->
+    <div class="col-span-2 grid gap-4 md:grid-cols-2 p-6 bg-grey100 rounded-2xl">
+      <div class="col-span-2 h-10 bg-grey200 rounded"></div>
+      <div class="col-span-2 h-10 bg-grey200 rounded"></div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="col-span-2 grid gap-4 md:grid-cols-2 p-6 bg-grey100 rounded-2xl">
+      <div class="col-span-2 h-10 bg-grey200 rounded"></div>
+      <div class="col-span-2 h-20 bg-grey200 rounded"></div>
+    </div>
+
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex justify-end gap-4 mt-4 animate-pulse">
+    <div class="h-12 w-32 bg-grey200 rounded"></div>
+    <div class="h-12 w-40 bg-grey200 rounded"></div>
+  </div>
+
+</ng-container>
+  <!-- Form -->
+  <ng-template #formContent>
+    <form [formGroup]="formly" (ngSubmit)="onSubmit()">
+      <formly-form
+        [form]="formly"
+        [fields]="formlyFields"
+        [model]="formlyModel">
+      </formly-form>
+
+      <div class="flex justify-end gap-4 mt-4">
+        <app-shared-button
+          styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"
+          [label]="'common.cancel' | translate"
+          [btnType]="'button'"
+          (onClick)="cancel()">
+        </app-shared-button>
+
+        <app-shared-button
+          styleClass="bg-primary text-white px-8 py-3 text-lg font-medium h-12 leading-5"
+          [label]="(feesIdentifier() ? 'Update Fees' : 'Create Fees') | translate"
+          [btnType]="'submit'"
+          [isLoading]="isSubmitted">
+        </app-shared-button>
+      </div>
+    </form>
+  </ng-template>
+</section>

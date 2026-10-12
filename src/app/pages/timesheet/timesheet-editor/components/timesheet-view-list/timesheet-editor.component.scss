@@ -1,0 +1,108 @@
+:host ::ng-deep {
+  table {
+    @apply border-separate border-spacing-y-2;
+  }
+
+  th,
+  label {
+    @apply py-2 px-1 font-medium text-sm text-greyscale600 bg-transparent border-white;
+  }
+
+  .p-datatable .p-datatable-tbody > tr:not(.is-new-row):not(.hidden-row) > td {
+    @apply bg-white px-1 py-2.5 leading-4;
+  }
+
+  .p-inputtext,
+  textarea,
+  input {
+    @apply leading-4 h-10 border-0;
+  }
+
+  .p-dropdown {
+    @apply border-0;
+    &-trigger {
+      @apply w-6;
+    }
+  }
+
+  .p-button-icon-only {
+    @apply p-0 bg-white text-grey500 border-0;
+  }
+
+  .p-datatable .p-datatable-thead > tr > th {
+    @apply text-start;
+  }
+
+  .p-datatable .p-datatable-thead > tr > th,
+  .p-datatable .p-datatable-tbody > tr > td {
+    @apply text-center align-middle;
+  }
+}
+
+:dir(rtl) .rtl-flip.rotate-90 {
+  transform: rotate(-90deg);
+}
+
+:dir(rtl) .rtl-flip.rotate-180 {
+  transform: rotate(-180deg);
+}
+
+tr {
+  transition: all 0.3s ease;
+
+  &.row-deleted {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    overflow: hidden;
+  }
+
+  &.hidden-row td {
+    @apply bg-gray-200 text-gray-500;
+  }
+
+  &.is-new-row td {
+    background-color: #ffccd5;
+    @apply text-gray-500;
+  }
+  // .is-new-row {
+  //   background-color: #eff6ff !important;
+  //   @apply text-gray-500;
+  // }
+  
+  .bg-error50 {
+    cursor: pointer;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+
+    &:hover {
+      background-color: lighten(#f8d7da, 10%);
+    }
+
+    i {
+      color: #dc3545;
+    }
+  }
+}
+:host ::ng-deep {
+  td {
+    @apply bg-white px-1 py-2.5 leading-4;
+  }
+
+  tr.is-new-row td {
+    @apply bg-yellow-100 text-gray-500;
+  }
+
+  tr.hidden-row td {
+    @apply bg-gray-200 text-gray-500;
+  }
+}
+:host ::ng-deep .p-calendar {
+  height: auto !important;
+}
+:host ::ng-deep .p-dropdown {
+  width: 100% !important;
+  min-width: 100% !important;
+}

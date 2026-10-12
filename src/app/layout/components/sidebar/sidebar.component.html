@@ -1,0 +1,182 @@
+<!-- <nav class="h-screen bg-white w-[269px] transition-all duration-300" -->
+<nav
+  class="h-screen flex flex-col bg-white w-[273px] transition-all duration-300"
+  [ngClass]="_menuService.showSideBar ? 'w-[273px]' : 'w-[75px]'"
+>
+  <div class="logo flex items-center justify-between px-6 pt-5 pb-10">
+    @if (_menuService.showSideBar) {
+      <img
+        [src]="
+          isProduction
+            ? 'assets/images/Logo.svg'
+            : 'assets/images/Law8logoDemo.png'
+        "
+        alt="Logo"
+        class="w-[150px] h-12"
+      />
+    }
+    <i
+      class="icon-split-screen text-borderPrimary cursor-pointer text-2xl"
+      (click)="onToggleSidebar()"
+    ></i>
+  </div>
+
+  <div
+    class="flex flex-col justify-start max-h-[calc(100vh-180px)] overflow-y-auto"
+    #menuContainer
+  >
+    @for (menu of _menuService.pagesMenu; track $index) {
+      @if ($index == 0) {
+        <div>
+          <ul class="menu transition-all duration-300">
+            @for (item of menu.items; track $index) {
+              <li
+                class="group px-6 py-2 mb-1 border-s-[4px] border-s-transparent transition-all duration-200"
+                style="border-radius: 0px"
+                [ngClass]="{ 'active-item': isActive(item) }"
+              >
+                <div class="flex justify-between items-center">
+                  <span class="flex items-center">
+                    <i
+                      [class]="item.icon || ''"
+                      class="text-2xl cursor-pointer"
+                      (contextmenu)="onRightClick($event, item)"
+                      (click)="onMenuItemClick(item, $event)"
+                    ></i>
+                    @if (_menuService.showSideBar) {
+                      <span
+                        class="text-sm ps-4 font-medium cursor-pointer"
+                        (click)="onMenuItemClick(item, $event)"
+                        (contextmenu)="onRightClick($event, item)"
+                      >
+                        {{ item.label | translate }}
+                      </span>
+                    }
+                  </span>
+                </div>
+
+                @if (item.children?.length) {
+                  <ul
+                    class="relative ps-10 mt-2 transition-all duration-500"
+                    [ngClass]="{
+                      hidden: !item.expanded || !_menuService.showSideBar,
+                      'max-h-screen': item.expanded,
+                    }"
+                  >
+                    @for (child of item.children; track $index) {
+                      <li
+                        (contextmenu)="onRightClick($event, child)"
+                        class="pe-5 py-2 relative before:border-b before:absolute before:w-[25px] before:h-[110%] before:border-s before:rounded-bl before:-top-[23px] before:-start-[30px] before:border-borderPrimary before:first-of-type:h-2/3 before:first-of-type:-top-[6px] group-hover:before:border-blue200"
+                        [ngClass]="{
+                          'text-primary text-xl font-lg !before:border-blue200':
+                            isActive(child),
+                          'font-normal text-[11px]': !isActive(child),
+                        }"
+                      >
+                        <span
+                          class="text-sm cursor-pointer"
+                          (click)="
+                            $event.stopPropagation();
+                            onMenuItemClick(child, $event)
+                          "
+                          (contextmenu)="onRightClick($event, child)"
+                        >
+                          {{ child.label | translate }}
+                        </span>
+
+                        <!-- levele three -->
+                        @if (child.children?.length && child.expanded) {
+                          <ul
+                            class="relative ps-10 mt-2 transition-all duration-500"
+                          >
+                            @for (grandChild of child.children; track $index) {
+                              <li
+                                (contextmenu)="onRightClick($event, grandChild)"
+                                class="pe-5 py-2 relative before:border-b before:absolute before:w-[25px] before:h-[110%] before:border-s before:rounded-bl before:-top-[23px] before:-start-[30px] before:border-borderPrimary before:first-of-type:h-2/3 before:first-of-type:-top-[6px] group-hover:before:border-blue200"
+                                [ngClass]="{
+                                  'text-primary text-xl font-lg !before:border-blue200':
+                                    isActive(grandChild),
+                                  'font-normal text-[11px]':
+                                    !isActive(grandChild),
+                                }"
+                              >
+                                <span
+                                  class="text-sm cursor-pointer"
+                                  (click)="
+                                    $event.stopPropagation();
+                                    onMenuItemClick(grandChild, $event)
+                                  "
+                                  (contextmenu)="
+                                    onRightClick($event, grandChild)
+                                  "
+                                >
+                                  {{ grandChild.label | translate }}
+                                </span>
+                              </li>
+                            }
+                          </ul>
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="border-t border-dividerColor">
+    @for (menu of _menuService.pagesMenu; track $index) {
+      @if ($index == 1) {
+        <div class="bottom-menu">
+          <ul class="menu transition-all duration-300">
+            @for (item of menu.items; track $index) {
+              <li
+                class="group px-6 py-2 mb-1 border-s-[4px] border-s-transparent transition-all duration-200"
+                style="border-radius: 0px"
+                [ngClass]="{ 'active-item': isActive(item) }"
+              >
+                <div class="flex items-center">
+                  <i
+                    [class]="item.icon || ''"
+                    class="text-2xl cursor-pointer"
+                    (click)="onMenuItemClick(item, $event)"
+                    (contextmenu)="onRightClick($event, item)"
+                  ></i>
+                  @if (_menuService.showSideBar) {
+                    <span
+                      class="text-sm ps-4 font-medium cursor-pointer"
+                      (click)="onMenuItemClick(item, $event)"
+                      (contextmenu)="onRightClick($event, item)"
+                    >
+                      {{ item.label | translate }}
+                    </span>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    }
+  </div>
+
+  <div
+    class="custom-context-menu"
+    *ngIf="contextMenuVisible"
+    [style.top.px]="contextMenuPosition.y"
+    [style.left.px]="contextMenuPosition.x"
+  >
+    <ul>
+      <li (click)="openInNewTab()">Open in New Tab</li>
+      <li (click)="_authService.logout()">Logout</li>
+    </ul>
+  </div>
+
+  <div class="version-box" *ngIf="_menuService.showSideBar">
+    v{{ appVersion }}
+  </div>
+</nav>

@@ -1,0 +1,31 @@
+{
+    "search": {
+        "matterNumber": "Matter No",
+        "date": "Date",
+        "task": "Task",
+        "lawyerInitial": "Lawyer Initial",
+        "rate": "Rate",
+        "hours": "Hours",
+        "totalAmount": "Total Amount",
+        "explanation": "Explanation",
+        "notes": "Notes",
+        "code": "Code",
+        "description": "Description",
+        "fullName": "Full Name",
+        "position": "Position",
+        "email": "Email",
+        "phone": "Phone",
+        "mobile": "Mobile",
+        "fax": "Fax",
+        "remarks": "Remarks",
+        "courtNumber": "Court No",
+        "activityType": "Activity Type",
+        "user": "User",
+        "status": "Status",
+        "name": "Name",
+        "party": "Party",
+        "partyType": "Party Type",
+        "clientCode": "Client Code",
+        "clientName": "Client Name"
+    }
+}

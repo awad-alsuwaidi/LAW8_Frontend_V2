@@ -1,0 +1,13 @@
+<nav class="flex gap-2">
+    @for (breadcrumb of breadcrumbs; track $index;let last=$last) {
+       
+        @if(!last){
+            <a [routerLink]="breadcrumb.url" class="text-sm text-textTertairy font-medium">
+                {{ breadcrumb.label | translate }}
+            </a>
+            <span class="icon-chevron-down text-borderPrimary -rotate-90 "></span>
+        }@else {
+            <span class="text-sm font-medium text-grey500">{{ breadcrumb.label | translate }}</span>
+        }
+    }
+</nav>
