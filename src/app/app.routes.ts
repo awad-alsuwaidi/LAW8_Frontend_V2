@@ -1,55 +1,59 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './@core/guards/auth.guard';
-import { PAGES_ROUTES } from './pages/pages.routes';
+import { AuthGuard } from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
-    {
-    path: 'invalid-subdomain',
-    loadComponent: () =>
-      import('./@core/auth/auth/invalid-subdomain/invalid-subdomain.component').then(
-        (m) => m.InvalidSubdomainComponent
-      ),
-  },
-    {
-    path: 'advanced-search',
-    loadChildren: () =>
-      import('./pages/advanced-search/advanced-search.routes').then(
-        (mod) => mod.ADVANCED_SEARCH_ROUTES
-      ),
-  },
-  // {
-  //   path: '',
-  //   loadComponent: () =>
-  //     import('./layout/layout.component').then((m) => m.LayoutComponent),
-  //   loadChildren: () =>
-  //     import('./pages/pages.routes').then((mod) => mod.PAGES_ROUTES),
-  // },
-{
-  path: '',
-  canActivate: [AuthGuard],
-  loadComponent: () =>
-    import('./layout/layout.component').then(m => m.LayoutComponent),
-  children: PAGES_ROUTES
-}
-,
   {
     path: 'auth',
-    loadComponent: () =>
-      import('./@core/auth/auth/auth.component').then((m) => m.AuthComponent),
-    loadChildren: () =>
-      import('./@core/auth/auth/auth.routes').then((mod) => mod.AUTH_ROUTES),
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
   },
   {
-    path: 'forget-password',
-    loadComponent: () =>
-      import('./@core/auth/forgetpassword/forgetpassword.component').then(
-        (m) => m.ForgetpasswordComponent
-      ),
+    path: 'dashboard',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./layout/admin-layout/admin-layout').then((c) => c.AdminLayout),
+  },
+  {
+    path: 'setup',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/setup/setup.routes').then((m) => m.SETUP_ROUTES),
+  },
+  {
+    path: 'tenants',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/tenant/tenant.routes').then((m) => m.TENANT_ROUTES),
+  },
+  {
+    path: 'subscriptions',
+    canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./@core/auth/forgetpassword/forgetpassword.routes').then(
-        (mod) => mod.FORGET_PASSWORD_ROUTES
-      ),
+      import('./features/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
+  },
+  {
+    path: 'audit',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/audit/audit.routes').then((m) => m.AUDIT_ROUTES),
+  },
+  {
+    path: 'platform',
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./features/platform/platform.routes').then((m) => m.PLATFORM_ROUTES),
+  },
+  {
+    path: 'self-service',
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./features/self-service/self-service.routes').then((m) => m.SELF_SERVICE_ROUTES),
   },
 
-  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  {
+    path: '',
+    redirectTo: '/dashboard',
+    pathMatch: 'full',
+  },
+
+  {
+    path: '**',
+    redirectTo: '/auth/login',
+    pathMatch: 'full',
+  },
 ];

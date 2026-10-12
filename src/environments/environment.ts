@@ -1,4 +1,11 @@
-import { ACTIVE_ENV } from '../app/@core/config/env.config';
-import { envMap, EnvConfig } from '../app/@core/config/env.map';
+export const environment = {
+  production: false,
 
-export const environment: EnvConfig = envMap[ACTIVE_ENV];
+  apiUrl: 'https://law8-tenancy-api-evevejd5emgedrhw.uaenorth-01.azurewebsites.net/api/v1',
+  authUrl: 'https://law8-auth-api-chexfmhreucwgye3.uaenorth-01.azurewebsites.net/api/v1',
+  tenant: 'admin',
+
+  auth: {
+    redirectUri: 'http://localhost:4200/callback',
+  },
+};

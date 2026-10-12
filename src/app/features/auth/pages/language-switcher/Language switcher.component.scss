@@ -1,0 +1,150 @@
+.language-dropdown-wrapper {
+  position: relative;
+}
+
+.language-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.language-button:hover {
+  opacity: 0.8;
+}
+
+.language-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #424242;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.language-name {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.arrow {
+  margin-left: 2px;
+  margin-top: -4px;
+  font-size: 22px;
+  line-height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+.language-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 1000;
+  min-width: 160px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #111111;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+  text-align: left;
+}
+
+.language-option:hover {
+  background: #f0f0f0;
+}
+
+.language-option.active {
+  background: #e3ebff;
+  color: #3164f4;
+  font-weight: 600;
+}
+
+.language-option.active .option-circle {
+  background: #3164f4;
+  color: #ffffff;
+}
+
+.option-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #424242;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.option-text {
+  flex: 1;
+}
+
+:host-context([dir='rtl']) .language-dropdown {
+  right: auto;
+  left: 0;
+}
+
+:host-context([dir='rtl']) .language-name {
+  text-align: right;
+}
+
+:host-context([dir='rtl']) .arrow {
+  margin-left: 0;
+  margin-right: 2px;
+}
+
+:host-context([dir='rtl']) .language-button {
+  flex-direction: row-reverse;
+}

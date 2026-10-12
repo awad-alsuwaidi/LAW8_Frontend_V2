@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-role-list',
+  imports: [],
+  standalone:true,
+  templateUrl: './role-list.html',
+  styleUrl: './role-list.scss',
+})
+export class RoleList {
+
+}
