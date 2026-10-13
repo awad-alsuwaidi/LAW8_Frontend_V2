@@ -78,33 +78,34 @@ export class LookupsSupJurisdictionsComponent implements OnInit, OnDestroy {
     this.jurisdictionIdentifier = value;
   }
 
-  ngOnInit(): void {
-    this.refresh$
-      .pipe(
-        debounceTime(50),
-        switchMap(() => {
-          const params = {
-            pagSize: this.pagination.pagSize,
-            pageNum: this.pagination.pageNum,
-            sortBy: this.pagination.sortBy,
-            isDescending: this.pagination.isDescending,
-            search: this.pagination.search,
-          };
-          return this._apiService.get(
-            `${API_Config.judicatures.getByJurisdiction}/${this.jurisdiction?.id}`,
-            params,
-          );
-        }),
-        this._unsubscribe.takeUntilDestroy(),
-      )
-      .subscribe({
-        next: (res: any) => this.handleResponse(res),
-        error: (err) => {
-          console.error('fetch judicatures failed:', err);
-          this.isLoading = false;
-        },
-      });
-  }
+ngOnInit(): void {
+  this.refresh$
+    .pipe(
+      debounceTime(50),
+      switchMap(() => {
+        const params = {
+          jurisdictionId: this.jurisdiction?.id,      
+          pagSize: this.pagination.pagSize,
+          pageNum: this.pagination.pageNum,
+          sortBy: this.pagination.sortBy,
+          isDescending: this.pagination.isDescending,
+          search: this.pagination.search,
+        };
+        return this._apiService.get(
+          API_Config.judicatures.get,                 
+          params,
+        );
+      }),
+      this._unsubscribe.takeUntilDestroy(),
+    )
+    .subscribe({
+      next: (res: any) => this.handleResponse(res),
+      error: (err) => {
+        console.error('fetch judicatures failed:', err);
+        this.isLoading = false;
+      },
+    });
+}
 
   private triggerRefresh(): void {
     if (!this.jurisdiction?.id) return;

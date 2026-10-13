@@ -112,6 +112,11 @@
     "costCenter": "Cost Center",
     "glAccountId": "GL Account",
       "control": "Control",
+        "taskGroup": "Task Groups",
+  "createTaskGroup": "Create Task Group",
+  "updateTaskGroup": "Update Task Group",
+  "viewTaskGroup": "View Task Group",
+  "tasksAdded": "Tasks Added",
   "subAccountOf": "Sub Account Of"
   }
 }

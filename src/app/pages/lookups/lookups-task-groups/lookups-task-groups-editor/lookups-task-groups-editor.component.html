@@ -12,13 +12,13 @@
     <h1 class="text-2xl font-bold text-colorsTextTextPrimary mb-4">
       @switch (true) {
         @case (_router.url.includes("add")) {
-          Create Task Groups
+          {{ "lookups.createTaskGroup" | translate }}
         }
         @case (_router.url.includes("update")) {
-          Update Task Groups
+          {{ "lookups.updateTaskGroup" | translate }}
         }
         @default {
-          ViewTask Groups
+          {{ "lookups.viewTaskGroup" | translate }}
         }
       }
     </h1>
@@ -35,7 +35,7 @@
         <div class="grid gap-4 md:grid-cols-3">
           <div class="col-span-2">
             <h6 class="text-sm text-grey500 font-medium mt-3 my-2">
-              Tasks added
+              {{ "lookups.tasksAdded" | translate }}
             </h6>
             @for (item of formlyModel.taskIds; track $index) {
               <div

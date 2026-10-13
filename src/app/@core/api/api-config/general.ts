@@ -3,21 +3,21 @@ export const General_API = {
     // ============================================================
     // V2 Endpoints (الجديدة) — بتستخدم دي
     // ============================================================
-    getIndustryModel: 'industries',
-    getRateTypeLookup: 'ratetypes',
-    getDepartmentLookup: 'departments',
-    getAllBranches: 'branches',
+    getIndustryModel: 'lookups/industries',
+    getRateTypeLookup: 'lookups/rate-types',
+    getDepartmentLookup: 'lookups/departments',
+    getAllBranches: 'lookups/branches',
     getAssignedUsersTimeSheet: 'predefinedtasks/lookups/users',
     getLawyerMyPermission: 'tenant/users',
-    getActivityType: 'activitytypes',
-    getFinalJudgement: 'finaljudgements',
-    getActivityStatus: 'activitystatuses',
-    getAdjournmentReasons: 'adjournmentreasons',
-    getBankAccountsTypeLookup: 'bankaccounttypes',
-    getGlAccountsLookup: 'glaccounts',
-    getGlAccountsTypeLookup: 'glaccounttypes',
+    getActivityType: 'lookups/activity-types',
+    getFinalJudgement: 'lookups/final-judgements',
+    getActivityStatus: 'lookups/activity-statuses',
+    getAdjournmentReasons: 'lookups/adjournment-reasons',
+    getBankAccountsTypeLookup: 'lookups/bank-account-types',
+    getGlAccountsLookup: 'lookups/glaccounts',
+    getGlAccountsTypeLookup: 'lookups/gl-account-types',
     getUsersLookup: 'predefinedtasks/lookups/users',
-    getTaskPriority: 'taskpriorities',
+    getTaskPriority: 'lookups/task-priorities',
 
     // ============================================================
     // V1 Endpoints (القديمة) — بتستخدم دي
@@ -34,7 +34,8 @@ export const General_API = {
     getMatterCategoriesLookup: 'AppLookup/GetLaw_MatCatLookup',
     checkIsLitigation: 'AppLookup/CheckIsLitigation',
     getItemLookup: 'AppLookup/GetLaw_SEC_ItmLookup',
-    getLawyerMyPermissionCalendar: 'AppLookup/GetLaw_LawyerMyPermissionCalander',
+    getLawyerMyPermissionCalendar:
+      'AppLookup/GetLaw_LawyerMyPermissionCalander',
     getLawTaskCodesByMatterId: 'AppLookup/GetLaw_TaskCodesByMatterId',
     getMatterStatus: 'AppLookup/GetLaw_MattStatusLookup',
     getStages: 'AppLookup/GetLaw_StageLookup',
@@ -46,13 +47,16 @@ export const General_API = {
     getPartiesDescription: 'AppLookup/GetLaw_PartiesDescriptionModelLookup',
     getRecentMatters: 'AppLookup/GetRecentMatterCodeForUserLookup',
     getMatterCodes: 'AppLookup/GetLawMattertCodeLookup',
-    getAssignedUsersCalender: 'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
+    getAssignedUsersCalender:
+      'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
     getLawyerShort: 'AppLookup/GetLaw_LawyerShortLookup',
     getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
     getPartyTypes: 'AppLookup/GetLawpartyTypeLookup',
     getPartyPosition: 'AppLookup/GetLaw_MatterPartiesPositionsLookup',
-    getUsersInitialSaparateForTimeShet: 'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
-    getUsersInitialViewForTimeShet: 'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
+    getUsersInitialSaparateForTimeShet:
+      'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
+    getUsersInitialViewForTimeShet:
+      'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
     getAllMatterTypes: 'AppLookup/GetLaw_MtrTyppLookup',
     getAllMatter: 'AppLookup/GetLawMattertLookup',
     getAllCurrencies: 'AppLookup/GetCurrencyLookup',

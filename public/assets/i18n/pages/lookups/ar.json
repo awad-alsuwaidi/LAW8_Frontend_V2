@@ -112,6 +112,11 @@
     "costCenter": "مركز التكلفة",
     "glAccountId": "معرّف الحساب العام",
       "control": "التحكم",
+        "taskGroup": "مجموعات المهام",
+  "createTaskGroup": "إنشاء مجموعة مهام",
+  "updateTaskGroup": "تعديل مجموعة مهام",
+  "viewTaskGroup": "عرض مجموعة المهام",
+  "tasksAdded": "المهام المضافة",
   "subAccountOf": "الحساب الرئيسي"
   }
 }

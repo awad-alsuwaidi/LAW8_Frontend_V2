@@ -45,9 +45,6 @@ import { Subject, debounceTime, switchMap } from 'rxjs';
   styleUrl: './lookups-sub-rate-table.component.scss',
 })
 export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
-  // ============================================================
-  // ★ Subject للـ debounce
-  // ============================================================
   private refresh$ = new Subject<void>();
 
   _lookupsRateTableService = inject(LookupsRateTableService);
@@ -78,9 +75,6 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     this.rateTableIdentifier = value;
   }
 
-  // ============================================================
-  // ★ ngOnInit — debounce + switchMap
-  // ============================================================
   ngOnInit(): void {
     this.refresh$
       .pipe(
@@ -95,28 +89,22 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
           };
           return this._apiService.get(
             `${API_Config.rates.getByRateType}/${this.rateTable?.id}`,
-            params
+            params,
           );
         }),
-        this._unsubscribe.takeUntilDestroy()
+        this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe({
         next: (res: any) => this.handleResponse(res),
-        error: (err) => console.error('❌ fetch rates failed:', err),
+        error: (err) => console.error('fetch rates failed:', err),
       });
   }
 
-  // ============================================================
-  // ★ triggerRefresh — بدل getData
-  // ============================================================
   private triggerRefresh(): void {
     if (!this.rateTable?.id) return;
     this.refresh$.next();
   }
 
-  // ============================================================
-  // ★ handleResponse — map الـ data
-  // ============================================================
   private handleResponse(res: any): void {
     const result = res?.data ?? res?.result ?? {};
     const items: any[] = result?.items ?? result?.dataList ?? [];
@@ -132,7 +120,7 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
         rateTypeId: obj.rateTypeId ?? this.rateTable?.id,
         isActive,
         activeText: this._languageService.getTransValue(
-          isActive ? 'common.active' : 'common.inactive'
+          isActive ? 'common.active' : 'common.inactive',
         ),
       };
     });
@@ -141,15 +129,19 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     this.pagination = { ...this.pagination };
   }
 
-  // ============================================================
-  // openRateEditor
-  // ============================================================
   openRateEditor() {
     const ref = this._dialogService.open(LookupsRateTableEditorComponent, {
       header: this._languageService.getTransValue('lookups.editRate'),
       width: '40vw',
       data: { rowData: this.rateTable },
     });
+
+    if (!ref) {
+      console.error(
+        '❌ Dialog failed to open — check LookupsRateTableEditorComponent',
+      );
+      return;
+    }
 
     ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
       next: (res) => {
@@ -163,13 +155,10 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ============================================================
-  // openSubRateEditor
-  // ============================================================
   openSubRateEditor(rowData?: RateSubTableDto) {
     const ref = this._dialogService.open(LookupsSubRateTableEditorComponent, {
       header: this._languageService.getTransValue(
-        rowData ? 'lookups.editSubRate' : 'lookups.addSubRate'
+        rowData ? 'lookups.editSubRate' : 'lookups.addSubRate',
       ),
       width: '40vw',
       data: { rowData, categoryId: this.rateTableIdentifier },
@@ -185,9 +174,6 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ============================================================
-  // signalEffect
-  // ============================================================
   signalEffect = effect(() => {
     const rateDetails = this._lookupsRateTableService.getLookupRateDetails();
     if (!rateDetails) return;
@@ -197,21 +183,14 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     this.triggerRefresh();
   });
 
-  // ============================================================
-  // onSort
-  // ============================================================
   onSort(event: any): void {
     this.pagination.sortBy = event.sortBy ?? event.field;
-    this.pagination.isDescending =
-      event.isDescending ?? event.order === -1;
+    this.pagination.isDescending = event.isDescending ?? event.order === -1;
     this.pagination.pageNum = 1;
     this.pagination = { ...this.pagination };
     this.triggerRefresh();
   }
 
-  // ============================================================
-  // onPageChange
-  // ============================================================
   onPageChange(event: any): void {
     this.pagination.pagSize = Number(event.rows);
     this.pagination.pageNum = Math.floor(event.first / event.rows) + 1;
@@ -219,9 +198,6 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
     this.triggerRefresh();
   }
 
-  // ============================================================
-  // deleteRow
-  // ============================================================
   deleteRow(rowDataId: number) {
     this._apiService
       .delete(`${API_Config.rates.delete}/${rowDataId}`)
@@ -240,9 +216,6 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ============================================================
-  // onDelete — dialog
-  // ============================================================
   onDelete(rowData: RateSubTableDto) {
     this.deleteDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
@@ -255,7 +228,7 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
             value: rowData?.id,
           }),
           message: this._languageService.getTransValue(
-            'messages.deleteMessage'
+            'messages.deleteMessage',
           ),
           btns: [
             {
@@ -274,7 +247,7 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
             },
           ],
         },
-      }
+      },
     );
   }
 

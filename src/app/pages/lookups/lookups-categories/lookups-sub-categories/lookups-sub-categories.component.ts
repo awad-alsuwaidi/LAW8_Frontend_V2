@@ -133,62 +133,61 @@ export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
       });
   }
 
-  getData(): void {
-    clearTimeout(this.getDataTimeout);
-    this.getDataTimeout = setTimeout(() => {
-      if (!this.categoryIdentifier) {
-        console.warn('categoryIdentifier not set — abort');
-        return;
-      }
+getData(): void {
+  clearTimeout(this.getDataTimeout);
+  this.getDataTimeout = setTimeout(() => {
+    if (!this.categoryIdentifier) {
+      console.warn('categoryIdentifier not set — abort');
+      return;
+    }
 
-      this.isLoading = true;
-      const params = {
-        pageNumber: this.pagination.pageNumber,
-        pageSize: this.pagination.pageSize,
-        sortBy: this.sortBy,
-        isDescending: this.isDescending,
-      };
+    this.isLoading = true;
+    const params = {
+      matterCategoryId: this.categoryIdentifier,        
+      pageNumber: this.pagination.pageNumber,
+      pageSize: this.pagination.pageSize,
+      sortBy: this.sortBy,
+      isDescending: this.isDescending,
+    };
 
-      const url = `${Lookups_API.matterTypes.getByCategory}/${this.categoryIdentifier}`;
-      console.log('📡 Fetching subcategories:', url, params);
+    const url = Lookups_API.matterTypes.get;          
+    this._apiService
+      .get<any>(url, params)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const body = res?.data ?? res?.result ?? res;
+          const list = body?.items ?? body?.dataList ?? [];
 
-      this._apiService
-        .get<any>(url, params)
-        .pipe(this._unsubscribe.takeUntilDestroy())
-        .subscribe({
-          next: (res: any) => {
-            const body = res?.data ?? res?.result ?? res;
-            const list = body?.items ?? body?.dataList ?? [];
+          this.data = list.map((obj: any) => ({
+            id: obj.id,
+            matterCategoryId: obj.matterCategoryId,
+            nameEn: obj.nameEn,
+            nameAr: obj.nameAr,
+            appealPeriod: obj.appealPeriod,
+            cassationPeriod: obj.cassationPeriod,
+            isActive: obj.isActive,
+            active: obj.isActive,
+            activeText: this._languageService.getTransValue(
+              obj.isActive ? 'common.active' : 'common.inactive',
+            ),
+          }));
 
-            this.data = list.map((obj: any) => ({
-              id: obj.id,
-              matterCategoryId: obj.matterCategoryId,
-              nameEn: obj.nameEn,
-              nameAr: obj.nameAr,
-              appealPeriod: obj.appealPeriod,
-              cassationPeriod: obj.cassationPeriod,
-              isActive: obj.isActive,
-              active: obj.isActive,
-              activeText: this._languageService.getTransValue(
-                obj.isActive ? 'common.active' : 'common.inactive',
-              ),
-            }));
-
-            this.pagination.totalElements = body?.totalCount ?? 0;
-            this.pagination = { ...this.pagination };
-            this.isLoading = false;
-            this.hasLoaded = true;
-          },
-          error: (err) => {
-            console.error('Subcategories fetch failed:', err);
-            this.data = [];
-            this.pagination.totalElements = 0;
-            this.isLoading = false;
-            this.hasLoaded = true;
-          },
-        });
-    }, 200);
-  }
+          this.pagination.totalElements = body?.totalCount ?? 0;
+          this.pagination = { ...this.pagination };
+          this.isLoading = false;
+          this.hasLoaded = true;
+        },
+        error: (err) => {
+          console.error('Subcategories fetch failed:', err);
+          this.data = [];
+          this.pagination.totalElements = 0;
+          this.isLoading = false;
+          this.hasLoaded = true;
+        },
+      });
+  }, 200);
+}
 
   openCategoryEditor(): void {
     const ref = this._dialogService.open(LookupsCategoryEditorComponent, {

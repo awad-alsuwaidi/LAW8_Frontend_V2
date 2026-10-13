@@ -67,15 +67,15 @@ export class FileService {
     });
   }
 
-  downloadDocumentPredefiendTask(id: number | string) {
-    const url = `${environment.baseUrl}/api/${API_Config.predefinedTasks.download}/${id}`;
+downloadDocumentPredefiendTask(id: number | string) {
+  const url = `${environment.baseUrl}/api/v1/${API_Config.predefinedTasks.download}/${id}/download`;
 
-    return this._http.get(url, {
-      responseType: 'blob',
-      observe: 'response',
-      withCredentials: true,
-    });
-  }
+  return this._http.get(url, {
+    responseType: 'blob',
+    observe: 'response',
+    withCredentials: true,
+  });
+}
 
   previewFileFromPath(path: string) {
     if (!path) {

@@ -1,127 +1,328 @@
 export const Lookups_API = {
   // ============================================================
-  // ★★★ V2 — RESTful Endpoints الجديدة
+  // ★★★ V2 —  Lookups Route (/api/v1/lookups/{lookup})
   // ============================================================
 
-  matterCategories: {
-    get: 'mattercategories',
-    getById: 'mattercategories',
-    create: 'mattercategories',
-    update: 'mattercategories',
-    delete: 'mattercategories',
+  activityStatuses: {
+    get: 'lookups/activity-statuses',
+    getById: 'lookups/activity-statuses',
+    create: 'lookups/activity-statuses',
+    update: 'lookups/activity-statuses',
+    delete: 'lookups/activity-statuses',
   },
-
-  matterTypes: {
-    get: 'mattertypes',
-    getByCategory: 'mattertypes/by-category',
-    getById: 'mattertypes',
-    create: 'mattertypes',
-    update: 'mattertypes',
-    delete: 'mattertypes',
+  activityTypes: {
+    get: 'lookups/activity-types',
+    getById: 'lookups/activity-types',
+    create: 'lookups/activity-types',
+    update: 'lookups/activity-types',
+    delete: 'lookups/activity-types',
   },
-
-  matterStatuses: {
-    get: 'MatterStatuses',
-    getById: 'MatterStatuses',
-    create: 'MatterStatuses',
-    update: 'MatterStatuses',
-    delete: 'MatterStatuses',
-  },
-
-  stages: {
-    get: 'matterstages',
-    getById: 'matterstages',
-    create: 'matterstages',
-    update: 'matterstages',
-    delete: 'matterstages',
-  },
-
-  clientGroups: {
-    get: 'clientgroups',
-    getById: 'clientgroups',
-    create: 'clientgroups',
-    update: 'clientgroups',
-    delete: 'clientgroups',
-  },
-
-  referralTypes: {
-    get: 'referraltypes',
-    getById: 'referraltypes',
-    create: 'referraltypes',
-    update: 'referraltypes',
-    delete: 'referraltypes',
-  },
-
-  partiesDescriptions: {
-    get: 'partydescriptions',
-    getById: 'partydescriptions',
-    create: 'partydescriptions',
-    update: 'partydescriptions',
-    delete: 'partydescriptions',
-  },
-
   adjournmentReasons: {
-    get: 'adjournmentreasons',
-    getById: 'adjournmentreasons',
-    create: 'adjournmentreasons',
-    update: 'adjournmentreasons',
-    delete: 'adjournmentreasons',
+    get: 'lookups/adjournment-reasons',
+    getById: 'lookups/adjournment-reasons',
+    create: 'lookups/adjournment-reasons',
+    update: 'lookups/adjournment-reasons',
+    delete: 'lookups/adjournment-reasons',
   },
-
-  taskCodes: {
-    get: 'taskcodes',
-    getById: 'taskcodes',
-    create: 'taskcodes',
-    update: 'taskcodes',
-    delete: 'taskcodes',
+  bankAccountTypes: {
+    get: 'lookups/bank-account-types',
+    getById: 'lookups/bank-account-types',
+    create: 'lookups/bank-account-types',
+    update: 'lookups/bank-account-types',
+    delete: 'lookups/bank-account-types',
   },
-
-  taskCodesGroups: {
-    get: 'taskcodegroups',
-    getById: 'taskcodegroups',
-    create: 'taskcodegroups',
-    update: 'taskcodegroups',
-    delete: 'taskcodegroups',
+  clientGroups: {
+    get: 'lookups/client-groups',
+    getById: 'lookups/client-groups',
+    create: 'lookups/client-groups',
+    update: 'lookups/client-groups',
+    delete: 'lookups/client-groups',
   },
-
-  practiceAreas: {
-    get: 'practiceareas',
-    lookup: 'practiceareas',
-    getById: 'practiceareas',
-    create: 'practiceareas',
-    update: 'practiceareas',
-    delete: 'practiceareas',
+  clientTypes: {
+    get: 'lookups/client-types',
+    getById: 'lookups/client-types',
+    create: 'lookups/client-types',
+    update: 'lookups/client-types',
+    delete: 'lookups/client-types',
   },
-
+  contactCategories: {
+    get: 'lookups/contact-categories',
+    getById: 'lookups/contact-categories',
+    create: 'lookups/contact-categories',
+    update: 'lookups/contact-categories',
+    delete: 'lookups/contact-categories',
+  },
+  costCenters: {
+    get: 'lookups/cost-centers',
+    getById: 'lookups/cost-centers',
+    create: 'lookups/cost-centers',
+    update: 'lookups/cost-centers',
+    delete: 'lookups/cost-centers',
+  },
+  countries: {
+    get: 'lookups/countries',
+    getById: 'lookups/countries',
+    create: 'lookups/countries',
+    update: 'lookups/countries',
+    delete: 'lookups/countries',
+  },
   departments: {
-    get: 'Departments',
-    getById: 'Departments',
-    create: 'Departments',
-    update: 'Departments',
-    delete: 'Departments',
+    get: 'lookups/departments',
+    getById: 'lookups/departments',
+    create: 'lookups/departments',
+    update: 'lookups/departments',
+    delete: 'lookups/departments',
+  },
+  expenseStatuses: {
+    get: 'lookups/expense-statuses',
+    getById: 'lookups/expense-statuses',
+    create: 'lookups/expense-statuses',
+    update: 'lookups/expense-statuses',
+    delete: 'lookups/expense-statuses',
+  },
+  finalJudgements: {
+    get: 'lookups/final-judgements',
+    getById: 'lookups/final-judgements',
+    create: 'lookups/final-judgements',
+    update: 'lookups/final-judgements',
+    delete: 'lookups/final-judgements',
+  },
+  glAccountCategories: {
+    get: 'lookups/gl-account-categories',
+    getById: 'lookups/gl-account-categories',
+    create: 'lookups/gl-account-categories',
+    update: 'lookups/gl-account-categories',
+    delete: 'lookups/gl-account-categories',
+  },
+  glAccountTypes: {
+    get: 'lookups/gl-account-types',
+    getById: 'lookups/gl-account-types',
+    create: 'lookups/gl-account-types',
+    update: 'lookups/gl-account-types',
+    delete: 'lookups/gl-account-types',
+  },
+  invoiceStatuses: {
+    get: 'lookups/invoice-statuses',
+    getById: 'lookups/invoice-statuses',
+    create: 'lookups/invoice-statuses',
+    update: 'lookups/invoice-statuses',
+    delete: 'lookups/invoice-statuses',
+  },
+  jurisdictions: {
+    get: 'lookups/jurisdictions',
+    getById: 'lookups/jurisdictions',
+    create: 'lookups/jurisdictions',
+    update: 'lookups/jurisdictions',
+    delete: 'lookups/jurisdictions',
+  },
+  matterStages: {
+    get: 'lookups/matter-stages',
+    getById: 'lookups/matter-stages',
+    create: 'lookups/matter-stages',
+    update: 'lookups/matter-stages',
+    delete: 'lookups/matter-stages',
+    getAppealKinds: 'lookups/matter-stages/appeal-kinds',
+    getAppealKindByStage: 'lookups/matter-stages',
+  },
+  matterStatuses: {
+    get: 'lookups/matter-statuses',
+    getById: 'lookups/matter-statuses',
+    create: 'lookups/matter-statuses',
+    update: 'lookups/matter-statuses',
+    delete: 'lookups/matter-statuses',
+  },
+  matterTaskStatuses: {
+    get: 'lookups/matter-task-statuses',
+    getById: 'lookups/matter-task-statuses',
+    create: 'lookups/matter-task-statuses',
+    update: 'lookups/matter-task-statuses',
+    delete: 'lookups/matter-task-statuses',
+  },
+  partyDescriptions: {
+    get: 'lookups/party-descriptions',
+    getById: 'lookups/party-descriptions',
+    create: 'lookups/party-descriptions',
+    update: 'lookups/party-descriptions',
+    delete: 'lookups/party-descriptions',
+  },
+  paymentMethods: {
+    get: 'lookups/payment-methods',
+    getById: 'lookups/payment-methods',
+    create: 'lookups/payment-methods',
+    update: 'lookups/payment-methods',
+    delete: 'lookups/payment-methods',
+  },
+  rateTypes: {
+    get: 'lookups/rate-types',
+    getById: 'lookups/rate-types',
+    create: 'lookups/rate-types',
+    update: 'lookups/rate-types',
+    delete: 'lookups/rate-types',
+  },
+  referralTypes: {
+    get: 'lookups/referral-types',
+    getById: 'lookups/referral-types',
+    create: 'lookups/referral-types',
+    update: 'lookups/referral-types',
+    delete: 'lookups/referral-types',
+  },
+  reminderStatuses: {
+    get: 'lookups/reminder-statuses',
+    getById: 'lookups/reminder-statuses',
+    create: 'lookups/reminder-statuses',
+    update: 'lookups/reminder-statuses',
+    delete: 'lookups/reminder-statuses',
+  },
+  taskPriorities: {
+    get: 'lookups/task-priorities',
+    getById: 'lookups/task-priorities',
+    create: 'lookups/task-priorities',
+    update: 'lookups/task-priorities',
+    delete: 'lookups/task-priorities',
+  },
+  timesheetEntryStatuses: {
+    get: 'lookups/timesheet-entry-statuses',
+    getById: 'lookups/timesheet-entry-statuses',
+    create: 'lookups/timesheet-entry-statuses',
+    update: 'lookups/timesheet-entry-statuses',
+    delete: 'lookups/timesheet-entry-statuses',
+  },
+  titles: {
+    get: 'lookups/titles',
+    getById: 'lookups/titles',
+    create: 'lookups/titles',
+    update: 'lookups/titles',
+    delete: 'lookups/titles',
+  },
+  vendorGroups: {
+    get: 'lookups/vendor-groups',
+    getById: 'lookups/vendor-groups',
+    create: 'lookups/vendor-groups',
+    update: 'lookups/vendor-groups',
+    delete: 'lookups/vendor-groups',
   },
 
+  cards: {
+    get: 'lookups/cards',
+    getById: 'lookups/cards',
+    create: 'lookups/cards',
+    update: 'lookups/cards',
+    delete: 'lookups/cards',
+  },
+  matterCategories: {
+    get: 'lookups/matter-categories',
+    getById: 'lookups/matter-categories',
+    create: 'lookups/matter-categories',
+    update: 'lookups/matter-categories',
+    delete: 'lookups/matter-categories',
+  },
+  matterTypes: {
+    get: 'lookups/matter-types',
+    getById: 'lookups/matter-types',
+    create: 'lookups/matter-types',
+    update: 'lookups/matter-types',
+    delete: 'lookups/matter-types',
+    getByCategory: 'lookups/matter-types',
+  },
+  judicatures: {
+    get: 'lookups/judicatures',
+    getById: 'lookups/judicatures',
+    create: 'lookups/judicatures',
+    update: 'lookups/judicatures',
+    delete: 'lookups/judicatures',
+    getByJurisdiction: 'lookups/jurisdictions',
+  },
+  taskCodeGroups: {
+    get: 'lookups/task-code-groups',
+    getById: 'lookups/task-code-groups',
+    create: 'lookups/task-code-groups',
+    update: 'lookups/task-code-groups',
+    delete: 'lookups/task-code-groups',
+  },
+  taskCodes: {
+    get: 'lookups/task-codes',
+    getById: 'lookups/task-codes',
+    create: 'lookups/task-codes',
+    update: 'lookups/task-codes',
+    delete: 'lookups/task-codes',
+  },
+  practiceAreas: {
+    get: 'lookups/practice-areas',
+    lookup: 'lookups/practice-areas',
+    getById: 'lookups/practice-areas',
+    create: 'lookups/practice-areas',
+    update: 'lookups/practice-areas',
+    delete: 'lookups/practice-areas',
+  },
   industries: {
-    get: 'industries',
-    getById: 'industries',
-    create: 'industries',
-    update: 'industries',
-    delete: 'industries',
+    get: 'lookups/industries',
+    getById: 'lookups/industries',
+    create: 'lookups/industries',
+    update: 'lookups/industries',
+    delete: 'lookups/industries',
   },
-
   branches: {
-    get: 'branches',
-    getById: 'branches',
-    create: 'branches',
-    update: 'branches',
-    delete: 'branches',
+    get: 'lookups/branches',
+    getById: 'lookups/branches',
+    create: 'lookups/branches',
+    update: 'lookups/branches',
+    delete: 'lookups/branches',
   },
   taskGroups: {
-    get: 'taskgroups',
-    getById: 'taskgroups',
-    create: 'taskgroups',
-    update: 'taskgroups',
-    delete: 'taskgroups',
+    get: 'lookups/task-groups',
+    getById: 'lookups/task-groups',
+    create: 'lookups/task-groups',
+    update: 'lookups/task-groups',
+    delete: 'lookups/task-groups',
+  },
+  partyTypes: {
+    get: 'lookups/party-types',
+    getById: 'lookups/party-types',
+    create: 'lookups/party-types',
+    update: 'lookups/party-types',
+    delete: 'lookups/party-types',
+  },
+  matterClassCategories: {
+    get: 'lookups/matter-class-categories',
+    getById: 'lookups/matter-class-categories',
+    create: 'lookups/matter-class-categories',
+    update: 'lookups/matter-class-categories',
+    delete: 'lookups/matter-class-categories',
+  },
+  expenseTypes: {
+    get: 'lookups/expense-types',
+    getById: 'lookups/expense-types',
+    create: 'lookups/expense-types',
+    update: 'lookups/expense-types',
+    delete: 'lookups/expense-types',
+  },
+  timeZones: {
+    get: 'lookups/time-zones',
+    getById: 'lookups/time-zones',
+  },
+
+  allLookups: 'lookups',
+
+  stages: {
+    get: 'lookups/matter-stages',
+    getById: 'lookups/matter-stages',
+    create: 'lookups/matter-stages',
+    update: 'lookups/matter-stages',
+    delete: 'lookups/matter-stages',
+  },
+  partiesDescriptions: {
+    get: 'lookups/party-descriptions',
+    getById: 'lookups/party-descriptions',
+    create: 'lookups/party-descriptions',
+    update: 'lookups/party-descriptions',
+    delete: 'lookups/party-descriptions',
+  },
+  taskCodesGroups: {
+    get: 'lookups/task-code-groups',
+    getById: 'lookups/task-code-groups',
+    create: 'lookups/task-code-groups',
+    update: 'lookups/task-code-groups',
+    delete: 'lookups/task-code-groups',
   },
 
   predefinedTasks: {
@@ -130,64 +331,23 @@ export const Lookups_API = {
     create: 'predefinedtasks',
     update: 'predefinedtasks',
     delete: 'predefinedtasks',
-    download: 'predefinedtasks/download',
+    download: 'PredefinedTasks/attachments',
     lookupsUsers: 'predefinedtasks/lookups/users',
   },
-
-  taskPriorities: {
-    get: 'taskpriorities',
-    getById: 'taskpriorities',
-    create: 'taskpriorities',
-    update: 'taskpriorities',
-    delete: 'taskpriorities',
-  },
-
-  jurisdictions: {
-    get: 'jurisdictions',
-    getById: 'jurisdictions',
-    create: 'jurisdictions',
-    update: 'jurisdictions',
-    delete: 'jurisdictions',
-  },
-
-  judicatures: {
-    get: 'judicatures',
-    getByJurisdiction: 'judicatures/by-jurisdiction',
-    getById: 'judicatures',
-    create: 'judicatures',
-    update: 'judicatures',
-    delete: 'judicatures',
-  },
-
-  rateTypes: {
-    get: 'ratetypes',
-    getById: 'ratetypes',
-    create: 'ratetypes',
-    update: 'ratetypes',
-    delete: 'ratetypes',
-  },
   rates: {
-    get: 'rates',
-    getByRateType: 'rates/by-ratetype',
-    getById: 'rates',
-    create: 'rates',
-    update: 'rates',
-    delete: 'rates',
+    get: 'Rates',
+    getByRateType: 'Rates/by-ratetype',
+    getById: 'Rates',
+    create: 'Rates',
+    update: 'Rates',
+    delete: 'Rates',
   },
-
   bankAccounts: {
     get: 'bankaccounts',
     getById: 'bankaccounts',
     create: 'bankaccounts',
     update: 'bankaccounts',
     delete: 'bankaccounts',
-  },
-  bankAccountTypes: {
-    get: 'bankaccounttypes',
-    getById: 'bankaccounttypes',
-    create: 'bankaccounttypes',
-    update: 'bankaccounttypes',
-    delete: 'bankaccounttypes',
   },
   glAccounts: {
     get: 'glaccounts',
@@ -196,144 +356,106 @@ export const Lookups_API = {
     update: 'glaccounts',
     delete: 'glaccounts',
   },
-  glAccountTypes: {
-    get: 'glaccounttypes',
-    getById: 'glaccounttypes',
-    create: 'glaccounttypes',
-    update: 'glaccounttypes',
-    delete: 'glaccounttypes',
-  },
-  glAccountCategories: {
-    get: 'glaccountCategories',
-    getById: 'glaccountCategories',
-    create: 'glaccountCategories',
-    update: 'glaccountCategories',
-    delete: 'glaccountCategories',
-  },
-  costCenters: {
-    get: 'costcenters',
-    getById: 'costcenters',
-    create: 'costcenters',
-    update: 'costcenters',
-    delete: 'costcenters',
-  },
 
   // ============================================================
-  // ★★★ V1 — RESTful Endpoints القديم
+  // ★★★ V1 Legacy — للصفحات اللي لسه ما اتحولتش
   // ============================================================
-
   matterCategory: {
     get: 'LawMtrCat/GetList',
     create: 'LawMtrCat/Create',
     update: 'LawMtrCat/Update',
     delete: 'LawMtrCat/Delete',
   },
-
   matterCategoryType: {
     get: 'LawMtrTyp/GetList',
     create: 'LawMtrTyp/Create',
     update: 'LawMtrTyp/Update',
     delete: 'LawMtrTyp/Delete',
   },
-
   practiceArea: {
     get: 'Law_PractsArea/GetList',
     create: 'Law_PractsArea/Create',
     update: 'Law_PractsArea/Update',
     delete: 'Law_PractsArea/Delete',
   },
-
   clientGroup: {
     get: 'ClientGroup/GetList',
     create: 'ClientGroup/Create',
     update: 'ClientGroup/Update',
     delete: 'ClientGroup/Delete',
   },
-
   department: {
     get: 'Law_Department/GetList',
     create: 'Law_Department/Create',
     update: 'Law_Department/Update',
     delete: 'Law_Department/Delete',
   },
-
   industry: {
     get: 'Law_Industry/GetList',
     create: 'Law_Industry/Create',
     update: 'Law_Industry/Update',
     delete: 'Law_Industry/Delete',
   },
-
   mattStatus: {
     get: 'Law_MattStatus/GetList',
     create: 'Law_MattStatus/Create',
     update: 'Law_MattStatus/Update',
     delete: 'Law_MattStatus/Delete',
   },
-
   referralType: {
     get: 'Law_ReferralType/GetList',
     create: 'Law_ReferralType/Create',
     update: 'Law_ReferralType/Update',
     delete: 'Law_ReferralType/Delete',
   },
-
   adjournmentReasonsOld: {
     get: 'Law_AdjournmentReasons/GetList',
     create: 'Law_AdjournmentReasons/Create',
     update: 'Law_AdjournmentReasons/Update',
     delete: 'Law_AdjournmentReasons/Delete',
   },
-
   partiesDescription: {
     get: 'Law_PartiesDescription/GetList',
     create: 'Law_PartiesDescription/Create',
     update: 'Law_PartiesDescription/Update',
     delete: 'Law_PartiesDescription/Delete',
   },
-
   stage: {
     get: 'Law_Stage/GetList',
     create: 'Law_Stage/Create',
     update: 'Law_Stage/Update',
     delete: 'Law_Stage/Delete',
   },
-
   taskCode: {
     get: 'Law_TaskCode/GetList',
     create: 'Law_TaskCode/Create',
     update: 'Law_TaskCode/Update',
     delete: 'Law_TaskCode/Delete',
   },
-
   taskCodesGroupOld: {
     get: 'Law_TaskCodesGroup/GetList',
     create: 'Law_TaskCodesGroup/Create',
     update: 'Law_TaskCodesGroup/Update',
     delete: 'Law_TaskCodesGroup/Delete',
   },
-
   rateType: {
     get: 'Law_RateType/GetList',
     create: 'Law_RateType/Create',
     update: 'Law_RateType/Update',
     delete: 'Law_RateType/Delete',
   },
-
   rate: {
     get: 'Law_Rate/GetList',
     create: 'Law_Rate/Create',
     update: 'Law_Rate/Update',
     delete: 'Law_Rate/Delete',
   },
-
   branch: {
     get: 'Law_Branch/GetList',
     create: 'Law_Branch/Create',
     update: 'Law_Branch/Update',
     delete: 'Law_Branch/Delete',
   },
-
   predefinedTasksOld: {
     get: 'Law_Predifiend_Tasks/GetList',
     create: 'Law_Predifiend_Tasks/Create',
@@ -342,7 +464,6 @@ export const Lookups_API = {
     download: 'Law_Predifiend_Tasks/download',
     getById: 'Law_Predifiend_Tasks/GetById',
   },
-
   taskGroupsOld: {
     get: 'Law_Predifined_Task_Group/GetList',
     create: 'Law_Predifined_Task_Group/Create',
@@ -350,7 +471,6 @@ export const Lookups_API = {
     delete: 'Law_Predifined_Task_Group/Delete',
     getById: 'Law_Predifined_Task_Group/GetById',
   },
-
   bankAccount: {
     get: 'BankAccounts/GetList',
     getById: 'BankAccounts/GetById',
@@ -358,7 +478,6 @@ export const Lookups_API = {
     update: 'BankAccounts/Update',
     delete: 'BankAccounts/Delete',
   },
-
   glAccount: {
     get: 'GlAccounts/GetList',
     getById: 'GlAccounts/GetById',
@@ -366,14 +485,12 @@ export const Lookups_API = {
     update: 'GlAccounts/Update',
     delete: 'GlAccounts/Delete',
   },
-
   jurisdictionsOld: {
     get: 'Law_Jurisdiction/GetList',
     create: 'Law_Jurisdiction/Create',
     update: 'Law_Jurisdiction/Update',
     delete: 'Law_Jurisdiction/Delete',
   },
-
   judicature: {
     get: 'Law_Judicature/GetList',
     create: 'Law_Judicature/Create',
