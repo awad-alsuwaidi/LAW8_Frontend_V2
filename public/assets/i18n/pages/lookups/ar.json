@@ -100,6 +100,8 @@
     "bankAccounts_title": "الحسابات البنكية",
     "bankAccounts_description": "جميع الحسابات البنكية",
     "glAccounts_title": "حسابات الأستاذ العام",
+    "glAccounts_add": "اضافه حساب الأستاذ العام",
+    "glAccounts_update": "تحديث حساب الأستاذ العام",
     "glAccounts_description": "جميع حسابات الأستاذ العام",
     "accountId": "رقم الحساب",
     "bankType": "نوع الحساب البنكي",
@@ -108,6 +110,8 @@
     "type": "النوع",
     "category": "الفئة",
     "costCenter": "مركز التكلفة",
-    "glAccountId": "معرّف الحساب العام"
+    "glAccountId": "معرّف الحساب العام",
+      "control": "التحكم",
+  "subAccountOf": "الحساب الرئيسي"
   }
 }

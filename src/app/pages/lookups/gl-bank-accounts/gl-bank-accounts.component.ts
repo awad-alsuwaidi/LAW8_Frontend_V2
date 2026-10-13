@@ -107,8 +107,8 @@ export class GlBankAccountsComponent implements OnInit, OnDestroy {
   openBankAccountEditor(rowData?: any) {
     const ref = this._dialogService.open(GlbankAccountsEditorComponent, {
       header: rowData
-        ? this._languageService.getTransValue('matters.updateBankAccount')
-        : this._languageService.getTransValue('matters.addBankAccount'),
+        ? this._languageService.getTransValue('lookups.glAccounts_update')
+        : this._languageService.getTransValue('lookups.glAccounts_add'),
       data: { rowData, matterIdentifier: this.matterIdentifier },
       width: '720px',
     });

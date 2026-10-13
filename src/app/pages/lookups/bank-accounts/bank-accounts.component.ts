@@ -101,8 +101,8 @@ getData() {
 openBankAccountEditor(rowData?: any) {
   const ref = this._dialogService.open(BankAccountsEditorComponent, {
     header: rowData
-      ? this._languageService.getTransValue('update Bank Account')
-      : this._languageService.getTransValue('Add Bank Account'),
+      ? this._languageService.getTransValue('matters.updateBankAccount')
+      : this._languageService.getTransValue('matters.addBankAccount'),
     data: { rowData, matterIdentifier: this.matterIdentifier },
     width: '720px',
   });

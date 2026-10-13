@@ -13,7 +13,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'nickName',
           type: 'input',
           props: {
-            label: THIS._languageService.getTransValue('Nickname'),
+            label: THIS._languageService.getTransValue('lookups.nickname'),
             required: true,
           },
           expressions: { 'props.readonly': 'formState.readonly' },
@@ -22,7 +22,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'accountName',
           type: 'input',
           props: {
-            label: THIS._languageService.getTransValue('Account Name'),
+            label: THIS._languageService.getTransValue('lookups.accountName'),
             required: true,
           },
           expressions: { 'props.readonly': 'formState.readonly' },
@@ -31,7 +31,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'glAccountTypeId',           
           type: 'select',
           props: {
-            label: THIS._languageService.getTransValue('Type'),
+            label: THIS._languageService.getTransValue('lookups.type'),
             required: true,
             optionsArr: getOptionsArray(
               THIS.lookupsData?.glType ?? [],
@@ -46,7 +46,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'departmentId',
           type: 'select',
           props: {
-            label: THIS._languageService.getTransValue('Department'),
+            label: THIS._languageService.getTransValue('lookups.department'),
             optionsArr: getOptionsArray(
               THIS.lookupsData?.department ?? [],
               'id',
@@ -60,7 +60,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'categoryId',                
           type: 'select',
           props: {
-            label: THIS._languageService.getTransValue('Category'),
+            label: THIS._languageService.getTransValue('lookups.category'),
             optionsArr: getOptionsArray(
               THIS.lookupsData?.category ?? [],
               'id',
@@ -74,7 +74,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'costCenterId',               
           type: 'select',
           props: {
-            label: THIS._languageService.getTransValue('Cost Center'),
+            label: THIS._languageService.getTransValue('lookups.costCenter'),
             optionsArr: getOptionsArray(
               THIS.lookupsData?.costCenter ?? [],
               'id',
@@ -88,7 +88,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'control',
           type: 'input',
           props: {
-            label: THIS._languageService.getTransValue('Control'),
+            label: THIS._languageService.getTransValue('lookups.control'),
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
@@ -96,7 +96,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           key: 'subAccountOfId',            
           type: 'input',
           props: {
-            label: THIS._languageService.getTransValue('Sub Account Of'),
+            label: THIS._languageService.getTransValue('lookups.subAccountOf'),
             type: 'number',
           },
           expressions: { 'props.readonly': 'formState.readonly' },

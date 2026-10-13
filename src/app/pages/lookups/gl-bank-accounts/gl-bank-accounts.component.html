@@ -2,13 +2,13 @@
   <div class="flex justify-between items-center mb-4">
     <div>
       <h1 class="text-colorsTextTextPrimary font-bold text-2xl mb-2">
-        {{ "G/L Account" | translate }}
+        {{ "lookups.glAccounts_title" | translate }}
       </h1>
       <app-shared-breadcrumb />
     </div>
     <app-shared-button
       [requiredPermission]="'Add_GLAccounts'"
-      [label]="'Add G/L Account' | translate"
+      [label]="'lookups.glAccounts_add' | translate"
       (onClick)="openBankAccountEditor()"
       [styleClass]="
         'bg-primary text-white !text-sm !py-1 !font-medium !leading-8'

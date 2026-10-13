@@ -100,6 +100,8 @@
     "bankAccounts_title": "Bank Accounts",
     "bankAccounts_description": "All Bank Accounts",
     "glAccounts_title": "G/L Accounts",
+    "glAccounts_add": "Add G/l Account",
+    "glAccounts_update": "Update G/l Account",
     "glAccounts_description": "All G/L Accounts",
     "accountId": "Account ID",
     "bankType": "Bank Type",
@@ -108,6 +110,8 @@
     "type": "Type",
     "category": "Category",
     "costCenter": "Cost Center",
-    "glAccountId": "GL Account"
+    "glAccountId": "GL Account",
+      "control": "Control",
+  "subAccountOf": "Sub Account Of"
   }
 }
