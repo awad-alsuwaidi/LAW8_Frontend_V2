@@ -62,7 +62,6 @@ export class LookupsJurisdictionsComponent implements OnInit, OnDestroy {
     addPermission: 'Add_Jurisdiction',
     addButton: {
       label: this._languageService.getTransValue('lookups.addJurisdiction'),
-      //'Add Jurisdiction',
       command: () => {
         this.openJurisdictionEditor()
       }
@@ -86,7 +85,6 @@ getData() {
     .pipe(this._unsubscribeService.takeUntilDestroy())
     .subscribe({
       next: (res: any) => {
-        // ★ يقبل {data: {items}} أو {result: {dataList}} أو {result: {items}}
         const result = res?.data ?? res?.result ?? {};
         const items: any[] = result?.items ?? result?.dataList ?? [];
 
@@ -131,7 +129,7 @@ getData() {
 
   searchValueChange(value: string): void {
     this.searchText = value
-    this.filterOptions.search = value;
+    this.filterOptions.SearchTerm = value;
     this.filterOptions = { ...this.filterOptions }
     this.getData();
   }

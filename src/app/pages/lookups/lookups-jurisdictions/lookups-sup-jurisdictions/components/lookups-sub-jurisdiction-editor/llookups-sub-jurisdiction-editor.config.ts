@@ -8,7 +8,6 @@ export function lookupsSubJurisdictionEditorConfig(
     {
       fieldGroupClassName: 'grid gap-4 md:grid-cols-2',
       fieldGroup: [
-        // ★ حقل مخفي — يتبعت للباك لكن مش بيتعرض
         {
           key: 'jurisdictionId',
           type: 'input',
@@ -40,7 +39,7 @@ export function lookupsSubJurisdictionEditorConfig(
           },
         },
         {
-          key: 'isActive',                       // ★ مش 'active'
+          key: 'isActive',                      
           type: 'switch',
           defaultValue: true,
           props: {

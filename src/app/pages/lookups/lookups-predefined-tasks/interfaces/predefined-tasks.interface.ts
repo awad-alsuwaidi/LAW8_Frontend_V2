@@ -5,7 +5,7 @@ export interface PredefinedTaskDto {
   isActive: boolean;
   priorityId: number;
   priorityName?: string;
-  durationType: number;        // 1 = Hours, 2 = Days
+  durationType: number;        
   duration: number;
   assigneeCount?: number;
   assignees?: Assignee[];

@@ -1,43 +1,82 @@
 <div class="flex justify-between p-2 rounded-t-lg h-14 mb-5">
-    <h1 class=" font-bold text-2xl text-colorsTextTextPrimary leading-9">
-        {{apiConfigSelected.title|translate}}
-    </h1>
+  <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
+    {{ apiConfigSelected.title | translate }}
+  </h1>
 </div>
 
 <div class="p-6 bg-white rounded-2xl">
-    <div class="flex justify-between mb-4">
-    <h3 class="text-lg font-bold text-grey500">{{'lookups.subList'|translate}}</h3>
+  <div class="flex justify-between mb-4">
+    <h3 class="text-lg font-bold text-grey500">
+      {{ "lookups.subList" | translate }}
+    </h3>
 
-        <app-shared-button [label]="'lookups.addSubItem'|translate" [requiredPermission]="apiConfigSelected.addPermission"
-        [styleClass]="'bg-primary text-white !px-4  !text-sm !py-1.5 !text-xs !font-medium !leading-4 h-8'" (onClick)="openSubMatterListEditor()" />  
-    </div>
-    <app-shared-table [data]="data" [columns]="columns" [statusConfig]="statusConfig" [pagination]="pagination"
-    (onPageChange)="onPageChange($event)" (onSort)="onSort($event)">
+    <app-shared-button
+      [label]="'lookups.addSubItem' | translate"
+      [requiredPermission]="apiConfigSelected.addPermission"
+      [styleClass]="
+        'bg-primary text-white !px-4  !text-sm !py-1.5 !text-xs !font-medium !leading-4 h-8'
+      "
+      (onClick)="openSubMatterListEditor()"
+    />
+  </div>
+  <app-shared-table
+    [data]="data"
+    [columns]="columns"
+    [statusConfig]="statusConfig"
+    [pagination]="pagination"
+    (onPageChange)="onPageChange($event)"
+    (onSort)="onSort($event)"
+  >
     <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
-        <!-- @if(!apiConfigSelected.values.includes(rowData.id)){ -->
-  @if(!isRowLocked(rowData)){
-            <div class="font-medium text-sm text-textSecondary rounded-e-lg">
-              <div class="flex gap-6">
-                <div class="cursor-pointer" (click)="openSubMatterListEditor(rowData)" [requiredPermission]="apiConfigSelected.updatePermission"
-                   [style.visibility]="isEditDisabled(rowData) ? 'hidden' : 'visible'">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    class="stroke-grey500 stroke-2">
-                    <path
-                      d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                    <path
-                      d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
-                      stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015" stroke-miterlimit="10"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </div>
-                <div class="cursor-pointer" (click)="onDelete(rowData)" [requiredPermission]="apiConfigSelected.deletePermission" *ngIf="canDelete">
-                  <i class="icon-trash text-base text-grey500"></i>
-                </div>
-              </div>
+      @if (!isRowLocked(rowData)) {
+        <div class="font-medium text-sm text-textSecondary rounded-e-lg">
+          <div class="flex gap-6">
+            <div
+              class="cursor-pointer"
+              (click)="openSubMatterListEditor(rowData)"
+              [requiredPermission]="apiConfigSelected.updatePermission"
+              [style.visibility]="
+                isEditDisabled(rowData) ? 'hidden' : 'visible'
+              "
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                class="stroke-grey500 stroke-2"
+              >
+                <path
+                  d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
+                  stroke-miterlimit="10"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015"
+                  stroke-miterlimit="10"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
             </div>
-        }
-      </ng-template>
-    </app-shared-table>
+            <div
+              class="cursor-pointer"
+              (click)="onDelete(rowData)"
+              [requiredPermission]="apiConfigSelected.deletePermission"
+              *ngIf="canDelete"
+            >
+              <i class="icon-trash text-base text-grey500"></i>
+            </div>
+          </div>
+        </div>
+      }
+    </ng-template>
+  </app-shared-table>
 </div>

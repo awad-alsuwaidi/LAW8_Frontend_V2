@@ -1,4 +1,11 @@
-import { Component, effect, inject, Input, OnDestroy } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuModule } from 'primeng/menu';
 import { PaginatorModule } from 'primeng/paginator';
@@ -22,6 +29,7 @@ import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
 import { SharedConfirmDialogComponent } from 'src/app/@shared/components/shared-confirm-dialog/shared-confirm-dialog.component';
 import { LookupsJurisdictionsEditorComponent } from '../components/lookups-jurisdictions-editor/lookups-jurisdictions-editor.component';
 import { LookupsSubJurisdictionEditorComponent } from './components/lookups-sub-jurisdiction-editor/lookups-sub-jurisdiction-editor.component';
+import { Subject, debounceTime, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-lookups-sup-jurisdictions',
@@ -37,7 +45,9 @@ import { LookupsSubJurisdictionEditorComponent } from './components/lookups-sub-
   templateUrl: './lookups-sup-jurisdictions.component.html',
   styleUrl: './lookups-sup-jurisdictions.component.scss',
 })
-export class LookupsSupJurisdictionsComponent implements OnDestroy {
+export class LookupsSupJurisdictionsComponent implements OnInit, OnDestroy {
+  private refresh$ = new Subject<void>();
+
   _lookupsJurisdictionService = inject(LookupsJurisdictionsService);
   _router = inject(Router);
   _route = inject(ActivatedRoute);
@@ -52,12 +62,15 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
   data: LookupSubjurisdictionDto[] = [];
   columns = Jurisdictions_Sub_Columns_EN;
   statusConfig = lookupSubCategory_statusConfig;
+
   pagination: any = {
-    pagSize: PAGESIZE,
+    pagSize: PAGESIZE ?? 10,
     pageNum: 1,
-    orderByDirection: 'ASC',
     totalElements: 0,
+    sortBy: 'id',
+    isDescending: false,
   };
+
   isLoading: boolean = false;
 
   private jurisdictionIdentifier!: number;
@@ -65,11 +78,66 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
     this.jurisdictionIdentifier = value;
   }
 
+  ngOnInit(): void {
+    this.refresh$
+      .pipe(
+        debounceTime(50),
+        switchMap(() => {
+          const params = {
+            pagSize: this.pagination.pagSize,
+            pageNum: this.pagination.pageNum,
+            sortBy: this.pagination.sortBy,
+            isDescending: this.pagination.isDescending,
+            search: this.pagination.search,
+          };
+          return this._apiService.get(
+            `${API_Config.judicatures.getByJurisdiction}/${this.jurisdiction?.id}`,
+            params,
+          );
+        }),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => this.handleResponse(res),
+        error: (err) => {
+          console.error('fetch judicatures failed:', err);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  private triggerRefresh(): void {
+    if (!this.jurisdiction?.id) return;
+    this.isLoading = true;
+    this.refresh$.next();
+  }
+
+  private handleResponse(res: any): void {
+    const result = res?.result ?? res?.data ?? {};
+    const items: any[] = result?.items ?? result?.dataList ?? [];
+
+    this.data = items.map((obj: any) => ({
+      id: obj.id,
+      jurisdictionId: obj.jurisdictionId ?? obj.law_JurisdictionId,
+      nameEn: obj.nameEn,
+      nameAr: obj.nameAr,
+      isActive: obj.isActive ?? obj.active,
+      activeText: this._languageService.getTransValue(
+        (obj.isActive ?? obj.active) ? 'common.active' : 'common.inactive',
+      ),
+    }));
+
+    this.pagination.totalElements = result?.totalCount ?? 0;
+    this.pagination = { ...this.pagination };
+    this.isLoading = false;
+  }
+
   signalEffect = effect(() => {
-    const current = this._lookupsJurisdictionService.getLookupJurisdictionDetails();
+    const current =
+      this._lookupsJurisdictionService.getLookupJurisdictionDetails();
     if (current) {
       this.jurisdiction = current;
-      this.getData();
+      this.triggerRefresh(); 
     } else {
       this._router.navigate(['../'], { relativeTo: this._route });
     }
@@ -87,7 +155,7 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
         if (!updated) return;
         if (typeof updated === 'object') {
           this._lookupsJurisdictionService.updatelookupJurisdictionDetails(
-            updated as LookupJurisdictionsDto
+            updated as LookupJurisdictionsDto,
           );
         } else {
           this.refetchJurisdiction();
@@ -98,6 +166,7 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
 
   private refetchJurisdiction() {
     if (!this.jurisdiction?.id) return;
+
     this._apiService
       .get(`${API_Config.jurisdictions.getById}/${this.jurisdiction.id}`)
       .pipe(this._unsubscribe.takeUntilDestroy())
@@ -105,15 +174,12 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
         next: (res: ApiRes) => {
           const data = res?.data ?? res?.result;
           if (data) {
-            this._lookupsJurisdictionService.updatelookupJurisdictionDetails(data);
+            this._lookupsJurisdictionService.updatelookupJurisdictionDetails(
+              data,
+            );
           }
         },
       });
-  }
-    onSort(event: any) {
-    this.pagination.orderBy = event.field;
-    this.pagination.orderByDirection = event.order === 1 ? 'ASC' : 'DESC';
-    this.getData();
   }
 
   openSubJurisdictionEditor(rowData?: LookupSubjurisdictionDto) {
@@ -121,61 +187,36 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
       LookupsSubJurisdictionEditorComponent,
       {
         header: this._languageService.getTransValue(
-          rowData ? 'lookups.editSubJurisdiction' : 'lookups.addSubJurisdiction'
+          rowData
+            ? 'lookups.editSubJurisdiction'
+            : 'lookups.addSubJurisdiction',
         ),
         width: '40vw',
         data: { rowData, categoryId: this.jurisdictionIdentifier },
-      }
+      },
     );
 
     ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
       next: (res) => {
-        if (res) this.getData();
+        if (res) this.triggerRefresh(); 
       },
     });
   }
 
-  getData() {
-    if (!this.jurisdiction?.id) return;
+ 
+  onSort(event: any) {
+    this.pagination.sortBy = event.sortBy ?? event.field;
+    this.pagination.isDescending = event.isDescending ?? event.order === -1;
+    this.pagination.pageNum = 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh(); 
+  }
 
-    this.isLoading = true;
-
-    const params = {
-      pagSize: this.pagination.pagSize,
-      pageNum: this.pagination.pageNum,
-      orderBy: this.pagination.orderBy,
-      orderByDirection: this.pagination.orderByDirection,
-      search: this.pagination.search,
-    };
-
-    this._apiService
-      .get(
-        `${API_Config.judicatures.getByJurisdiction}/${this.jurisdiction.id}`,
-        params
-      )
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          const result = res?.result ?? res?.data ?? {};
-          const items: any[] = result?.items ?? result?.dataList ?? [];
-
-          this.data = items.map((obj: any) => ({
-            id: obj.id,
-            jurisdictionId: obj.jurisdictionId ?? obj.law_JurisdictionId,
-            nameEn: obj.nameEn,
-            nameAr: obj.nameAr,
-            isActive: obj.isActive ?? obj.active,
-            activeText: this._languageService.getTransValue(
-              obj.isActive ?? obj.active ? 'common.active' : 'common.inactive'
-            ),
-          }));
-
-          this.pagination.totalElements = result?.totalCount ?? 0;
-          this.pagination = { ...this.pagination };
-          this.isLoading = false;
-        },
-        error: () => (this.isLoading = false),
-      });
+  onPageChange(event: any) {
+    this.pagination.pagSize = Number(event.rows);
+    this.pagination.pageNum = Math.floor(event.first / event.rows) + 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh(); 
   }
 
 
@@ -191,7 +232,7 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
             value: rowData?.id,
           }),
           message: this._languageService.getTransValue(
-            'messages.deleteMessage'
+            'messages.deleteMessage',
           ),
           btns: [
             {
@@ -206,19 +247,19 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
             },
           ],
         },
-      }
+      },
     );
   }
 
   deleteRow(rowDataId: number) {
     this._apiService
-      .delete(`${API_Config.judicatures.delete}/${rowDataId}`)   
+      .delete(`${API_Config.judicatures.delete}/${rowDataId}`)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
           if (res && res.isSuccess) {
             if (this.data.length === 1) this.pagination.pageNum--;
-            this.getData();
+            this.triggerRefresh(); 
             this._toastrNotifiService.displaySuccess(res.message);
             this.deleteDialogRef.close();
           }
@@ -226,13 +267,6 @@ export class LookupsSupJurisdictionsComponent implements OnDestroy {
         error: (err: any) =>
           this._toastrNotifiService.displayError(err?.error?.message),
       });
-  }
-
-  onPageChange(event: any) {
-    this.pagination.pagSize = Number(event.rows);
-    this.pagination.pageNum = event.first / event.rows + 1;
-    this.pagination = { ...this.pagination };
-    this.getData();
   }
 
   ngOnDestroy(): void {

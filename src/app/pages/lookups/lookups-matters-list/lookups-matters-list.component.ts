@@ -20,7 +20,7 @@ import { PermissionService } from 'src/app/@core/services/permission.service';
     SharedSearchComponent,
   ],
   templateUrl: './lookups-matters-list.component.html',
-  styleUrl: './lookups-matters-list.component.scss'
+  styleUrl: './lookups-matters-list.component.scss',
 })
 export class LookupsMattersListComponent {
   _router = inject(Router);
@@ -36,52 +36,45 @@ export class LookupsMattersListComponent {
   };
   searchText: string = '';
   ngOnInit(): void {
-    this.getData()
+    this.getData();
   }
-getData() {
-  this.data = MATTERS_LIST.filter(item =>
-    this._permsissionsService.hasPermission(item.permission)
-  );
-  if (this.data.length) {
-    const currentId = this._route.snapshot.firstChild?.params['id'];
+  getData() {
+    this.data = MATTERS_LIST.filter((item) =>
+      this._permsissionsService.hasPermission(item.permission),
+    );
+    if (this.data.length) {
+      const currentId = this._route.snapshot.firstChild?.params['id'];
 
-    if (!currentId) {
-      this.openSubMatterList(this.data[0]);
+      if (!currentId) {
+        this.openSubMatterList(this.data[0]);
+      }
     }
   }
-}
 
-openSubMatterList(subMatterList: any) {
-  this._router.navigate(
-    [subMatterList.id],
-    { relativeTo: this._route }
-  );
-}
-
+  openSubMatterList(subMatterList: any) {
+    this._router.navigate([subMatterList.id], { relativeTo: this._route });
+  }
 
   searchValueChange(value: string): void {
-    this.searchText = value
+    this.searchText = value;
     this.filterOptions.search = value;
-    this.filterOptions = { ...this.filterOptions }
+    this.filterOptions = { ...this.filterOptions };
     this.getData();
   }
   onPageChange(event: any): void {
     this.filterOptions.pagSize = Number(event.rows);
     this.filterOptions.pageNum = event.first / event.rows + 1;
-    this.filterOptions = { ...this.filterOptions }
+    this.filterOptions = { ...this.filterOptions };
     this.getData();
   }
 
   isActiveItem(id: number): boolean {
-  const currentUrl = this._router.url;
+    const currentUrl = this._router.url;
 
-  if (id === 7) {
-    return (
-      currentUrl.endsWith('/7') ||
-      currentUrl.endsWith('/13')
-    );
+    if (id === 7) {
+      return currentUrl.endsWith('/7') || currentUrl.endsWith('/13');
+    }
+
+    return currentUrl.endsWith(`/${id}`);
   }
-
-  return currentUrl.endsWith(`/${id}`);
-}
 }

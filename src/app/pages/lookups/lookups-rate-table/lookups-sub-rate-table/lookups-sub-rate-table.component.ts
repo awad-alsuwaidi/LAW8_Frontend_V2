@@ -1,4 +1,11 @@
-import { Component, effect, inject, Input, OnDestroy } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { LookupsRateTableService } from '../services/lookups-rate-table.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PAGESIZE } from 'src/app/@core/utilities/defines';
@@ -8,7 +15,6 @@ import { LookupsSubRateTableEditorComponent } from './components/lookups-sub-rat
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
 import { SharedConfirmDialogComponent } from 'src/app/@shared/components/shared-confirm-dialog/shared-confirm-dialog.component';
 import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
@@ -22,6 +28,7 @@ import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/
 import { SharedTableComponent } from 'src/app/@shared/components/shared-table/shared-table.component';
 import { SharedModule } from 'src/app/@shared/shared.module';
 import { Rate_Table_Sub_Columns_EN } from './lookups-sub-rate-table-columns.config';
+import { Subject, debounceTime, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-lookups-sub-rate-table',
@@ -37,7 +44,12 @@ import { Rate_Table_Sub_Columns_EN } from './lookups-sub-rate-table-columns.conf
   templateUrl: './lookups-sub-rate-table.component.html',
   styleUrl: './lookups-sub-rate-table.component.scss',
 })
-export class LookupsSubRateTableComponent implements OnDestroy {
+export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
+  // ============================================================
+  // ★ Subject للـ debounce
+  // ============================================================
+  private refresh$ = new Subject<void>();
+
   _lookupsRateTableService = inject(LookupsRateTableService);
   _router = inject(Router);
   _route = inject(ActivatedRoute);
@@ -47,41 +59,113 @@ export class LookupsSubRateTableComponent implements OnDestroy {
   _dialogService = inject(DialogService);
   private _toastrNotifiService = inject(ToastrNotifiService);
   private deleteDialogRef!: DynamicDialogRef;
+
   rateTable?: RateTableDto;
   data: RateSubTableDto[] = [];
   columns = Rate_Table_Sub_Columns_EN;
   statusConfig = lookupSubCategory_statusConfig;
+
   pagination: any = {
-    pagSize: PAGESIZE,
     pageNum: 1,
-    orderByDirection: 'ASC',
+    pagSize: PAGESIZE ?? 10,
+    totalElements: 0,
+    sortBy: 'id',
+    isDescending: false,
   };
+
   private rateTableIdentifier!: number;
   @Input() set rateTableId(value: number) {
     this.rateTableIdentifier = value;
   }
 
-openRateEditor() {
-  const ref = this._dialogService.open(LookupsRateTableEditorComponent, {
-    header: this._languageService.getTransValue('lookups.editRate'),
-    width: '40vw',
-    data: { rowData: this.rateTable },
-  });
+  // ============================================================
+  // ★ ngOnInit — debounce + switchMap
+  // ============================================================
+  ngOnInit(): void {
+    this.refresh$
+      .pipe(
+        debounceTime(50),
+        switchMap(() => {
+          const params = {
+            pagSize: this.pagination.pagSize,
+            pageNum: this.pagination.pageNum,
+            sortBy: this.pagination.sortBy,
+            isDescending: this.pagination.isDescending,
+            search: this.pagination.search,
+          };
+          return this._apiService.get(
+            `${API_Config.rates.getByRateType}/${this.rateTable?.id}`,
+            params
+          );
+        }),
+        this._unsubscribe.takeUntilDestroy()
+      )
+      .subscribe({
+        next: (res: any) => this.handleResponse(res),
+        error: (err) => console.error('❌ fetch rates failed:', err),
+      });
+  }
 
-  ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
-    next: (res) => {
-      if (res) {
-        this.rateTable = res;
-        this.rateTableIdentifier = res.id;
+  // ============================================================
+  // ★ triggerRefresh — بدل getData
+  // ============================================================
+  private triggerRefresh(): void {
+    if (!this.rateTable?.id) return;
+    this.refresh$.next();
+  }
 
-        this._lookupsRateTableService.updateLookupRateDetails(res);
-        this._lookupsRateTableService.triggerRefreshRateTypeList();
-      }
-    },
-  });
-}
+  // ============================================================
+  // ★ handleResponse — map الـ data
+  // ============================================================
+  private handleResponse(res: any): void {
+    const result = res?.data ?? res?.result ?? {};
+    const items: any[] = result?.items ?? result?.dataList ?? [];
 
+    this.data = items.map((obj: any) => {
+      const isActive =
+        typeof obj.isActive === 'boolean' ? obj.isActive : !!obj.active;
+      return {
+        id: obj.id,
+        name: obj.name ?? '',
+        code: obj.code ?? '',
+        amount: obj.amount ?? 0,
+        rateTypeId: obj.rateTypeId ?? this.rateTable?.id,
+        isActive,
+        activeText: this._languageService.getTransValue(
+          isActive ? 'common.active' : 'common.inactive'
+        ),
+      };
+    });
 
+    this.pagination.totalElements = result?.totalCount ?? 0;
+    this.pagination = { ...this.pagination };
+  }
+
+  // ============================================================
+  // openRateEditor
+  // ============================================================
+  openRateEditor() {
+    const ref = this._dialogService.open(LookupsRateTableEditorComponent, {
+      header: this._languageService.getTransValue('lookups.editRate'),
+      width: '40vw',
+      data: { rowData: this.rateTable },
+    });
+
+    ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
+      next: (res) => {
+        if (res) {
+          this.rateTable = res;
+          this.rateTableIdentifier = res.id;
+          this._lookupsRateTableService.updateLookupRateDetails(res);
+          this._lookupsRateTableService.triggerRefreshRateTypeList();
+        }
+      },
+    });
+  }
+
+  // ============================================================
+  // openSubRateEditor
+  // ============================================================
   openSubRateEditor(rowData?: RateSubTableDto) {
     const ref = this._dialogService.open(LookupsSubRateTableEditorComponent, {
       header: this._languageService.getTransValue(
@@ -90,87 +174,75 @@ openRateEditor() {
       width: '40vw',
       data: { rowData, categoryId: this.rateTableIdentifier },
     });
-ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
-  next: (res) => {
-    if (res) {
-      this.getData();
-      this._lookupsRateTableService.triggerRefreshRateTypeList();
-    }
-  },
-});
-  }
 
-signalEffect = effect(() => {
-  const rateDetails = this._lookupsRateTableService.getLookupRateDetails();
-  if (!rateDetails) return;
-
-  this.rateTable = rateDetails;
-  this.rateTableIdentifier = rateDetails.id;
-  this.getData();
-});
-
-getData() {
-  if (!this.rateTable?.id) return;
-
-  const params = {
-    pagSize: this.pagination.pagSize,
-    pageNum: this.pagination.pageNum,
-    orderBy: this.pagination.orderBy,
-    orderByDirection: this.pagination.orderByDirection,
-    search: this.pagination.search,
-  };
-  this._apiService
-    .get(`${API_Config.rates.getByRateType}/${this.rateTable.id}`, params)
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: any) => {
-        const result = res?.data ?? res?.result ?? {};
-        const items: any[] = result?.items ?? result?.dataList ?? [];
-        this.data = items.map((obj: any) => {
-          const isActive =
-            typeof obj.isActive === 'boolean' ? obj.isActive : !!obj.active;
-          return {
-            id: obj.id,
-            name: obj.name ?? '',
-            code: obj.code ?? '',
-            amount: obj.amount ?? 0,
-            rateTypeId: obj.rateTypeId ?? obj.law_JurisdictionId ?? this.rateTable?.id,
-            isActive,
-            activeText: this._languageService.getTransValue(
-              isActive ? 'common.active' : 'common.inactive'
-            ),
-          };
-        });
-
-        this.pagination.totalElements = result?.totalCount ?? 0;
-        this.pagination = { ...this.pagination };
-      },
-    });
-}
-
-  onSort(event: any) {
-    this.pagination.orderBy = event.field;
-    this.pagination.orderByDirection = event.order === 1 ? 'ASC' : 'DESC';
-    this.getData();
-  }
-  
-  deleteRow(rowDataId: number) {
-  this._apiService
-    .delete(`${API_Config.rates.delete}/${rowDataId}`)
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: any) => {
-        if (res && (res.isSuccess || res.success)) {
-          if (this.data.length === 1) this.pagination.pageNum--;
-          this.getData();
-          this._toastrNotifiService.displaySuccess(res.message);
-          this.deleteDialogRef.close();
+    ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
+      next: (res) => {
+        if (res) {
+          this.triggerRefresh();
+          this._lookupsRateTableService.triggerRefreshRateTypeList();
         }
       },
-      error: (err: any) =>
-        this._toastrNotifiService.displayError(err?.error?.message),
     });
-}
+  }
+
+  // ============================================================
+  // signalEffect
+  // ============================================================
+  signalEffect = effect(() => {
+    const rateDetails = this._lookupsRateTableService.getLookupRateDetails();
+    if (!rateDetails) return;
+
+    this.rateTable = rateDetails;
+    this.rateTableIdentifier = rateDetails.id;
+    this.triggerRefresh();
+  });
+
+  // ============================================================
+  // onSort
+  // ============================================================
+  onSort(event: any): void {
+    this.pagination.sortBy = event.sortBy ?? event.field;
+    this.pagination.isDescending =
+      event.isDescending ?? event.order === -1;
+    this.pagination.pageNum = 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh();
+  }
+
+  // ============================================================
+  // onPageChange
+  // ============================================================
+  onPageChange(event: any): void {
+    this.pagination.pagSize = Number(event.rows);
+    this.pagination.pageNum = Math.floor(event.first / event.rows) + 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh();
+  }
+
+  // ============================================================
+  // deleteRow
+  // ============================================================
+  deleteRow(rowDataId: number) {
+    this._apiService
+      .delete(`${API_Config.rates.delete}/${rowDataId}`)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          if (res && (res.isSuccess || res.success)) {
+            if (this.data.length === 1) this.pagination.pageNum--;
+            this.triggerRefresh();
+            this._toastrNotifiService.displaySuccess(res.message);
+            this.deleteDialogRef.close();
+          }
+        },
+        error: (err: any) =>
+          this._toastrNotifiService.displayError(err?.error?.message),
+      });
+  }
+
+  // ============================================================
+  // onDelete — dialog
+  // ============================================================
   onDelete(rowData: RateSubTableDto) {
     this.deleteDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
@@ -188,7 +260,6 @@ getData() {
           btns: [
             {
               label: this._languageService.getTransValue('lookups.discard'),
-              // 'Discard',
               styleClass: 'border border-grey500 text-grey500',
               command: () => {
                 this.deleteDialogRef.close();
@@ -196,7 +267,6 @@ getData() {
             },
             {
               label: this._languageService.getTransValue('lookups.delete'),
-              // 'Delete',
               styleClass: 'bg-textErrorBase text-white',
               command: () => {
                 this.deleteRow(rowData.id);
@@ -208,12 +278,6 @@ getData() {
     );
   }
 
-  onPageChange(event: any) {
-    this.pagination.pagSize = Number(event.rows);
-    this.pagination.pageNum = event.first / event.rows + 1;
-    this.pagination = { ...this.pagination };
-    this.getData();
-  }
   ngOnDestroy(): void {
     this._unsubscribe.destroy();
   }

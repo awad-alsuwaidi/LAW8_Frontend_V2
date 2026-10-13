@@ -29,6 +29,7 @@ import { map } from 'rxjs';
   templateUrl: './lookups-sub-categories.component.html',
   styleUrl: './lookups-sub-categories.component.scss',
 })
+
 export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
   private _lookupsCategoriesService = inject(LookupsCategoriesService);
   protected _router = inject(Router);
@@ -50,10 +51,13 @@ export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
   hasLoaded = false;
 
   pagination: any = {
-    pageSize: PAGESIZE ?? 10,
     pageNumber: 1,
+    pageSize: PAGESIZE ?? 10,
     totalElements: 0,
   };
+
+  sortBy = 'id';
+  isDescending = false;
 
   sortField = 'id';
   sortOrder = 1;
@@ -61,39 +65,39 @@ export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
   private getDataTimeout: any;
   private deleteDialogRef!: DynamicDialogRef;
 
-
-ngOnInit(): void {
-  console.log('SubCategories init');
-  const fromService = this._lookupsCategoriesService.getLookupCategoryDetails();
-  if (fromService) {
-    this.category = fromService;
+  ngOnInit(): void {
+    console.log('SubCategories init');
+    const fromService =
+      this._lookupsCategoriesService.getLookupCategoryDetails();
+    if (fromService) {
+      this.category = fromService;
+    }
+    this._route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        distinctUntilChanged(),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe((idParam) => {
+        if (!idParam) {
+          this._router.navigate(['../'], { relativeTo: this._route });
+          return;
+        }
+        const newId = Number(idParam);
+        if (this.categoryIdentifier === newId && this.hasLoaded) {
+          return;
+        }
+        this.categoryIdentifier = newId;
+        const cat = this._lookupsCategoriesService.getLookupCategoryDetails();
+        if (cat && cat.id === newId) {
+          this.category = cat;
+          console.log('Using cached category from service');
+        } else if (!this.category || this.category.id !== newId) {
+          this.loadCategory(newId);
+        }
+        this.getData();
+      });
   }
-  this._route.paramMap
-    .pipe(
-      map((params) => params.get('id')),
-      distinctUntilChanged(),        
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe((idParam) => {
-      if (!idParam) {
-        this._router.navigate(['../'], { relativeTo: this._route });
-        return;
-      }
-      const newId = Number(idParam);
-      if (this.categoryIdentifier === newId && this.hasLoaded) {
-        return;
-      }
-      this.categoryIdentifier = newId;
-      const cat = this._lookupsCategoriesService.getLookupCategoryDetails();
-      if (cat && cat.id === newId) {
-        this.category = cat;
-        console.log('Using cached category from service');
-      } else if (!this.category || this.category.id !== newId) {
-        this.loadCategory(newId);
-      }
-      this.getData();
-    });
-}
 
   ngOnDestroy(): void {
     clearTimeout(this.getDataTimeout);
@@ -136,22 +140,23 @@ ngOnInit(): void {
         console.warn('categoryIdentifier not set — abort');
         return;
       }
+
       this.isLoading = true;
       const params = {
         pageNumber: this.pagination.pageNumber,
-        pagSize: this.pagination.pagSize,
-        orderBy: this.sortField,
-        orderByDirection: this.sortOrder === 1 ? 'ASC' : 'DESC',
+        pageSize: this.pagination.pageSize,
+        sortBy: this.sortBy,
+        isDescending: this.isDescending,
       };
+
       const url = `${Lookups_API.matterTypes.getByCategory}/${this.categoryIdentifier}`;
-      console.log('Fetching subcategories:', url, params);
+      console.log('📡 Fetching subcategories:', url, params);
 
       this._apiService
         .get<any>(url, params)
         .pipe(this._unsubscribe.takeUntilDestroy())
         .subscribe({
           next: (res: any) => {
-            console.log('Subcategories raw:', res);
             const body = res?.data ?? res?.result ?? res;
             const list = body?.items ?? body?.dataList ?? [];
 
@@ -164,20 +169,15 @@ ngOnInit(): void {
               cassationPeriod: obj.cassationPeriod,
               isActive: obj.isActive,
               active: obj.isActive,
-
               activeText: this._languageService.getTransValue(
-                obj.isActive ? 'common.active' : 'common.inactive'
+                obj.isActive ? 'common.active' : 'common.inactive',
               ),
             }));
+
             this.pagination.totalElements = body?.totalCount ?? 0;
             this.pagination = { ...this.pagination };
             this.isLoading = false;
             this.hasLoaded = true;
-            console.log('Subcategories mapped:', {
-              count: this.data.length,
-              totalCount: this.pagination.totalElements,
-              firstItem: this.data[0],
-            });
           },
           error: (err) => {
             console.error('Subcategories fetch failed:', err);
@@ -209,7 +209,7 @@ ngOnInit(): void {
   openSubCategoryEditor(rowData?: LookupSubCategoryDto): void {
     const ref = this._dialogService.open(LookupsSubCategoryEditorComponent, {
       header: this._languageService.getTransValue(
-        rowData ? 'lookups.editSubCategory' : 'lookups.addSubCategory'
+        rowData ? 'lookups.editSubCategory' : 'lookups.addSubCategory',
       ),
       width: '40vw',
       data: {
@@ -223,17 +223,17 @@ ngOnInit(): void {
       },
     });
   }
-  
 
   onSort(event: any): void {
-    this.sortField = event.field;
-    this.sortOrder = event.order;
+    this.sortBy = event.field;
+    this.isDescending = event.order === -1;
     this.pagination.pageNumber = 1;
+    this.pagination = { ...this.pagination };
     this.getData();
   }
 
   onPageChange(event: any): void {
-    this.pagination.pagSize = Number(event.rows);
+    this.pagination.pageSize = Number(event.rows);
     this.pagination.pageNumber = Math.floor(event.first / event.rows) + 1;
     this.pagination = { ...this.pagination };
     this.getData();
@@ -250,7 +250,9 @@ ngOnInit(): void {
           title: this._languageService.getTransValue('messages.deleteTitle', {
             value: rowData?.id,
           }),
-          message: this._languageService.getTransValue('messages.deleteMessage'),
+          message: this._languageService.getTransValue(
+            'messages.deleteMessage',
+          ),
           btns: [
             {
               label: this._languageService.getTransValue('lookups.discard'),
@@ -264,7 +266,7 @@ ngOnInit(): void {
             },
           ],
         },
-      }
+      },
     );
   }
 
@@ -285,7 +287,7 @@ ngOnInit(): void {
         },
         error: (err) => {
           this._toastrNotifiService.displayError(
-            err?.error?.message ?? 'Failed to delete'
+            err?.error?.message ?? 'Failed to delete',
           );
         },
       });

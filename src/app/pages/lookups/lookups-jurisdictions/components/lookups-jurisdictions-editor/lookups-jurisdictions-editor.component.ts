@@ -26,80 +26,76 @@ export class LookupsJurisdictionsEditorComponent
     this.initForm();
   }
 
-override initForm(): void {
-  this.formlyFields = lookupsJurisdictionEditorConfig(this);
-  this.rowData = this._dynamicDialogConfig.data.rowData;
+  override initForm(): void {
+    this.formlyFields = lookupsJurisdictionEditorConfig(this);
+    this.rowData = this._dynamicDialogConfig.data.rowData;
 
-  console.log('🔍 rowData passed to dialog:', this.rowData);
+    console.log('🔍 rowData passed to dialog:', this.rowData);
 
-  if (this.rowData) {
-    // ★★★★★ يقبل isActive أو active + fallback
-    const isActive =
-      typeof (this.rowData as any).isActive === 'boolean'
-        ? (this.rowData as any).isActive
-        : typeof (this.rowData as any).active === 'boolean'
-          ? (this.rowData as any).active
-          : true;   // ★ default لو الاتنين مش موجودين
+    if (this.rowData) {
+      const isActive =
+        typeof (this.rowData as any).isActive === 'boolean'
+          ? (this.rowData as any).isActive
+          : typeof (this.rowData as any).active === 'boolean'
+            ? (this.rowData as any).active
+            : true;
 
-    this.formlyModel = {
-      nameEn: this.rowData.nameEn ?? '',
-      nameAr: this.rowData.nameAr ?? '',
-      isActive: isActive,
-    };
-  } else {
-    this.formlyModel = {
-      nameEn: '',
-      nameAr: '',
-      isActive: true,
-    };
+      this.formlyModel = {
+        nameEn: this.rowData.nameEn ?? '',
+        nameAr: this.rowData.nameAr ?? '',
+        isActive: isActive,
+      };
+    } else {
+      this.formlyModel = {
+        nameEn: '',
+        nameAr: '',
+        isActive: true,
+      };
+    }
+
+    console.log('🔍 formlyModel:', this.formlyModel);
   }
 
-  console.log('🔍 formlyModel:', this.formlyModel);
-}
+  override onSubmit(): void {
+    if (this.formly.invalid) {
+      this.formly.markAllAsTouched();
+      return;
+    }
 
-override onSubmit(): void {
-  if (this.formly.invalid) {
-    this.formly.markAllAsTouched();
-    return;
-  }
+    const requestPayload = {
+      nameEn: this.formlyModel.nameEn,
+      nameAr: this.formlyModel.nameAr,
+      isActive: this.formlyModel.isActive ?? true,
+    };
 
-  // ★ الـ Jurisdiction مش محتاج jurisdictionId خالص
-  const requestPayload = {
-    nameEn: this.formlyModel.nameEn,
-    nameAr: this.formlyModel.nameAr,
-    isActive: this.formlyModel.isActive ?? true,
-  };
+    const request$ = this.rowData
+      ? this._apiService.put(
+          `${API_Config.jurisdictions.update}/${this.rowData.id}`,
+          requestPayload,
+        )
+      : this._apiService.post(API_Config.jurisdictions.create, requestPayload);
 
-  const request$ = this.rowData
-    ? this._apiService.put(
-        `${API_Config.jurisdictions.update}/${this.rowData.id}`,
-        requestPayload
+    this.isLoading = true;
+
+    request$
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
       )
-    : this._apiService.post(API_Config.jurisdictions.create, requestPayload);
-
-  this.isLoading = true;
-
-  request$
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this._toastrNotifiService.displaySuccess(res.message);
-          const updated =
-            (res as any).data ??
-            (res as any).result ??
-            { ...this.rowData, ...requestPayload };
-          this._dynamicDialogRef.close(updated);
-        } else {
-          this._toastrNotifiService.displayError(res?.message);
-        }
-      },
-      error: (err: any) => {
-        this._toastrNotifiService.displayError(err?.error?.message);
-      },
-    });
-}
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this._toastrNotifiService.displaySuccess(res.message);
+            const updated = (res as any).data ??
+              (res as any).result ?? { ...this.rowData, ...requestPayload };
+            this._dynamicDialogRef.close(updated);
+          } else {
+            this._toastrNotifiService.displayError(res?.message);
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(err?.error?.message);
+        },
+      });
+  }
 }

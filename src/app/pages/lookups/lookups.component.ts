@@ -17,7 +17,7 @@ import { getLookupCards } from './lookup-list-config';
 export class LookupsComponent implements OnInit {
   _router = inject(Router);
   _languageService = inject(LanguageService);
-  _permissionService = inject(PermissionService); // ★
+  _permissionService = inject(PermissionService); 
 
   lookups: LookupConfig[] = [];
 
@@ -27,15 +27,12 @@ export class LookupsComponent implements OnInit {
     );
   }
 
-  /** ★ بيحدد لو الكارت يظهر */
   private canSeeCard(card: LookupConfig): boolean {
-    // لو فيه anyOfRouteNames
     if (card.anyOfRouteNames?.length) {
       return card.anyOfRouteNames.some((c) =>
         this._permissionService.hasPermission(c.routeName, c.action ?? 'canRead')
       );
     }
-    // الشكل العادي
     return this._permissionService.hasPermission(
       card.routeName,
       card.action ?? 'canRead'

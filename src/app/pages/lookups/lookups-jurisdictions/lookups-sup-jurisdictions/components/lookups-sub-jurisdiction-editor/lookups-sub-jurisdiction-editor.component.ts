@@ -27,81 +27,73 @@ export class LookupsSubJurisdictionEditorComponent
     this.initForm();
   }
 
-override initForm(): void {
-  this.formlyFields = lookupsSubJurisdictionEditorConfig(this);
-  this.rowData = this._dynamicDialogConfig.data.rowData;
-  this.jurisdictionIdentifier = this._dynamicDialogConfig.data.categoryId;
+  override initForm(): void {
+    this.formlyFields = lookupsSubJurisdictionEditorConfig(this);
+    this.rowData = this._dynamicDialogConfig.data.rowData;
+    this.jurisdictionIdentifier = this._dynamicDialogConfig.data.categoryId;
 
-  if (this.rowData) {
-    // ★ التعديل — تأكد إن jurisdictionId بياخد القيمة الصح
-    this.formlyModel = {
-      nameEn: this.rowData.nameEn,
-      nameAr: this.rowData.nameAr,
-      isActive: this.rowData.isActive,
-      // ★ لو الباك بيرجع الحقل باسم تاني، عدّله
-      jurisdictionId:
-        this.rowData.jurisdictionId ??
-        (this.rowData as any).law_JurisdictionId ??
-        this.jurisdictionIdentifier,   // ★ fallback من الـ dialog
-    };
-  } else {
-    // الإضافة
-    this.formlyModel = {
-      nameEn: '',
-      nameAr: '',
-      isActive: true,
-      jurisdictionId: +this.jurisdictionIdentifier,
-    };
-  }
-}
-
-override onSubmit(): void {
-  if (this.formly.invalid) {
-    this.formly.markAllAsTouched();
-    return;
+    if (this.rowData) {
+      this.formlyModel = {
+        nameEn: this.rowData.nameEn,
+        nameAr: this.rowData.nameAr,
+        isActive: this.rowData.isActive,
+        jurisdictionId:
+          this.rowData.jurisdictionId ??
+          (this.rowData as any).law_JurisdictionId ??
+          this.jurisdictionIdentifier,
+      };
+    } else {
+      this.formlyModel = {
+        nameEn: '',
+        nameAr: '',
+        isActive: true,
+        jurisdictionId: +this.jurisdictionIdentifier,
+      };
+    }
   }
 
-  // ★ تأكد إن jurisdictionId مش null
-  const jurisdictionId =
-    this.formlyModel.jurisdictionId ??
-    this.jurisdictionIdentifier;
+  override onSubmit(): void {
+    if (this.formly.invalid) {
+      this.formly.markAllAsTouched();
+      return;
+    }
 
-  const requestPayload = {
-    nameEn: this.formlyModel.nameEn,
-    nameAr: this.formlyModel.nameAr,
-    isActive: this.formlyModel.isActive ?? true,
-    jurisdictionId: +jurisdictionId,
-  };
+    const jurisdictionId =
+      this.formlyModel.jurisdictionId ?? this.jurisdictionIdentifier;
 
-  const request$ = this.rowData
-    ? this._apiService.put(
-        `${API_Config.judicatures.update}/${this.rowData.id}`,
-        requestPayload
+    const requestPayload = {
+      nameEn: this.formlyModel.nameEn,
+      nameAr: this.formlyModel.nameAr,
+      isActive: this.formlyModel.isActive ?? true,
+      jurisdictionId: +jurisdictionId,
+    };
+
+    const request$ = this.rowData
+      ? this._apiService.put(
+          `${API_Config.judicatures.update}/${this.rowData.id}`,
+          requestPayload,
+        )
+      : this._apiService.post(API_Config.judicatures.create, requestPayload);
+
+    this.isLoading = true;
+
+    request$
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
       )
-    : this._apiService.post(
-        API_Config.judicatures.create,
-        requestPayload
-      );
-
-  this.isLoading = true;
-
-  request$
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this._toastrNotifiService.displaySuccess(res.message);
-          this._dynamicDialogRef.close(true);
-        } else {
-          this._toastrNotifiService.displayError(res?.message);
-        }
-      },
-      error: (err: any) => {
-        this._toastrNotifiService.displayError(err?.error?.message);
-      },
-    });
-}
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this._toastrNotifiService.displaySuccess(res.message);
+            this._dynamicDialogRef.close(true);
+          } else {
+            this._toastrNotifiService.displayError(res?.message);
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(err?.error?.message);
+        },
+      });
+  }
 }

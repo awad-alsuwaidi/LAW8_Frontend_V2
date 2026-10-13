@@ -45,7 +45,7 @@ export class GlBankAccountsComponent implements OnInit, OnDestroy {
 
   protected data: any[] = [];
   protected columns: any[] = Gl_Account_Columns;
-  protected statusConfig = isActive_statusConfig;          // ★
+  protected statusConfig = isActive_statusConfig;         
   protected pagination: any = {
     pagSize: PAGESIZE,
     pageNum: 1,
@@ -153,7 +153,7 @@ export class GlBankAccountsComponent implements OnInit, OnDestroy {
 
   deleteRow(id: number) {
     this._apiService
-      .delete(`${API_Config.glAccounts.delete}/${id}`)      // ★ DELETE
+      .delete(`${API_Config.glAccounts.delete}/${id}`)      
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: any) => {

@@ -16,7 +16,7 @@ import { Predefined_Task_Columns } from './predefined-task-columns.config';
 import { LookupsPredefinedTasksFilterComponent } from './components/lookups-predefined-tasks-filter/lookups-predefined-tasks-filter.component';
 import {
   MatterTaskPriority,
-  MatterTaskPriorityLabel,
+  MatterTaskPriorityLabel
 } from '../../matters/enums/matter-taskPriority';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -59,7 +59,7 @@ export class LookupsPredefinedTasksComponent implements OnInit, OnDestroy {
     this.getData();
   }
   onFilter(e: any) {
-    this.pagination.search = e.search;
+    this.pagination.SearchTerm = e.SearchTerm;
     this.getData();
   }
   onPageChange(e: any) {
@@ -69,43 +69,43 @@ export class LookupsPredefinedTasksComponent implements OnInit, OnDestroy {
     this.getData();
   }
 
-getData() {
-  this.isLoading = true;
-  this.pagination = { ...this.pagination };
+  getData() {
+    this.isLoading = true;
+    this.pagination = { ...this.pagination };
 
-  this._apiService
-    .get(API_Config.predefinedTasks.get, this.pagination)
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this.data = res.result?.items ?? [];              // ★ items
-          this.pagination.totalElements = res.result?.totalCount ?? 0;
-          this.pagination = { ...this.pagination };
-        }
-      },
-      error: (err) => console.error(err),
-    });
-}
+    this._apiService
+      .get(API_Config.predefinedTasks.get, this.pagination)
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this.data = res.result?.items ?? [];
+            this.pagination.totalElements = res.result?.totalCount ?? 0;
+            this.pagination = { ...this.pagination };
+          }
+        },
+        error: (err) => console.error(err),
+      });
+  }
 
-deleteTask(TaskId: number) {
-  this._apiService
-    .delete(`${API_Config.predefinedTasks.delete}/${TaskId}`)   // ★ DELETE
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          if (this.data.length === 1) this.pagination.pageNum--;
-          this.getData();
-          this._toastrNotifiService.displaySuccess(res.message);
-          this.deleteDialogRef.close();
-        }
-      },
-    });
-}
+  deleteTask(TaskId: number) {
+    this._apiService
+      .delete(`${API_Config.predefinedTasks.delete}/${TaskId}`)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            if (this.data.length === 1) this.pagination.pageNum--;
+            this.getData();
+            this._toastrNotifiService.displaySuccess(res.message);
+            this.deleteDialogRef.close();
+          }
+        },
+      });
+  }
   onSort(event: any) {
     this.pagination.orderBy = event.field;
     this.pagination.orderByDirection = event.order === 1 ? 'ASC' : 'DESC';
@@ -123,7 +123,6 @@ deleteTask(TaskId: number) {
       {
         modal: true,
         styleClass: 'w-[400px]',
-        // width: '30vw',
         data: {
           type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
@@ -136,7 +135,6 @@ deleteTask(TaskId: number) {
           btns: [
             {
               label: this._languageService.getTransValue('lookups.discard'),
-              //'Discard',
               styleClass: 'border border-grey500 text-grey500',
               command: () => {
                 this.deleteDialogRef.close();
@@ -144,7 +142,6 @@ deleteTask(TaskId: number) {
             },
             {
               label: this._languageService.getTransValue('lookups.delete'),
-              // 'Delete',
               styleClass: 'bg-textErrorBase text-white',
               command: () => {
                 this.deleteTask(rowData.id);

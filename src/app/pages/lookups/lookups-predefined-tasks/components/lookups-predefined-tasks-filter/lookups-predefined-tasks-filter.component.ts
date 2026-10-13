@@ -30,7 +30,7 @@ export class LookupsPredefinedTasksFilterComponent implements OnInit {
         fieldGroup: [
           {
             type: 'input',
-            key: 'search',
+            key: 'SearchTerm',
             props: {
               placeholder: 'Search',
               icon: 'icon-search text-grey400',
@@ -40,32 +40,6 @@ export class LookupsPredefinedTasksFilterComponent implements OnInit {
               },
             },
           },
-          // {
-          //   type: 'button',
-          //   props: {
-          //     label: 'Filter',
-          //     icon: 'icon-sort !text-xl !leading-4 mt-1',
-          //     class: '!p-2 border border-grey200 !text-textSecondary !text-sm !font-medium flex',
-          //     onClick: () => {
-          //       const ref = this._dialogService.open(SharedMatterAdditionalFilterEditorComponent, {
-          //         header: 'Filter',
-          //         width: '45vw',
-          //         data: { formlyModel: this.formlyModel }
-          //       })
-          //       ref.onClose.subscribe({
-          //         next: (res) => {
-          //           if (res) {
-          //             this.formlyModel = { ...this.formly.value, ...res }
-          //             console.log('this.formlyModel',this.formlyModel)
-          //             const keysWithValues = Object.values(res).filter(value => value !== undefined && value!==null)
-          //             this.additionalFilterValues = keysWithValues;
-          //             this.onFilter.emit(this.formlyModel)
-          //           }
-          //         }
-          //       })
-          //     }
-          //   }
-          // }
         ],
       },
     ];

@@ -5,7 +5,7 @@ const isInhouse = environment.brand === 'inhouse';
 
 export const API_CONFIG: Record<string, any> = {
   '1': {
-    api: Lookups_API.matterStatuses,       // ★ جديد
+    api: Lookups_API.matterStatuses,
     title: 'common.mattStatus',
     addPermission: 'MatterStatuses:canUpdate',
     updatePermission: 'MatterStatuses:canUpdate',
@@ -13,7 +13,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [1],
   },
   '2': {
-    api: Lookups_API.stages,                // ★ جديد
+    api: Lookups_API.stages,
     title: 'common.stage',
     addPermission: 'MatterStages:canUpdate',
     updatePermission: 'MatterStages:canUpdate',
@@ -21,7 +21,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '3': {
-    api: Lookups_API.clientGroups,          // ★ جديد
+    api: Lookups_API.clientGroups,
     title: isInhouse ? 'common.entityGroup' : 'common.clientGroup',
     addPermission: 'ClientGroups:canUpdate',
     updatePermission: 'ClientGroups:canUpdate',
@@ -29,7 +29,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '4': {
-    api: Lookups_API.referralTypes,         // ★ جديد
+    api: Lookups_API.referralTypes,
     title: 'common.referralType',
     addPermission: 'ReferralTypes:canUpdate',
     updatePermission: 'ReferralTypes:canUpdate',
@@ -37,7 +37,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '5': {
-    api: Lookups_API.partiesDescriptions,   // ★ جديد
+    api: Lookups_API.partiesDescriptions,
     title: 'common.partiesDescription',
     addPermission: 'PartyDescriptions:canUpdate',
     updatePermission: 'PartyDescriptions:canUpdate',
@@ -45,7 +45,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '6': {
-    api: Lookups_API.adjournmentReasons,    // ★ جديد
+    api: Lookups_API.adjournmentReasons,
     title: 'common.adjournmentReasons',
     addPermission: 'AdjournmentReasons:canUpdate',
     updatePermission: 'AdjournmentReasons:canUpdate',
@@ -53,7 +53,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '7': {
-    api: Lookups_API.taskCodes,             // ★ جديد
+    api: Lookups_API.taskCodes,
     title: 'common.taskCodebilling',
     addPermission: 'TaskCodes:canUpdate',
     updatePermission: 'TaskCodes:canUpdate',
@@ -61,7 +61,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '8': {
-    api: Lookups_API.practiceAreas,         // ★ جديد
+    api: Lookups_API.practiceAreas,
     title: 'common.practiceArea',
     addPermission: 'PracticeAreas:canUpdate',
     updatePermission: 'PracticeAreas:canUpdate',
@@ -69,7 +69,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '9': {
-    api: Lookups_API.departments,           // ★ جديد
+    api: Lookups_API.departments,
     title: 'common.department',
     addPermission: 'Departments:canUpdate',
     updatePermission: 'Departments:canUpdate',
@@ -77,7 +77,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '10': {
-    api: Lookups_API.industries,            // ★ جديد
+    api: Lookups_API.industries,
     title: 'common.industry',
     addPermission: 'Industries:canUpdate',
     updatePermission: 'Industries:canUpdate',
@@ -85,7 +85,7 @@ export const API_CONFIG: Record<string, any> = {
     values: ['Lawyer'],
   },
   '11': {
-    api: Lookups_API.branches,              // ★ جديد
+    api: Lookups_API.branches,
     title: 'common.branch',
     addPermission: 'Branches:canUpdate',
     updatePermission: 'Branches:canUpdate',
@@ -93,7 +93,7 @@ export const API_CONFIG: Record<string, any> = {
     values: [],
   },
   '13': {
-    api: Lookups_API.taskCodesGroups,       // ★ جديد
+    api: Lookups_API.taskCodesGroups,
     title: 'common.taskCodebillinggroup',
     addPermission: 'TaskCodeGroups:canUpdate',
     updatePermission: 'TaskCodeGroups:canUpdate',

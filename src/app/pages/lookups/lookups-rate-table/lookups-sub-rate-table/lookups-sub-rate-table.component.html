@@ -18,7 +18,7 @@
         <!-- <app-shared-button [label]="'Add Sub Rate'|translate" [requiredPermission]="'Update_Client'"
         [styleClass]="'bg-primary text-white !px-4  !text-sm !py-1.5 !text-xs !font-medium !leading-4 h-8'" (onClick)="openSubRateEditor()" />   -->
     </div>
-    <app-shared-table [data]="data" [columns]="columns" [statusConfig]="statusConfig" [pagination]="pagination" (onSort)="onSort($event)"
+    <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination" (onSort)="onSort($event)"
     (onPageChange)="onPageChange($event)">
     <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
         <div class="font-medium text-sm text-textSecondary rounded-e-lg">

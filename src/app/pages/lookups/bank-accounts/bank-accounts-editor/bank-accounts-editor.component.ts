@@ -1,9 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { combineLatest, finalize } from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { FormBaseClass } from 'src/app/@core/classes/form-base.class';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { findField } from 'src/app/@core/utilities/functions/find-field';
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
 import { SharedModule } from 'src/app/@shared/shared.module';
@@ -33,8 +32,8 @@ export class BankAccountsEditorComponent extends FormBaseClass implements OnInit
   override getLookupsData(): void {
     this.isLoading = true;
     combineLatest({
-      bankType: this._apiService.get(API_Config.bankAccountTypes.get),  // ★
-      glAccount: this._apiService.get(API_Config.glAccounts.get),        // ★
+      bankType: this._apiService.get(API_Config.bankAccountTypes.get), 
+      glAccount: this._apiService.get(API_Config.glAccounts.get),        
     })
       .pipe(
         finalize(() => (this.isLoading = false)),
@@ -42,7 +41,6 @@ export class BankAccountsEditorComponent extends FormBaseClass implements OnInit
       )
       .subscribe({
         next: (res: any) => {
-          // ★ يقبل {data: {items}} أو {result: {dataList}} أو array مباشرة
           this.lookupsData = {
             bankType: res.bankType?.data?.items
               ?? res.bankType?.result?.items

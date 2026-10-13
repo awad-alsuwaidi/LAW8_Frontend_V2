@@ -6,14 +6,13 @@ export const lookupsRoutes: Routes = [
     path: '',
     loadComponent: () =>
       import('./lookups.component').then((comp) => comp.LookupsComponent),
-    // ★ الرئيسية بدون guard — بتفلتر الكروت بنفسها
   },
 
   {
     path: 'categories',
     loadChildren: () =>
       import('./lookups-categories/lookups-categories.routes').then(
-        (mod) => mod.Lookups_Categories_Routes
+        (mod) => mod.Lookups_Categories_Routes,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -25,22 +24,22 @@ export const lookupsRoutes: Routes = [
     path: 'matters-list',
     loadChildren: () =>
       import('./lookups-matters-list/lookups-matters-list.routes').then(
-        (mod) => mod.LOOKUPS_MATTERS_LIST_ROUTES
+        (mod) => mod.LOOKUPS_MATTERS_LIST_ROUTES,
       ),
     canActivate: [permissionGuard],
     data: {
       permission: {
         anyOf: [
-          { routeName: 'MatterStatuses',     action: 'canRead' },
-          { routeName: 'MatterStages',       action: 'canRead' },
-          { routeName: 'ReferralTypes',      action: 'canRead' },
-          { routeName: 'PartyDescriptions',  action: 'canRead' },
+          { routeName: 'MatterStatuses', action: 'canRead' },
+          { routeName: 'MatterStages', action: 'canRead' },
+          { routeName: 'ReferralTypes', action: 'canRead' },
+          { routeName: 'PartyDescriptions', action: 'canRead' },
           { routeName: 'AdjournmentReasons', action: 'canRead' },
-          { routeName: 'TaskCodes',          action: 'canRead' },
-          { routeName: 'TaskCodeGroups',     action: 'canRead' },
-          { routeName: 'PracticeAreas',      action: 'canRead' },
-          { routeName: 'Departments',        action: 'canRead' },
-          { routeName: 'Industries',         action: 'canRead' },
+          { routeName: 'TaskCodes', action: 'canRead' },
+          { routeName: 'TaskCodeGroups', action: 'canRead' },
+          { routeName: 'PracticeAreas', action: 'canRead' },
+          { routeName: 'Departments', action: 'canRead' },
+          { routeName: 'Industries', action: 'canRead' },
         ],
       },
     },
@@ -50,7 +49,7 @@ export const lookupsRoutes: Routes = [
     path: 'task-groups',
     loadChildren: () =>
       import('./lookups-task-groups/lookups-task-groups.routes').then(
-        (mod) => mod.Lookups_Task_Groups_Routes
+        (mod) => mod.Lookups_Task_Groups_Routes,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -63,7 +62,7 @@ export const lookupsRoutes: Routes = [
     path: 'predefined-tasks',
     loadChildren: () =>
       import('./lookups-predefined-tasks/lookups-predefined-tasks.routes').then(
-        (mod) => mod.Lookups_Predefined_Tasks_Routes
+        (mod) => mod.Lookups_Predefined_Tasks_Routes,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -76,7 +75,7 @@ export const lookupsRoutes: Routes = [
     path: 'jurisdictions',
     loadChildren: () =>
       import('./lookups-jurisdictions/lookups-jurisdictions.routes').then(
-        (mod) => mod.Lookups_Jurisdictions_Routes
+        (mod) => mod.Lookups_Jurisdictions_Routes,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -88,7 +87,7 @@ export const lookupsRoutes: Routes = [
     path: 'rate-table',
     loadChildren: () =>
       import('./lookups-rate-table/lookups-rate-table.routes').then(
-        (mod) => mod.Lookups_Rate_Table_Routes
+        (mod) => mod.Lookups_Rate_Table_Routes,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -100,7 +99,7 @@ export const lookupsRoutes: Routes = [
     path: 'bank-accounts',
     loadComponent: () =>
       import('./bank-accounts/bank-accounts.component').then(
-        (comp) => comp.BankAccountsComponent
+        (comp) => comp.BankAccountsComponent,
       ),
     canActivate: [permissionGuard],
     data: {
@@ -113,7 +112,7 @@ export const lookupsRoutes: Routes = [
     path: 'gl-bank-accounts',
     loadComponent: () =>
       import('./gl-bank-accounts/gl-bank-accounts.component').then(
-        (comp) => comp.GlBankAccountsComponent
+        (comp) => comp.GlBankAccountsComponent,
       ),
     canActivate: [permissionGuard],
     data: {

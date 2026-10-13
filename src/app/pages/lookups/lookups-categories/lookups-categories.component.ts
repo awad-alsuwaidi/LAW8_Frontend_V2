@@ -48,7 +48,8 @@ export class LookupsCategoriesComponent implements OnInit, OnDestroy {
   filterOptions: any = {
     pageNumber: 1,
     pageSize: 10,
-    orderByDirection: 'ASC',
+    sortBy: 'id',
+    isDescending: false,
   };
   searchText: string = '';
   emptyConfig: EmptyConfig = {
@@ -121,7 +122,7 @@ export class LookupsCategoriesComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(event: any): void {
-    this.filterOptions.pagSize = Number(event.rows);
+    this.filterOptions.pageSize = Number(event.rows);
     this.filterOptions.pageNumber = Math.floor(event.first / event.rows) + 1;
     this.filterOptions = { ...this.filterOptions };
     this.getData();

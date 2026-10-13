@@ -61,27 +61,27 @@ export class LookupsTaskGroupsComponent implements OnInit, OnDestroy {
     this.getData();
   }
 
-getData() {
-  this.isLoading = true;
-  this.pagination = { ...this.pagination };
+  getData() {
+    this.isLoading = true;
+    this.pagination = { ...this.pagination };
 
-  this._apiService
-    .get(API_Config.taskGroups.get, this.pagination)
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this.data = res.result?.items ?? [];          
-          this.pagination.totalElements = res.result?.totalCount ?? 0;
-          this.pagination = { ...this.pagination };
-        }
-      },
-      error: (err) => console.error(err),
-    });
-}
+    this._apiService
+      .get(API_Config.taskGroups.get, this.pagination)
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this.data = res.result?.items ?? [];
+            this.pagination.totalElements = res.result?.totalCount ?? 0;
+            this.pagination = { ...this.pagination };
+          }
+        },
+        error: (err) => console.error(err),
+      });
+  }
 
   onDelete(rowData: LookupTaskGroupsDto) {
     this.deleteDialogRef = this._dialogService.open(
@@ -89,7 +89,6 @@ getData() {
       {
         modal: true,
         styleClass: 'w-[400px]',
-        // width: '30vw',
         data: {
           type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
@@ -102,7 +101,6 @@ getData() {
           btns: [
             {
               label: this._languageService.getTransValue('lookups.discard'),
-              //'Discard',
               styleClass: 'border border-grey500 text-grey500',
               command: () => {
                 this.deleteDialogRef.close();
@@ -110,7 +108,6 @@ getData() {
             },
             {
               label: this._languageService.getTransValue('lookups.delete'),
-              //'Delete',
               styleClass: 'bg-textErrorBase text-white',
               command: () => {
                 this.deleteTask(rowData.id);
@@ -128,20 +125,20 @@ getData() {
   }
 
   deleteTask(TaskId: number) {
-  this._apiService
-    .delete(`${API_Config.taskGroups.delete}/${TaskId}`)
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          if (this.data.length === 1) this.pagination.pageNum--;
-          this.getData();
-          this._toastrNotifiService.displaySuccess(res.message);
-          this.deleteDialogRef.close();
-        }
-      },
-    });
-}
+    this._apiService
+      .delete(`${API_Config.taskGroups.delete}/${TaskId}`)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            if (this.data.length === 1) this.pagination.pageNum--;
+            this.getData();
+            this._toastrNotifiService.displaySuccess(res.message);
+            this.deleteDialogRef.close();
+          }
+        },
+      });
+  }
 
   ngOnDestroy(): void {
     this._unsubscribe.destroy();

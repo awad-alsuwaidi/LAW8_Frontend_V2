@@ -44,9 +44,11 @@ export class LookupsBillingTaskTabsComponent implements OnInit, OnDestroy {
         : []),
     ];
 
-    this._router.events.pipe(this._unsubscribe.takeUntilDestroy()).subscribe(() => {
-      this.syncFromUrl();
-    });
+    this._router.events
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe(() => {
+        this.syncFromUrl();
+      });
 
     this.syncFromUrl();
   }
@@ -55,9 +57,6 @@ export class LookupsBillingTaskTabsComponent implements OnInit, OnDestroy {
     this._unsubscribe.destroy();
   }
 
-  // ============================================================
-  // ★ يقرأ الـ id من الـ URL في كل مرة
-  // ============================================================
   private syncFromUrl(): void {
     const url = this._router.url;
     const parts = url.split('/').filter(Boolean);
@@ -68,7 +67,6 @@ export class LookupsBillingTaskTabsComponent implements OnInit, OnDestroy {
       this.selectedGroupId = id;
       this.activeItem = this.tabs.find((t) => t.id === id) ?? this.tabs[0];
     } else if (!this.activeItem) {
-      // أول مرة
       this.activeItem =
         this.tabs.find((t) => t.id === this.selectedGroupId) ?? this.tabs[0];
     }
@@ -78,7 +76,6 @@ export class LookupsBillingTaskTabsComponent implements OnInit, OnDestroy {
     this.selectedGroupId = id;
     this.activeItem = this.tabs.find((t) => t.id === id) ?? this.tabs[0];
 
-    // ★ استخدم navigateByUrl عشان الـ URL يتغير بشكل صريح
     this._router.navigate(['/lookups/matters-list', id]);
   }
 }

@@ -33,16 +33,7 @@ export function lookupsPredefinedTasksEditorConfig(
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-        // {
-        //   key: 'isActive',
-        //   type: 'checkbox',
-        //   className: 'col-span-1',
-        //   defaultValue: true,
-        //   props: {
-        //     label: THIS._languageService.getTransValue('common.isActive'),
-        //   },
-        //   expressions: { 'props.readonly': 'formState.readonly' },
-        // },
+
         {
           key: 'priorityId',
           type: 'select',
@@ -58,21 +49,21 @@ export function lookupsPredefinedTasksEditorConfig(
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-{
-  key: 'assigneeIds',
-  type: 'multi-select',
-  className: 'col-span-1',
-  props: {
-    label: THIS._languageService.getTransValue('lookups.assignee'),
-    selectedObj: [],
-    optionsArr: getOptionsArray(
-      THIS.lookupsData?.users ?? [],
-      'id',
-      'name',          // ✅ الباك بيرجع 'name'
-    ),
-  },
-  expressions: { 'props.readonly': 'formState.readonly' },
-},
+        {
+          key: 'assigneeIds',
+          type: 'multi-select',
+          className: 'col-span-1',
+          props: {
+            label: THIS._languageService.getTransValue('lookups.assignee'),
+            selectedObj: [],
+            optionsArr: getOptionsArray(
+              THIS.lookupsData?.users ?? [],
+              'id',
+              'name',
+            ),
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
         {
           key: 'durationType',
           type: 'radio',
@@ -98,20 +89,21 @@ export function lookupsPredefinedTasksEditorConfig(
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-{
-  key: 'attachments',
-  type: 'attachment-list',
-  className: 'col-span-2',
-  // ★ شيل defaultValue
-  props: {
-    label: THIS._languageService.getTransValue('lookups.attachDocument'),
-    fileType: 'blob',
-    multiple: true,
-    // ★ شيل existingFilesKey — كان تخمين
-    downloadFn: (attachment: any) => THIS.downloadTaskAttachment(attachment),
-  },
-  expressions: { 'props.readonly': 'formState.readonly' },
-},
+        {
+          key: 'attachments',
+          type: 'attachment-list',
+          className: 'col-span-2',
+          props: {
+            label: THIS._languageService.getTransValue(
+              'lookups.attachDocument',
+            ),
+            fileType: 'blob',
+            multiple: true,
+            downloadFn: (attachment: any) =>
+              THIS.downloadTaskAttachment(attachment),
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
       ],
     },
   ];

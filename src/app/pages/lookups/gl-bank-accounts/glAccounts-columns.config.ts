@@ -7,7 +7,7 @@ export const Gl_Account_Columns = [
   { header: 'Cost Center', field: 'costCenterName', isSort: true },
   // {
   //   header: 'lookups.active',
-  //   field: 'isActive', 
+  //   field: 'isActive',
   //   statusLabel: 'activeText',
   //   isStatus: true,
   //   isSort: true,

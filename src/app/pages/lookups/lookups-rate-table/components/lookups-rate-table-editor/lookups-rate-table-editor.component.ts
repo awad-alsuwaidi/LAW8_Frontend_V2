@@ -26,65 +26,65 @@ export class LookupsRateTableEditorComponent
   ngOnInit(): void {
     this.initForm();
   }
-override initForm(): void {
-  this.formlyFields = lookupsRateEditorConfig(this);
-  this.rowData = this._dynamicDialogConfig.data.rowData;
+  override initForm(): void {
+    this.formlyFields = lookupsRateEditorConfig(this);
+    this.rowData = this._dynamicDialogConfig.data.rowData;
 
-  if (this.rowData) {
-    this.formlyModel = {
-      nameEn: this.rowData.nameEn ?? '',
-      nameAr: this.rowData.nameAr ?? '',
-      isActive: this.rowData.isActive ?? true,
-    };
-  } else {
-    this.formlyModel = {
-      nameEn: '',
-      nameAr: '',
-      isActive: true,
-    };
-  }
-}
-
-override onSubmit(): void {
-  if (this.formly.invalid) {
-    this.formly.markAllAsTouched();
-    return;
+    if (this.rowData) {
+      this.formlyModel = {
+        nameEn: this.rowData.nameEn ?? '',
+        nameAr: this.rowData.nameAr ?? '',
+        isActive: this.rowData.isActive ?? true,
+      };
+    } else {
+      this.formlyModel = {
+        nameEn: '',
+        nameAr: '',
+        isActive: true,
+      };
+    }
   }
 
-  const requestPayload = {
-    nameEn: this.formlyModel.nameEn,
-    nameAr: this.formlyModel.nameAr,
-    isActive: this.formlyModel.isActive ?? true,
-  };
+  override onSubmit(): void {
+    if (this.formly.invalid) {
+      this.formly.markAllAsTouched();
+      return;
+    }
 
-  const request$ = this.rowData
-    ? this._apiService.put(
-        `${API_Config.rateTypes.update}/${this.rowData.id}`,
-        requestPayload
+    const requestPayload = {
+      nameEn: this.formlyModel.nameEn,
+      nameAr: this.formlyModel.nameAr,
+      isActive: this.formlyModel.isActive ?? true,
+    };
+
+    const request$ = this.rowData
+      ? this._apiService.put(
+          `${API_Config.rateTypes.update}/${this.rowData.id}`,
+          requestPayload,
+        )
+      : this._apiService.post(API_Config.rateTypes.create, requestPayload);
+
+    this.isLoading = true;
+
+    request$
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
       )
-    : this._apiService.post(API_Config.rateTypes.create, requestPayload);
-
-  this.isLoading = true;
-
-  request$
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: any) => {
-        if (res && (res.isSuccess || res.success)) {
-          this._toastrNotifiService.displaySuccess(res.message);
-          const updated =
-            res.data ?? res.result ?? { ...this.rowData, ...requestPayload };
-          this._dynamicDialogRef.close(updated);
-        } else {
-          this._toastrNotifiService.displayError(res?.message);
-        }
-      },
-      error: (err: any) => {
-        this._toastrNotifiService.displayError(err?.error?.message);
-      },
-    });
-}
+      .subscribe({
+        next: (res: any) => {
+          if (res && (res.isSuccess || res.success)) {
+            this._toastrNotifiService.displaySuccess(res.message);
+            const updated = res.data ??
+              res.result ?? { ...this.rowData, ...requestPayload };
+            this._dynamicDialogRef.close(updated);
+          } else {
+            this._toastrNotifiService.displayError(res?.message);
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(err?.error?.message);
+        },
+      });
+  }
 }

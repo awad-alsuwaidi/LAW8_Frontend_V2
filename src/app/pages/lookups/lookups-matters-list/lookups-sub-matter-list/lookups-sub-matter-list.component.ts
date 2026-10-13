@@ -28,7 +28,6 @@ import { lookupSubMatterList_statusConfig } from './lookups-sub-matter-list-stat
   styleUrl: './lookups-sub-matter-list.component.scss',
 })
 export class LookupsSubMatterListComponent implements OnInit, OnDestroy {
-  // ==================== DI ====================
   protected _router = inject(Router);
   protected _route = inject(ActivatedRoute);
   protected _languageService = inject(LanguageService);
@@ -37,7 +36,6 @@ export class LookupsSubMatterListComponent implements OnInit, OnDestroy {
   private _dialogService = inject(DialogService);
   private _toastrNotifiService = inject(ToastrNotifiService);
 
-  // ==================== State ====================
   data: any[] = [];
   lastSortField = '';
   lastSortDir = '';
@@ -49,11 +47,7 @@ export class LookupsSubMatterListComponent implements OnInit, OnDestroy {
   canDelete = true;
   isLoading = false;
 
-
   private deleteDialogRef!: DynamicDialogRef;
- 
-
-  /** ★ يتتبع آخر group تم تحميله لمنع إعادة التحميل */
   private _currentGroupId?: number;
 
   pagination: any = {
@@ -64,30 +58,24 @@ export class LookupsSubMatterListComponent implements OnInit, OnDestroy {
     totalElements: 0,
   };
 
-
-  // ============================================================
-  // ★ Input — يشتغل لما يتستخدم جوه template (billing-tabs)
-  // ============================================================
   @Input() set subMatterListId(value: string | number) {
     const id = Number(value);
     if (!id) return;
-    if (this._currentGroupId === id) return;  // ★ منع double load
+    if (this._currentGroupId === id) return;
     this.loadGroup(id);
   }
-  // ==================== Lifecycle ====================
-ngOnInit(): void {
-    // ★ يشتغل لما يتستخدم عن طريق الـ Route (path: ':subMatterListId')
+  ngOnInit(): void {
     this._route.paramMap
       .pipe(
         map((params) => params.get('subMatterListId')),
         distinctUntilChanged(),
-        this._unsubscribe.takeUntilDestroy()
+        this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe((idParam) => {
         if (!idParam) return;
 
         const id = Number(idParam);
-        if (this._currentGroupId === id) return;  // ★ منع double load
+        if (this._currentGroupId === id) return;
         this.loadGroup(id);
       });
   }
@@ -96,9 +84,6 @@ ngOnInit(): void {
     this._unsubscribe.destroy();
   }
 
-  // ============================================================
-  // ★ Load Group — نقطة واحدة للتحميل
-  // ============================================================
   private loadGroup(id: number): void {
     this._currentGroupId = id;
     this.groupId = id;
@@ -118,71 +103,59 @@ ngOnInit(): void {
     this.getData();
   }
 
-  // ============================================================
-  // ★ Get Data — محدّث للـ endpoints الجديدة
-  // ============================================================
-getData(): void {
-  if (!this.apiConfigSelected?.api?.get) {
-    console.warn('⚠️ No API endpoint for groupId:', this.groupId);
-    this.data = [];
-    return;
+  getData(): void {
+    if (!this.apiConfigSelected?.api?.get) {
+      console.warn('⚠️ No API endpoint for groupId:', this.groupId);
+      this.data = [];
+      return;
+    }
+
+    this.isLoading = true;
+    const url = this.apiConfigSelected.api.get;
+    console.log('📡 Fetching:', url, this.pagination);
+
+    this._apiService
+      .get<any>(url, this.pagination)
+      .pipe(
+        this._unsubscribe.takeUntilDestroy(),
+        finalize(() => (this.isLoading = false)),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const body = res?.data ?? res?.result ?? res;
+          const list = body?.items ?? body?.dataList ?? [];
+
+          this.data = list.map((obj: any) => {
+            const isActiveValue = obj.isActive ?? obj.active ?? false;
+
+            return {
+              ...obj,
+              active: isActiveValue,
+              isActive: isActiveValue,
+              groupName: obj.groupName || '',
+              activeText: this._languageService.getTransValue(
+                isActiveValue ? 'common.active' : 'common.inactive',
+              ),
+              defaultText:
+                this.groupId === 13
+                  ? this._languageService.getTransValue(
+                      obj.isDefault ? 'common.default' : 'common.notDefault',
+                    )
+                  : null,
+            };
+          });
+
+          this.pagination.totalElements =
+            body?.totalCount ?? body?.totalElements ?? 0;
+          this.pagination = { ...this.pagination };
+        },
+        error: (err) => {
+          this.data = [];
+          this.pagination.totalElements = 0;
+        },
+      });
   }
 
-  this.isLoading = true;
-  const url = this.apiConfigSelected.api.get;
-  console.log('📡 Fetching:', url, this.pagination);
-
-  this._apiService
-    .get<any>(url, this.pagination)
-    .pipe(
-      this._unsubscribe.takeUntilDestroy(),
-      finalize(() => (this.isLoading = false))
-    )
-    .subscribe({
-      next: (res: any) => {
-        console.log('✅ Response:', res);
-
-        // unwrap يدعم الشكلين
-        const body = res?.data ?? res?.result ?? res;
-        const list = body?.items ?? body?.dataList ?? [];
-
-        this.data = list.map((obj: any) => {
-          // ★★★ الإصلاح: استخدم isActive كأساس، و active كـ fallback
-          const isActiveValue = obj.isActive ?? obj.active ?? false;
-
-          return {
-            ...obj,
-            // ★ وحّد الحقلين للـ template
-            active: isActiveValue,
-            isActive: isActiveValue,
-            groupName: obj.groupName || '',
-            activeText: this._languageService.getTransValue(
-              isActiveValue ? 'common.active' : 'common.inactive'
-            ),
-            defaultText:
-              this.groupId === 13
-                ? this._languageService.getTransValue(
-                    obj.isDefault ? 'common.default' : 'common.notDefault'
-                  )
-                : null,
-          };
-        });
-
-        this.pagination.totalElements =
-          body?.totalCount ?? body?.totalElements ?? 0;
-        this.pagination = { ...this.pagination };
-
-        console.log('📊 Mapped data (first item):', this.data[0]);
-      },
-      error: (err) => {
-        console.error('❌ Fetch failed:', err);
-        this.data = [];
-        this.pagination.totalElements = 0;
-      },
-    });
-}
-
-  // ==================== Sorting / Pagination ====================
   onSort(event: any): void {
     const field = event.field;
     const dir = event.order === 1 ? 'ASC' : 'DESC';
@@ -204,7 +177,6 @@ getData(): void {
     this.getData();
   }
 
-  // ==================== Row Guards ====================
   isRowLocked(row: any): boolean {
     if (this.apiConfigSelected?.values?.includes(row.id)) return true;
     if (this.groupId === 7 && row.groupName === 'افتراضي') return true;
@@ -223,11 +195,10 @@ getData(): void {
     return [1, 2, 3, 4].includes(Number(row.id));
   }
 
-  // ==================== Editor Dialog ====================
   openSubMatterListEditor(rowData?: any): void {
     const ref = this._dialogService.open(LookupsSubMatterListEditorComponent, {
       header: this._languageService.getTransValue(
-        rowData ? 'lookups.editSubCategory' : 'lookups.addSubCategory'
+        rowData ? 'lookups.editSubCategory' : 'lookups.addSubCategory',
       ),
       width: '40vw',
       data: {
@@ -244,7 +215,6 @@ getData(): void {
     });
   }
 
-  // ==================== Delete ====================
   onDelete(rowData: any): void {
     this.deleteDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
@@ -256,7 +226,9 @@ getData(): void {
           title: this._languageService.getTransValue('messages.deleteTitle', {
             value: rowData?.id,
           }),
-          message: this._languageService.getTransValue('messages.deleteMessage'),
+          message: this._languageService.getTransValue(
+            'messages.deleteMessage',
+          ),
           btns: [
             {
               label: this._languageService.getTransValue('lookups.discard'),
@@ -270,41 +242,37 @@ getData(): void {
             },
           ],
         },
-      }
+      },
     );
   }
 
-deleteRow(rowDataId: number): void {
-  const base = this.apiConfigSelected.api.delete;
-  const url = `${base}/${rowDataId}`;
-
-  console.log('🗑️ DELETE', url);
-
-  this._apiService
-    .delete<ApiRes>(url)   // ★ لازم ApiService.delete بيعمل HTTP DELETE
-    .pipe(
-      this._unsubscribe.takeUntilDestroy(),
-      finalize(() => this.deleteDialogRef?.close())
-    )
-    .subscribe({
-      next: (res: any) => {
-        const ok = res?.isSuccess === true || res?.success === true;
-        if (ok) {
-          if (this.data.length === 1) this.pagination.pageNum--;
-          this.getData();
-          this._toastrNotifiService.displaySuccess(res?.message ?? 'Deleted');
-        } else {
+  deleteRow(rowDataId: number): void {
+    const base = this.apiConfigSelected.api.delete;
+    const url = `${base}/${rowDataId}`;
+    this._apiService
+      .delete<ApiRes>(url)
+      .pipe(
+        this._unsubscribe.takeUntilDestroy(),
+        finalize(() => this.deleteDialogRef?.close()),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const ok = res?.isSuccess === true || res?.success === true;
+          if (ok) {
+            if (this.data.length === 1) this.pagination.pageNum--;
+            this.getData();
+            this._toastrNotifiService.displaySuccess(res?.message ?? 'Deleted');
+          } else {
+            this._toastrNotifiService.displayError(
+              res?.message ?? 'Failed to delete',
+            );
+          }
+        },
+        error: (err) => {
           this._toastrNotifiService.displayError(
-            res?.message ?? 'Failed to delete'
+            err?.error?.message ?? 'Something went wrong',
           );
-        }
-      },
-      error: (err) => {
-        console.error('❌ Delete failed:', err);
-        this._toastrNotifiService.displayError(
-          err?.error?.message ?? 'Something went wrong'
-        );
-      },
-    });
-}
+        },
+      });
+  }
 }

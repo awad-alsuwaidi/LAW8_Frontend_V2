@@ -37,18 +37,6 @@
             <h6 class="text-sm text-grey500 font-medium mt-3 my-2">
               Tasks added
             </h6>
-            <!-- @for (item of formlyModel.tasksID; track $index) {
-                        <div class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg">
-                            <p class="text-sm text-textSecondary font-medium">{{item?.label}}</p>
-                            @if(!_router.url.includes('view')){
-                                <span class="cursor-pointer icon-trash text-grey500" (click)="deleteTask(item)"></span>
-                            }@else {
-                                <span class="cursor-pointer icon-chevron-down text-grey500 -rotate-90" [routerLink]="['/lookups/predefined-tasks/view/',item.value]"></span>
-                            }
-                            
-                        </div>
-                    } -->
-
             @for (item of formlyModel.taskIds; track $index) {
               <div
                 class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg"

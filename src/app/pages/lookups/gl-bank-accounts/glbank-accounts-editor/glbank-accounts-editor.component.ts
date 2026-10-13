@@ -8,7 +8,6 @@ import { SharedModule } from 'src/app/@shared/shared.module';
 import { glAccountEditorFields } from './gl-bank-accounts-editor.config';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { findField } from 'src/app/@core/utilities/functions/find-field';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-skeleton-grid/shared-skeleton-grid.component';
 
 @Component({
@@ -44,7 +43,7 @@ export class GlbankAccountsEditorComponent
     })
       .pipe(
         finalize(() => (this.isLoading = false)),
-        this._unsubscribe.takeUntilDestroy()
+        this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe({
         next: (res: any) => {
@@ -112,33 +111,45 @@ export class GlbankAccountsEditorComponent
     this.formlyFields = glAccountEditorFields(this);
     this.formly.patchValue(this.formlyModel);
 
-    const typeField: FieldTypeConfig = findField(this.formlyFields, 'glAccountTypeId');
-    const deptField: FieldTypeConfig = findField(this.formlyFields, 'departmentId');
-    const catField: FieldTypeConfig = findField(this.formlyFields, 'categoryId');
-    const ccField: FieldTypeConfig = findField(this.formlyFields, 'costCenterId');
+    const typeField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'glAccountTypeId',
+    );
+    const deptField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'departmentId',
+    );
+    const catField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'categoryId',
+    );
+    const ccField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'costCenterId',
+    );
 
     if (this.formlyModel.glAccountTypeId && typeField) {
       typeField.props['selectedObj'] = this.setSelected(
         this.lookupsData.glType,
-        this.formlyModel.glAccountTypeId
+        this.formlyModel.glAccountTypeId,
       );
     }
     if (this.formlyModel.departmentId && deptField) {
       deptField.props['selectedObj'] = this.setSelected(
         this.lookupsData.department,
-        this.formlyModel.departmentId
+        this.formlyModel.departmentId,
       );
     }
     if (this.formlyModel.categoryId && catField) {
       catField.props['selectedObj'] = this.setSelected(
         this.lookupsData.category,
-        this.formlyModel.categoryId
+        this.formlyModel.categoryId,
       );
     }
     if (this.formlyModel.costCenterId && ccField) {
       ccField.props['selectedObj'] = this.setSelected(
         this.lookupsData.costCenter,
-        this.formlyModel.costCenterId
+        this.formlyModel.costCenterId,
       );
     }
   }
@@ -147,7 +158,9 @@ export class GlbankAccountsEditorComponent
     const item = list.find((obj) => obj.id == id);
     if (!item) return null;
     const nameKey =
-      this._languageService.getSelectedLanguage() === 'en' ? 'nameEn' : 'nameAr';
+      this._languageService.getSelectedLanguage() === 'en'
+        ? 'nameEn'
+        : 'nameAr';
     return { label: item[nameKey] ?? item.name ?? '', value: item.id };
   }
 
@@ -157,9 +170,7 @@ export class GlbankAccountsEditorComponent
 
   override onSubmit(): void {
     if (this.formly.invalid) {
-      const text = this._languageService.getTransValue(
-        'Check Data Validation'
-      );
+      const text = this._languageService.getTransValue('Check Data Validation');
       this._toastrNotifiService.displayError(text);
       this.formly.markAllAsTouched();
       return;
@@ -170,12 +181,15 @@ export class GlbankAccountsEditorComponent
       ? 'messages.updateSuccessfully'
       : 'messages.createdSuccessfully';
 
-    // ★ Payload الجديد
     const requestPayload = {
       accountName: this.formlyModel.accountName ?? '',
       nickName: this.formlyModel.nickName ?? '',
-      categoryId: this.formlyModel.categoryId ? +this.formlyModel.categoryId : null,
-      costCenterId: this.formlyModel.costCenterId ? +this.formlyModel.costCenterId : null,
+      categoryId: this.formlyModel.categoryId
+        ? +this.formlyModel.categoryId
+        : null,
+      costCenterId: this.formlyModel.costCenterId
+        ? +this.formlyModel.costCenterId
+        : null,
       control: this.formlyModel.control ?? '',
       subAccountOfId: this.formlyModel.subAccountOfId
         ? +this.formlyModel.subAccountOfId
@@ -192,7 +206,7 @@ export class GlbankAccountsEditorComponent
     const request$ = isUpdate
       ? this._apiService.put(
           `${API_Config.glAccounts.update}/${this.rowData.id}`,
-          requestPayload
+          requestPayload,
         )
       : this._apiService.post(API_Config.glAccounts.create, requestPayload);
 
@@ -201,7 +215,7 @@ export class GlbankAccountsEditorComponent
     request$
       .pipe(
         finalize(() => (this.isSubmitted = false)),
-        this._unsubscribe.takeUntilDestroy()
+        this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe({
         next: (res: any) => {

@@ -1,69 +1,94 @@
-<p-table [columns]="columns" [value]="data()" [styleClass]="'p-datatable-sm w-full '+styleClass"
+<!-- <p-table [columns]="columns" [value]="data()" [styleClass]="'p-datatable-sm w-full '+styleClass"
     [(selection)]="selectedRows" (onRowSelect)="onRowSelect($event)" [lazy]="!paginationClient"
     [sortField]="pagination?.orderBy" [sortOrder]="pagination?.orderByDirection=='DESC'?-1:1"
     (onRowUnselect)="onRowUnselect($event)" [selectionMode]="selectionMode" [scrollable]="freezeActions"
     [resizableColumns]="resizableColumns" (onSort)="getSort($event)" [paginator]="paginationClient" [rows]="5">
-    <ng-template pTemplate="header" let-columns>
-        <!--  -->
-        <tr>
-            @if(withCheckbox){
-            <th></th>
+    <ng-template pTemplate="header" let-columns> -->
+<p-table
+  [columns]="columns"
+  [value]="data()"
+  [styleClass]="'p-datatable-sm w-full ' + styleClass"
+  [(selection)]="selectedRows"
+  (onRowSelect)="onRowSelect($event)"
+  [lazy]="!paginationClient"
+  [sortField]="currentSortField"
+  [sortOrder]="currentSortOrder"
+  (onRowUnselect)="onRowUnselect($event)"
+  [selectionMode]="selectionMode"
+  [scrollable]="freezeActions"
+  [resizableColumns]="resizableColumns"
+  (onSort)="getSort($event)"
+  [paginator]="paginationClient"
+  [rows]="5"
+>
+  <ng-template pTemplate="header" let-columns>
+    <!--  -->
+    <tr>
+      @if (withCheckbox) {
+        <th></th>
+      }
+      @for (col of columns; track $index) {
+        <th
+          [pSortableColumn]="col.field"
+          class="px-4 text-start"
+          [ngClass]="col.class"
+          [ngStyle]="col.style || {}"
+          [style]="freezeActions ? 'min-width:200px' : ''"
+        >
+          <div class="flex items-start gap-2 justify-start items-start">
+            {{ col.header | translate }}
+            <p-sortIcon [field]="col.field"></p-sortIcon>
+          </div>
+        </th>
+      }
+      @if (columnActionsTemplateRef) {
+        @if (freezeActions) {
+          <th class="px-4" alignFrozen="right" pFrozenColumn>
+            {{ "common.actions" | translate }}
+          </th>
+        } @else {
+          <th class="px-4">
+            {{ "common.actions" | translate }}
+          </th>
+        }
+      }
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-rowData let-rowIndex let-columns="columns">
+    @if (!isLoading) {
+      <tr
+        [ngClass]="{ 'row-highlight': highlightRow(rowData) }"
+        [pSelectableRow]="rowData"
+      >
+        @if (withCheckbox) {
+          <td><p-tableCheckbox [value]="rowIndex" /></td>
+        }
+        @for (col of columns; track $index) {
+          <td class="px-4">
+            @if (
+              col.field !== "amount" &&
+              !col.isCustom &&
+              !col.field2 &&
+              !col.isStatus &&
+              !col.isLargeText &&
+              !col.isDate &&
+              !col.isColumnNumber &&
+              !col.isSwitch &&
+              !col.isNumber &&
+              !col.isCheck &&
+              !col.isLink &&
+              !col.isMoney1 &&
+              !col.isMoney &&
+              !col.isInitial
+            ) {
+              <p
+                class="text-sm text-textTertairy"
+                [innerHTML]="rowData[col.field] | highlight: searchValue"
+                [pTooltip]="col.tooltipField ? rowData[col.tooltipField] : null"
+                tooltipPosition="top"
+              ></p>
             }
-            @for (col of columns; track $index) {
-            <th [pSortableColumn]="col.field" class="px-4 text-start" [ngClass]="col.class" [ngStyle]="col.style || {}"
-                [style]="freezeActions?'min-width:200px':''">
-                <div class="flex items-start gap-2 justify-start items-start">
-                    {{ col.header | translate }}
-                    <p-sortIcon [field]="col.field"></p-sortIcon>
-                </div>
-            </th>
-
-            }
-            @if(columnActionsTemplateRef){
-            @if(freezeActions){
-            <th class="px-4" alignFrozen="right" pFrozenColumn>
-                {{ "common.actions" | translate }}
-            </th>
-            }@else {
-            <th class="px-4">
-                {{ "common.actions" | translate }}
-            </th>
-            }
-
-            }
-
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-rowData let-rowIndex let-columns="columns">
-        @if(!isLoading){
-        <tr [ngClass]="{'row-highlight':highlightRow(rowData)}" [pSelectableRow]="rowData">
-            @if(withCheckbox){
-            <td><p-tableCheckbox [value]="rowIndex" /></td>
-            }
-            @for (col of columns; track $index) {
-            <td class="px-4 ">
-                @if(
-                col.field !== 'amount' &&
-                !col.isCustom &&
-                !col.field2 &&
-                !col.isStatus &&
-                !col.isLargeText &&
-                !col.isDate &&
-                !col.isColumnNumber &&
-                !col.isSwitch &&
-                !col.isNumber &&
-                !col.isCheck &&
-                !col.isLink&&
-                !col.isMoney1&&
-                !col.isMoney&&
-                !col.isInitial
-                ){
-                <p class="text-sm text-textTertairy" [innerHTML]="rowData[col.field] | highlight:searchValue"
-                    [pTooltip]="col.tooltipField ? rowData[col.tooltipField] : null" tooltipPosition="top">
-                </p>
-
-                }
-                <!-- @if(col.field2){
+            <!-- @if(col.field2){
                 <p class="text-textTertairy text-sm font-medium"
                     [innerHTML]="rowData[col.field] | highlight:searchValue">
                 </p>
@@ -71,157 +96,233 @@
                     [innerHTML]="rowData[col.field2] | highlight:searchValue">
                 </p>
                 } -->
-                @if(col.field2){
-                @if(isTimesheet && col.field === 'law_PractsArea'){
+            @if (col.field2) {
+              @if (isTimesheet && col.field === "law_PractsArea") {
                 <div class="flex flex-col">
-                    <span class="text-sm font-medium text-textTertairy">
-                        <span [innerHTML]="rowData.law_PractsArea | highlight: searchValue"></span>
-                        <ng-container *ngIf="rowData.courtNumber">
-                            -
-                            <span [innerHTML]="rowData.courtNumber | highlight: searchValue"></span>
-                        </ng-container>
-                    </span>
+                  <span class="text-sm font-medium text-textTertairy">
+                    <span
+                      [innerHTML]="
+                        rowData.law_PractsArea | highlight: searchValue
+                      "
+                    ></span>
+                    <ng-container *ngIf="rowData.courtNumber">
+                      -
+                      <span
+                        [innerHTML]="
+                          rowData.courtNumber | highlight: searchValue
+                        "
+                      ></span>
+                    </ng-container>
+                  </span>
 
-                    <span class="text-xs text-gray-500 mt-1" [innerHTML]="rowData.law_Client | highlight: searchValue">
-                    </span>
+                  <span
+                    class="text-xs text-gray-500 mt-1"
+                    [innerHTML]="rowData.law_Client | highlight: searchValue"
+                  >
+                  </span>
                 </div>
-
-                }@else{
-                <p class="text-textTertairy text-sm font-medium"
-                    [innerHTML]="rowData[col.field] | highlight:searchValue">
-                </p>
-                <p class="text-textSecondary font-medium text-sm"
-                    [innerHTML]="rowData[col.field2] | highlight:searchValue">
-                </p>
-                }
-                }
-                @if(col.isStatus){
-                <app-shared-status [label]="rowData[col.statusLabel]" [data]="rowData[col.field]"
-                    [statusConfig]="statusConfig" />
-                }
-                @if( col.isLargeText){
-                <p class="text-sm text-textSecondary font-medium truncate" [class]="col.class??'w-80'"
-                    [pTooltip]="rowData[col.field]" tooltipPosition="top">{{rowData[col.field]}}</p>
-                }
-
-                @if(col.isDate){
-                <p class="text-sm text-textTertairy">
-                    {{ rowData[col.field] | date:(col.format ? col.format : (col.isHour ? 'hh:mm a' : 'dd/MM/yyyy')) }}
-                </p>
-                }
-
-                @if( col.isSwitch){
-                <p-inputSwitch [(ngModel)]="rowData[col.field]" [requiredPermission]="col?.permission"
-                    (onChange)="onSwitch($event,rowData,col.field)"></p-inputSwitch>
-                }
-                @if(col.isColumnNumber){
-                <p-avatarGroup styleClass="mb-3">
-                    @for (item of rowData[col.field]; track $index) {
-                    @if($index
-                    <2){ <p-avatar [label]="item[col.label]"
-                        [pTooltip]="col?.tooltip?item[col?.tooltip]:item[col.label]" tooltipPosition="top" size="xlarge"
-                        shape="circle" />
-                    }
-                    }
-                    @if(rowData[col.field]?.length>2){
-                    <p-avatar [label]="'+'+(rowData[col.field]?.length - 2)" shape="circle" size="xlarge"
-                        styleClass="!bg-textSecondaryHover !text-white" />
-                    }
-                </p-avatarGroup>
-                }
-                @if(col.isCheck){
-                <p-checkbox [binary]="true" inputId="binary" [styleClass]="col?.class" [(ngModel)]="rowData[col.field]"
-                    (onChange)="onCheckRow(rowData)"></p-checkbox>
-                }
-                @if(col.isLink){
-                <span class="bg-grey100 font-medium text-primary underline cursor-pointer"
-                    [routerLink]="[col.link,rowData[col.field]]"> {{ rowData[col.label] }}</span>
-                }
-                @if(col.isCustom){
-                @if(customColumnTemplateRef){
-                <ng-container [ngTemplateOutlet]="customColumnTemplateRef" [ngTemplateOutletContext]="{
-                                                    $implicit: rowData,
-                                                    rowIndex: rowIndex,
-                                                    field: col.field
-                                                    }">
-                </ng-container>
-                }
-                }
-                @if(col.isMoney){
-                <p class="text-sm text-textTertairy font-semibold text-gray-700" style="min-width:140px !important"
-                    [ngClass]="col.class ? col.class : 'text-end'">
-                    {{ rowData[col.field] | number:'1.2-2':'en-EG' }}
-                </p>
-                }@if(col.isMoney1){
-  <div
-    class="text-sm font-semibold text-textTertairy"
-    [ngStyle]="{
-      'width': col.style?.width,
-      'min-width': col.style?.width,
-      'text-align': 'left'
-    }"
-  >
-    {{ rowData[col.field] | number:'1.2-2':'en-EG' }}
-  </div>
-}
-
-
-
-                @if(col.isInitial){
-                <p class="text-sm font-medium text-textTertairy" [pTooltip]="rowData[col.field]" tooltipPosition="top">
-                    {{ rowData.initial }}
-                </p>
-                }
-
-                @if(col.isNumber || col.field === 'amount'){
-                <p class="text-sm text-textTertairy font-semibold text-gray-700"
-                    [ngClass]="col.class ? col.class : 'text-end'">
-                    {{ rowData[col.field] | number:'1.1-1' }}
-                </p>
-                }
-
-            </td>
+              } @else {
+                <p
+                  class="text-textTertairy text-sm font-medium"
+                  [innerHTML]="rowData[col.field] | highlight: searchValue"
+                ></p>
+                <p
+                  class="text-textSecondary font-medium text-sm"
+                  [innerHTML]="rowData[col.field2] | highlight: searchValue"
+                ></p>
+              }
             }
-            @if(columnActionsTemplateRef){
-            @if(freezeActions){
+            @if (col.isStatus) {
+              <app-shared-status
+                [label]="rowData[col.statusLabel]"
+                [data]="rowData[col.field]"
+                [statusConfig]="statusConfig"
+              />
+            }
+            @if (col.isLargeText) {
+              <p
+                class="text-sm text-textSecondary font-medium truncate"
+                [class]="col.class ?? 'w-80'"
+                [pTooltip]="rowData[col.field]"
+                tooltipPosition="top"
+              >
+                {{ rowData[col.field] }}
+              </p>
+            }
+
+            @if (col.isDate) {
+              <p class="text-sm text-textTertairy">
+                {{
+                  rowData[col.field]
+                    | date
+                      : (col.format
+                          ? col.format
+                          : col.isHour
+                            ? "hh:mm a"
+                            : "dd/MM/yyyy")
+                }}
+              </p>
+            }
+
+            @if (col.isSwitch) {
+              <p-inputSwitch
+                [(ngModel)]="rowData[col.field]"
+                [requiredPermission]="col?.permission"
+                (onChange)="onSwitch($event, rowData, col.field)"
+              ></p-inputSwitch>
+            }
+            @if (col.isColumnNumber) {
+              <p-avatarGroup styleClass="mb-3">
+                @for (item of rowData[col.field]; track $index) {
+                  @if ($index < 2) {
+                    <p-avatar
+                      [label]="item[col.label]"
+                      [pTooltip]="
+                        col?.tooltip ? item[col?.tooltip] : item[col.label]
+                      "
+                      tooltipPosition="top"
+                      size="xlarge"
+                      shape="circle"
+                    />
+                  }
+                }
+                @if (rowData[col.field]?.length > 2) {
+                  <p-avatar
+                    [label]="'+' + (rowData[col.field]?.length - 2)"
+                    shape="circle"
+                    size="xlarge"
+                    styleClass="!bg-textSecondaryHover !text-white"
+                  />
+                }
+              </p-avatarGroup>
+            }
+            @if (col.isCheck) {
+              <p-checkbox
+                [binary]="true"
+                inputId="binary"
+                [styleClass]="col?.class"
+                [(ngModel)]="rowData[col.field]"
+                (onChange)="onCheckRow(rowData)"
+              ></p-checkbox>
+            }
+            @if (col.isLink) {
+              <span
+                class="bg-grey100 font-medium text-primary underline cursor-pointer"
+                [routerLink]="[col.link, rowData[col.field]]"
+              >
+                {{ rowData[col.label] }}</span
+              >
+            }
+            @if (col.isCustom) {
+              @if (customColumnTemplateRef) {
+                <ng-container
+                  [ngTemplateOutlet]="customColumnTemplateRef"
+                  [ngTemplateOutletContext]="{
+                    $implicit: rowData,
+                    rowIndex: rowIndex,
+                    field: col.field,
+                  }"
+                >
+                </ng-container>
+              }
+            }
+            @if (col.isMoney) {
+              <p
+                class="text-sm text-textTertairy font-semibold text-gray-700"
+                style="min-width: 140px !important"
+                [ngClass]="col.class ? col.class : 'text-end'"
+              >
+                {{ rowData[col.field] | number: "1.2-2" : "en-EG" }}
+              </p>
+            }
+            @if (col.isMoney1) {
+              <div
+                class="text-sm font-semibold text-textTertairy"
+                [ngStyle]="{
+                  width: col.style?.width,
+                  'min-width': col.style?.width,
+                  'text-align': 'left',
+                }"
+              >
+                {{ rowData[col.field] | number: "1.2-2" : "en-EG" }}
+              </div>
+            }
+
+            @if (col.isInitial) {
+              <p
+                class="text-sm font-medium text-textTertairy"
+                [pTooltip]="rowData[col.field]"
+                tooltipPosition="top"
+              >
+                {{ rowData.initial }}
+              </p>
+            }
+
+            @if (col.isNumber || col.field === "amount") {
+              <p
+                class="text-sm text-textTertairy font-semibold text-gray-700"
+                [ngClass]="col.class ? col.class : 'text-end'"
+              >
+                {{ rowData[col.field] | number: "1.1-1" }}
+              </p>
+            }
+          </td>
+        }
+        @if (columnActionsTemplateRef) {
+          @if (freezeActions) {
             <td alignFrozen="right" pFrozenColumn>
-
-                <ng-container [ngTemplateOutlet]="columnActionsTemplateRef" [ngTemplateOutletContext]="{
-                                        $implicit: rowData,
-                                        rowIndex: rowIndex
-                                        }">
-                </ng-container>
+              <ng-container
+                [ngTemplateOutlet]="columnActionsTemplateRef"
+                [ngTemplateOutletContext]="{
+                  $implicit: rowData,
+                  rowIndex: rowIndex,
+                }"
+              >
+              </ng-container>
             </td>
-            }@else {
-
+          } @else {
             <td>
-
-                <ng-container [ngTemplateOutlet]="columnActionsTemplateRef" [ngTemplateOutletContext]="{$implicit: rowData, rowIndex: rowIndex}">
-                </ng-container>
+              <ng-container
+                [ngTemplateOutlet]="columnActionsTemplateRef"
+                [ngTemplateOutletContext]="{
+                  $implicit: rowData,
+                  rowIndex: rowIndex,
+                }"
+              >
+              </ng-container>
             </td>
-            }
-            }
-        </tr>
+          }
         }
-        @if(isLoading){
-        <tr>
-            @for (item of columns; track $index) {
-            <td><p-skeleton /></td>
-            }
-        </tr>
+      </tr>
+    }
+    @if (isLoading) {
+      <tr>
+        @for (item of columns; track $index) {
+          <td><p-skeleton /></td>
         }
-    </ng-template>
-    <ng-template pTemplate="emptymessage" let-columns>
-        <tr>
-            <td [attr.colspan]="columns.length+1" class="!p-0 !border-none">
-                <app-shared-empty-section [emptyConfig]="emptyConfig" />
-            </td>
-        </tr>
-    </ng-template>
+      </tr>
+    }
+  </ng-template>
+  <ng-template pTemplate="emptymessage" let-columns>
+    <tr>
+      <td [attr.colspan]="columns.length + 1" class="!p-0 !border-none">
+        <app-shared-empty-section [emptyConfig]="emptyConfig" />
+      </td>
+    </tr>
+  </ng-template>
 </p-table>
-@if (withPagination && pagination?.totalElements>5 && !paginationClient) {
-
-<p-paginator [dir]="'ltr'" styleClass="py-6" (onPageChange)="pageChanged($event)"  [rows]="rows"  
-    [totalRecords]="pagination?.totalElements" [rowsPerPageOptions]="PAGE_SIZE_OPTION" [showCurrentPageReport]="true"
-    [currentPageReportTemplate]="currentPageReportTemplate" [first]="first" dropdownAppendTo="body" [pageLinkSize]="3" />
+@if (withPagination && pagination?.totalElements > 5 && !paginationClient) {
+  <p-paginator
+    [dir]="'ltr'"
+    styleClass="py-6"
+    (onPageChange)="pageChanged($event)"
+    [rows]="rows"
+    [totalRecords]="pagination?.totalElements"
+    [rowsPerPageOptions]="PAGE_SIZE_OPTION"
+    [showCurrentPageReport]="true"
+    [currentPageReportTemplate]="currentPageReportTemplate"
+    [first]="first"
+    dropdownAppendTo="body"
+    [pageLinkSize]="3"
+  />
 }

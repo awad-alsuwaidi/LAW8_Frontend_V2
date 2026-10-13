@@ -1,38 +1,40 @@
 <div class="grid grid-cols-6 gap-4">
-    <div class="col-span-2">
-        <div class="flex justify-between p-2 rounded-t-lg bg-white h-14">
-            <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
-                {{'lookups.lists' | translate}}
-            </h1>
-        </div>
-        <div class="my-2">
-            <app-shared-search (searchValueChange)="searchValueChange($event)" />
-        </div>
-        <div class="flex flex-col gap-2">
-            @for(rowData of data; track rowData.id){
-            <a [routerLink]="['/lookups/matters-list', rowData.id]" [relativeTo]="_route" [class.active]="isActiveItem(rowData.id)"
-                class="flex bg-grey50 justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer hover:bg-white relative before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out hover:before:h-4/6 hover:before:w-1">
-
-
-                <div class="flex justify-between gap-2">
-                    <div>
-                        <h1
-                            class="font-bold text-sm text-textSecondary mb-2 transition-colors duration-300 ease-in-out">
-                            {{ rowData.nameEN }}
-                        </h1>
-                    </div>
-                </div>
-                <div>
-                    <p class="font-medium text-xs text-grey500">
-                        {{ rowData.nameAR }}
-                    </p>
-                </div>
-            </a>
-            }
-
-        </div>
+  <div class="col-span-2">
+    <div class="flex justify-between p-2 rounded-t-lg bg-white h-14">
+      <h1 class="font-bold text-2xl text-colorsTextTextPrimary leading-9">
+        {{ "lookups.lists" | translate }}
+      </h1>
     </div>
-    <div class="col-span-4">
-        <router-outlet />
+    <div class="my-2">
+      <app-shared-search (searchValueChange)="searchValueChange($event)" />
     </div>
+    <div class="flex flex-col gap-2">
+      @for (rowData of data; track rowData.id) {
+        <a
+          [routerLink]="['/lookups/matters-list', rowData.id]"
+          [relativeTo]="_route"
+          [class.active]="isActiveItem(rowData.id)"
+          class="flex bg-grey50 justify-between py-4 ps-4 pe-2 rounded-lg border-2 border-white cursor-pointer hover:bg-white relative before:h-0 before:w-0 before:bg-primary before:rounded-full before:absolute before:top-2.5 before:-start-1.5 before:transition-all before:duration-300 before:ease-in-out hover:before:h-4/6 hover:before:w-1"
+        >
+          <div class="flex justify-between gap-2">
+            <div>
+              <h1
+                class="font-bold text-sm text-textSecondary mb-2 transition-colors duration-300 ease-in-out"
+              >
+                {{ rowData.nameEN }}
+              </h1>
+            </div>
+          </div>
+          <div>
+            <p class="font-medium text-xs text-grey500">
+              {{ rowData.nameAR }}
+            </p>
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+  <div class="col-span-4">
+    <router-outlet />
+  </div>
 </div>

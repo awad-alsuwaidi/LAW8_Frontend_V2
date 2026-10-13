@@ -28,7 +28,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'glAccountTypeId',            // ★ اسم جديد
+          key: 'glAccountTypeId',           
           type: 'select',
           props: {
             label: THIS._languageService.getTransValue('Type'),
@@ -57,7 +57,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'categoryId',                 // ★ جديد
+          key: 'categoryId',                
           type: 'select',
           props: {
             label: THIS._languageService.getTransValue('Category'),
@@ -71,7 +71,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'costCenterId',               // ★ جديد
+          key: 'costCenterId',               
           type: 'select',
           props: {
             label: THIS._languageService.getTransValue('Cost Center'),
@@ -93,7 +93,7 @@ export function glAccountEditorFields(THIS: GlbankAccountsEditorComponent) {
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'subAccountOfId',             // ★ جديد
+          key: 'subAccountOfId',            
           type: 'input',
           props: {
             label: THIS._languageService.getTransValue('Sub Account Of'),

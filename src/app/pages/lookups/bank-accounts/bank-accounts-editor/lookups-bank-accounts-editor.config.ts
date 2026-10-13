@@ -28,7 +28,7 @@ export function bankAccountEditorFields(THIS: BankAccountsEditorComponent) {
             optionsArr: getOptionsArray(
               THIS.lookupsData?.bankType ?? [],
               'id',
-              nameKey
+              nameKey,
             ),
             selectedObj: {},
           },
@@ -92,20 +92,20 @@ export function bankAccountEditorFields(THIS: BankAccountsEditorComponent) {
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-   {
-  key: 'glAccountId',
-  type: 'select',
-  props: {
-    label: THIS._languageService.getTransValue('lookups.glAccountId'),
-    optionsArr: getOptionsArray(
-      THIS.lookupsData?.glAccount ?? [],
-      'id',
-      'accountName'                    
-    ),
-    selectedObj: {},
-  },
-  expressions: { 'props.readonly': 'formState.readonly' },
-},
+        {
+          key: 'glAccountId',
+          type: 'select',
+          props: {
+            label: THIS._languageService.getTransValue('lookups.glAccountId'),
+            optionsArr: getOptionsArray(
+              THIS.lookupsData?.glAccount ?? [],
+              'id',
+              'accountName',
+            ),
+            selectedObj: {},
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
         // {
         //   key: 'isActive',
         //   type: 'switch',
