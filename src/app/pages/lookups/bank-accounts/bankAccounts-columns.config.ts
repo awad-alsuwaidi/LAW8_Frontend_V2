@@ -1,34 +1,27 @@
 export const Bank_Account_Columns = [
   {
-    header: 'Account ID',
-    field: 'id',            
+    header: 'lookups.accountId',
+    field: 'id',
     isSort: true,
   },
   {
-    header: 'Bank Type',
-    field: 'bankAccountTypeName',   
+    header: 'lookups.bankType',
+    field: 'bankAccountTypeName',
     isSort: true,
   },
   {
-    header: 'Bank Name',
-    field: 'bankName',              
+    header: 'lookups.bankName',
+    field: 'bankName',
     isSort: true,
   },
   {
-    header: 'Account Name',
-    field: 'accountName',         
+    header: 'lookups.accountName',
+    field: 'accountName',
     isSort: true,
   },
   {
-    header: 'GL Account',
+    header: 'lookups.glAccount',
     field: 'glAccountName',
     isSort: true,
   },
-  // {
-  //   header: 'lookups.active',
-  //   field: 'isActive',            
-  //   statusLabel: 'activeText',
-  //   isStatus: true,
-  //   isSort: true,
-  // },
 ];
