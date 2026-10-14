@@ -19,8 +19,6 @@ import { findField } from 'src/app/@core/utilities/functions/find-field';
 import { UserDetailsService } from '../user-details/services/user-details.service';
 import { SharedConfirmDialogComponent } from 'src/app/@shared/components/shared-confirm-dialog/shared-confirm-dialog.component';
 import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
-import { UserDetailsDto } from '../interfaces/user-details.interface';
 import { DatePipe } from '@angular/common';
 import { UserRateTableComponent } from '../user-details/user-rate-table/user-rate-table.component';
 import { ResetPasswordEditorComponent } from '../user-details/components/reset-password-editor/reset-password-editor.component';
@@ -56,9 +54,7 @@ export class UserInfoEditorComponent
     this.getLookupsData();
   }
 
-  // ============================================================
-  // ★ دالة مساعدة لفك الـ response
-  // ============================================================
+
   private unwrap(res: any): any {
     return res?.data ?? res?.result ?? res;
   }
@@ -68,9 +64,6 @@ export class UserInfoEditorComponent
     return body?.items ?? body?.dataList ?? (Array.isArray(body) ? body : []);
   }
 
-  // ============================================================
-  // Lookups
-  // ============================================================
 override getLookupsData(): void {
   this.isLoading = true;
 
@@ -90,7 +83,6 @@ override getLookupsData(): void {
     )
     .subscribe({
       next: (res: any) => {
-        // ★ دالة مساعدة — تاخد {data: {items}} وترجع {result: [...]}
         const unwrap = (r: any) => {
           const body = r?.data ?? r?.result ?? r;
           const items = body?.items ?? body?.dataList ?? (Array.isArray(body) ? body : []);
@@ -105,8 +97,6 @@ override getLookupsData(): void {
           branches: unwrap(res.branches),
           defUsrId: unwrap(res.defUsrId),
         };
-
-        // ★ شوف في الـ console
         console.log('🔍 lookupsData:', this.lookupsData);
 
         this.initForm();
@@ -114,16 +104,11 @@ override getLookupsData(): void {
     });
 }
 
-  // ============================================================
-  // Init Form
-  // ============================================================
   initForm(): void {
     this.formlyFields = userDetailsEditorFields(this);
   }
 
-  // ============================================================
-  // Signal Effect
-  // ============================================================
+
   signalEffect = effect(() => {
     const userId = this.userIdentifier();
     if (userId) {
@@ -131,9 +116,7 @@ override getLookupsData(): void {
     }
   });
 
-  // ============================================================
-  // Load User (combine lookups + user data)
-  // ============================================================
+
 loadUserData(userId: string) {
   this.isLoading = true;
   this.formly.reset();
@@ -175,13 +158,10 @@ loadUserData(userId: string) {
     });
 }
 
-  // ============================================================
-  // Patch Form (fill data)
-  // ============================================================
+
 patchForm(data: any) {
   this.formlyModel = {
     ...data,
-    // ★ الحقول الجديدة — بنفس أسماء الباك
     industryId: data.industryId ?? data.indstId ?? null,
     titleId: data.titleId ?? null,
     departmentId: data.departmentId ?? data.deptId ?? null,
@@ -198,8 +178,6 @@ patchForm(data: any) {
     nameEn: data.nameEn ?? '',
     nameAr: data.nameAr ?? '',
   };
-
-  // ★ عيّن الـ selectedObj
   this.setFieldSelectedObj('industryId', 'industry');
   this.setFieldSelectedObj('titleId', 'rateType');
   this.setFieldSelectedObj('departmentId', 'department');
@@ -209,9 +187,6 @@ patchForm(data: any) {
   this.formly.patchValue(this.formlyModel);
 }
 
-  // ============================================================
-  // setFieldSelectedObj
-  // ============================================================
   setFieldSelectedObj(
     key: string,
     lookupPath: string,
@@ -235,9 +210,6 @@ patchForm(data: any) {
     }
   }
 
-  // ============================================================
-  // Submit
-  // ============================================================
 onSubmit(): void {
   if (this.formly.invalid) {
     this.formly.markAllAsTouched();
@@ -308,9 +280,6 @@ onSubmit(): void {
     });
 }
 
-  // ============================================================
-  // Toggle Active (RESTful)
-  // ============================================================
   toggleActiveUser(activation: boolean) {
     const title = activation ? 'Activate' : 'Deactivate';
     const message = activation
@@ -341,8 +310,6 @@ onSubmit(): void {
               const userId =
                 this._userDetailsService.getUserData()?.id ??
                 this.userIdentifier();
-
-              // ★ RESTful: POST /tenant/users/{id}/toggle-active
               this._apiService
                 .put(
                   `${API_Config.users.toggleActive}/${userId}/toggle-active`,
@@ -364,9 +331,6 @@ onSubmit(): void {
     });
   }
 
-  // ============================================================
-  // Toggle Lock (RESTful)
-  // ============================================================
   toggleLockedeUser(locked: boolean) {
     const userData = this._userDetailsService.getUserData();
     const userId = userData?.id ?? this.userIdentifier();
@@ -397,7 +361,6 @@ onSubmit(): void {
               ? 'bg-primary text-white'
               : 'bg-textErrorBase text-white',
             command: () => {
-              // ★ RESTful: POST /tenant/users/{id}/toggle-lock
               this._apiService
                 .put(
                   `${API_Config.users.toggleLock}/${userId}/toggle-lock`,
@@ -419,9 +382,6 @@ onSubmit(): void {
     });
   }
 
-  // ============================================================
-  // Default Rate Approve
-  // ============================================================
   toggleDefaultRateApprove(event: DropdownChangeEvent) {
     let selectedTitleObject = this.lookupsData.rateType.result.find(
       (obj: any) => obj.id === event.value
@@ -459,9 +419,6 @@ onSubmit(): void {
     });
   }
 
-  // ============================================================
-  // Reset Password
-  // ============================================================
   openResetPasswordEditor() {
     this._dialogService.open(ResetPasswordEditorComponent, {
       header: this._languageService.getTransValue('auth.resetPassword'),

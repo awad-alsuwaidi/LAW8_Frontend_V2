@@ -76,14 +76,11 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
 getUser(userIdentifier: string) {
   if (!userIdentifier) return;
-
-  // ★ RESTful: GET /tenant/users/{id}
   this._apiService
     .get(`${API_Config.users.getById}/${userIdentifier}`)
     .pipe(this._unsubscribe.takeUntilDestroy())
     .subscribe({
       next: (res: any) => {
-        // ★ يقبل {data} أو {result}
         const body = res?.data ?? res?.result ?? res;
         if (body) {
           this.user = { ...body };

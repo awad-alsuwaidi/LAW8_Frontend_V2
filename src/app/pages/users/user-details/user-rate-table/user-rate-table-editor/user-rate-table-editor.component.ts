@@ -79,8 +79,6 @@ export class UserRateTableEditorComponent extends FormBaseClass implements OnIni
     name: this.formlyModel.name,
     amount: +this.formlyModel.amount,
   };
-
-  // ★ RESTful: PUT /api/v1/tenant/users/{userId}/rates/{rateId}
   const url = `${API_Config.usersRate.update}/${userId}/rates/${rateId}`;
 
   this.isLoading = true;

@@ -61,11 +61,6 @@ export class ResetPasswordEditorComponent
       ),
     },
   },
-
-  // expressionProperties: {
-  //   'props.disabled': (model) =>
-  //     !model?.newPassword || this.formly.get('newPassword')?.invalid,
-  // },
   hooks: {
     onInit: (field) => {
       field.form?.get('newPassword')?.valueChanges.subscribe(() => {
@@ -88,13 +83,9 @@ override onSubmit(): void {
     this._toastrNotifiService.displayError('User ID is required');
     return;
   }
-
-  // ★ بس newPassword — مفيش confirmPassword ولا userId في الـ body
   const payload = {
     newPassword: this.formlyModel.newPassword,
   };
-
-  // ★ RESTful: POST /api/v1/tenant/users/{id}/reset-password
   this._apiService
     .put(`${API_Config.users.resetPassword}/${userId}/reset-password`, payload)
     .pipe(this._unsubscribe.takeUntilDestroy())

@@ -64,8 +64,6 @@ getData() {
     console.warn('❌ No userId — abort getData');
     return;
   }
-
-  // ★ RESTful: GET /api/v1/tenant/users/{userId}/rates
   const url = `${API_Config.usersRate.get}/${userId}/rates`;
 
   const params = {

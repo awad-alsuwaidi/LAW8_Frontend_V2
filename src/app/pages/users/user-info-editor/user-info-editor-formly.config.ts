@@ -30,104 +30,8 @@ export function userDetailsEditorFields(
           className: 'col-span-3',
           fieldGroupClassName: 'grid gap-4 md:grid-cols-3',
           fieldGroup: [
-            // 🔹 English Name
-            // {
-            //   key:
-            //     THIS._languageService.getSelectedLanguage() == 'en'
-            //       ? 'nameEn'
-            //       : 'nameAr',
-            //   type: 'input',
-            //   props: {
-            //     label:
-            //       THIS._languageService.getSelectedLanguage() == 'en'
-            //         ? THIS._languageService.getTransValue('lookups.nameEN')
-            //         : THIS._languageService.getTransValue('lookups.nameAR'),
-            //     required: isEn && isAddOrUpdate,
-            //     readonly: !isAddOrUpdate,
-            //     minLength: 3,
-            //     maxLength: 100,
-            //   },
-            //   validators: { validation: ['englishLetters'] },
-            //   validation: {
-            //     messages: {
-            //       minlength: () => 'At least 3 characters required',
-            //       maxlength: () => 'Maximum 100 characters allowed',
-            //       englishLetters: () => 'Only English letters allowed',
-            //     },
-            //   },
-            // },
-            // 🔹 Arabic Name
-            // {
-            //   key:
-            //     THIS._languageService.getSelectedLanguage() == 'ar'
-            //       ? 'nameEn'
-            //       : 'nameAr',
-            //   type: 'input',
-            //   props: {
-            //     label:
-            //       THIS._languageService.getSelectedLanguage() == 'ar'
-            //         ? THIS._languageService.getTransValue('lookups.nameEN')
-            //         : THIS._languageService.getTransValue('lookups.nameAR'),
-            //     required: !isEn && isAddOrUpdate,
-            //     readonly: !isAddOrUpdate,
-            //     minLength: 3,
-            //     maxLength: 100,
-            //   },
-            //   validators: { validation: ['arabicLetters'] },
-            //   validation: {
-            //     messages: {
-            //       minlength: () => 'على الأقل 3 أحرف',
-            //       maxlength: () => 'بحد أقصى 100 حرف',
-            //       arabicLetters: () => 'مسموح فقط بالأحرف العربية',
-            //     },
-            //   },
-            // },
-
-            // English Name
-            // {
-            //   key: 'nameEn',
-            //   type: 'input',
-            //   props: {
-            //     label: THIS._languageService.getTransValue('lookups.nameEN'),
-            //     required: isEn && isAddOrUpdate,
-            //     readonly: !isAddOrUpdate,
-            //     minLength: 3,
-            //     maxLength: 100,
-            //   },
-            //   validators: { validation: ['englishLetters'] },
-            //   validation: {
-            //     messages: {
-            //       minlength: () => THIS._languageService.getTransValue('common.minLength3'),
-            //       maxlength: () => THIS._languageService.getTransValue('common.maxLength100'),
-            //       englishLetters: () => THIS._languageService.getTransValue('common.englishLettersOnly'),
-            //     },
-            //   },
-            // },
-
-            // Arabic Name
-            // {
-            //   key: 'nameAr',
-            //   type: 'input',
-            //   props: {
-            //     label: THIS._languageService.getTransValue('lookups.nameAR'),
-            //     required: !isEn && isAddOrUpdate,
-            //     readonly: !isAddOrUpdate,
-            //     minLength: 3,
-            //     maxLength: 100,
-            //   },
-            //   validators: { validation: ['arabicLetters'] },
-            //   validation: {
-            //     messages: {
-            //       minlength: () => THIS._languageService.getTransValue('common.minLength3'),
-            //       maxlength: () => THIS._languageService.getTransValue('common.maxLength100'),
-            //       arabicLetters: () => THIS._languageService.getTransValue('common.arabicLettersOnly'),
-            //     },
-            //   },
-            // },
-
             ...(isEn
               ? [
-                  // English Name
                   {
                     key: 'nameEn',
                     type: 'input',
@@ -158,7 +62,6 @@ export function userDetailsEditorFields(
                   },
                 ]
               : [
-                  // Arabic Name
                   {
                     key: 'nameAr',
                     type: 'input',
@@ -173,7 +76,6 @@ export function userDetailsEditorFields(
                     validators: { validation: ['arabicLetters'] },
                   },
 
-                  // English Name
                   {
                     key: 'nameEn',
                     type: 'input',
@@ -188,8 +90,6 @@ export function userDetailsEditorFields(
                     validators: { validation: ['englishLetters'] },
                   },
                 ]),
-
-            // 🔹 Username
             {
               type: 'input',
               key: 'userName',
@@ -212,7 +112,6 @@ export function userDetailsEditorFields(
                 },
               },
             },
-            // 🔹 Initial
             {
               type: 'input',
               key: 'initial',
@@ -229,7 +128,6 @@ export function userDetailsEditorFields(
                 },
               },
             },
-            // 🔹 Industry
             {
               type: 'select',
               key: 'industryId',
@@ -246,7 +144,6 @@ export function userDetailsEditorFields(
                 required: true,
               },
             },
-            // 🔹 Title
             {
               type: 'select',
               key: 'titleId',
@@ -264,7 +161,6 @@ export function userDetailsEditorFields(
                   THIS.toggleDefaultRateApprove(e),
               },
             },
-            // 🔹 Department
             {
               type: 'select',
               key: 'departmentId',
@@ -281,7 +177,6 @@ export function userDetailsEditorFields(
                 required: true,
               },
             },
-            // 🔹 Password
             {
               type: 'password',
               key: 'password',
@@ -302,10 +197,9 @@ export function userDetailsEditorFields(
               },
               expressions: { hide: () => !isAdd },
             },
-            // 🔹 Default User
             {
               type: 'select',
-              key: 'defUsrId',
+              key: 'defaultUserId',
               className: 'col-md-4',
               props: {
                 label: THIS._languageService.getTransValue('profile.defUsrId'),
@@ -318,7 +212,6 @@ export function userDetailsEditorFields(
                 readonly: !isAddOrUpdate,
               },
             },
-            // 🔹 Locked
             {
               type: 'radio',
               key: 'locked',
