@@ -78,21 +78,25 @@ export function getLookupCards(THIS: LookupsComponent): LookupConfig[] {
       action: 'canRead',
       command: () => THIS._router.navigate(['/lookups/rate-table']),
     },
- {
-  icon: 'icon-bank',
-  title: THIS._languageService.getTransValue('lookups.bankAccounts_title'),
-  description: THIS._languageService.getTransValue('lookups.bankAccounts_description'),
-  routeName: 'BankAccounts',
-  action: 'canRead',
-  command: () => THIS._router.navigate(['/lookups/bank-accounts']),
-},
-{
-  icon: 'icon-buildings',
-  title: THIS._languageService.getTransValue('lookups.glAccounts_title'),
-  description: THIS._languageService.getTransValue('lookups.glAccounts_description'),
-  routeName: 'GlAccounts',
-  action: 'canRead',
-  command: () => THIS._router.navigate(['/lookups/gl-bank-accounts']),
-},
+    {
+      icon: 'icon-bank',
+      title: THIS._languageService.getTransValue('lookups.bankAccounts_title'),
+      description: THIS._languageService.getTransValue(
+        'lookups.bankAccounts_description',
+      ),
+      routeName: 'BankAccounts',
+      action: 'canRead',
+      command: () => THIS._router.navigate(['/lookups/bank-accounts']),
+    },
+    {
+      icon: 'icon-buildings',
+      title: THIS._languageService.getTransValue('lookups.glAccounts_title'),
+      description: THIS._languageService.getTransValue(
+        'lookups.glAccounts_description',
+      ),
+      routeName: 'GlAccounts',
+      action: 'canRead',
+      command: () => THIS._router.navigate(['/lookups/gl-bank-accounts']),
+    },
   ];
 }

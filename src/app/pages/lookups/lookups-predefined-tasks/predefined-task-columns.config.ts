@@ -24,7 +24,7 @@ export const Predefined_Task_Columns = [
   },
   {
     header: 'lookups.assignee',
-    field: 'assignee',
+    field: 'assignees',
     label: 'assigneeInitial',
     tooltip: 'assigneeName',
     isSort: true,
@@ -38,6 +38,3 @@ export const Predefined_Task_Columns = [
     isCustom: true,
   },
 ];
-
-
-

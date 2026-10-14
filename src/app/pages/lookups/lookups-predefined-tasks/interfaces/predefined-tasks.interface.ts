@@ -35,5 +35,5 @@ export interface PredefinedTaskSaveDto {
   duration: number;
   assigneeIds: number[];
   attachments?: File[];
-  attachmentIdsToDelete?: number[];
+  removedAttachmentIds?: number[];
 }

@@ -3,7 +3,6 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { PaginatorModule } from 'primeng/paginator';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { PAGESIZE } from 'src/app/@core/utilities/defines';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
 import { EmptyConfig } from 'src/app/@shared/components/shared-empty-section/interface/empty-config.interface';

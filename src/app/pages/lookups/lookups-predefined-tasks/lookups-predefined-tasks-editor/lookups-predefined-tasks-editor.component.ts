@@ -58,30 +58,57 @@ export class LookupsPredefinedTasksEditorComponent
       .filter((v: any) => v != null && v !== '');
 
     const formData = new FormData();
-    formData.append('nameEn', this.formlyModel.nameEn ?? '');
-    formData.append('nameAr', this.formlyModel.nameAr ?? '');
-    formData.append('isActive', String(this.formlyModel.isActive ?? true));
-    formData.append('priorityId', String(this.formlyModel.priorityId ?? ''));
-    formData.append('durationType', String(this.formlyModel.durationType ?? 1));
-    formData.append('duration', String(this.formlyModel.duration ?? 0));
+
+    formData.append('NameEn', this.formlyModel.nameEn ?? '');
+    formData.append('NameAr', this.formlyModel.nameAr ?? '');
+    formData.append('IsActive', String(this.formlyModel.isActive ?? true));
+    formData.append('PriorityId', String(this.formlyModel.priorityId ?? ''));
+    formData.append('DurationType', String(this.formlyModel.durationType ?? 1));
+    formData.append('Duration', String(this.formlyModel.duration ?? 0));
+    formData.append(
+      'ClosesMatter',
+      String(this.formlyModel.closesMatter ?? false),
+    );
 
     if (assigneeIds.length > 0) {
-      assigneeIds.forEach((id) => formData.append('assigneeIds', String(id)));
+      assigneeIds.forEach((id) => formData.append('AssigneeIds', String(id)));
     } else {
-      formData.append('assigneeIds', '');
+      formData.append('AssigneeIds', '');
     }
+
     const attachmentField = findField(this.formlyFields, 'attachments');
     const deletedIds: number[] =
       attachmentField?.props?.['deletedAttachmentIds'] ?? [];
 
-    deletedIds.forEach((id) =>
-      formData.append('AttachmentIdsToDelete', String(id)),
-    );
+    if (deletedIds.length > 0) {
+      deletedIds.forEach((id) =>
+        formData.append('removedAttachmentIds', String(id)),
+      );
+    }
+
+    const existingDocumentIds: number[] = (this.formlyModel.attachments || [])
+      .filter(
+        (f: any) =>
+          f instanceof File &&
+          (f as any)?.id != null &&
+          !deletedIds.includes(Number((f as any).id)),
+      )
+      .map((f: any) => Number((f as any).id));
+
+    if (existingDocumentIds.length > 0) {
+      existingDocumentIds.forEach((id) =>
+        formData.append('existingDocumentIds', String(id)),
+      );
+    }
 
     const newFiles = (this.formlyModel.attachments || []).filter(
-      (f: any) => f instanceof File,
+      (f: any) => f instanceof File && !(f as any).id,
     );
-    newFiles.forEach((file: File) => formData.append('attachments', file));
+
+    if (newFiles.length > 0) {
+      newFiles.forEach((file: File) => formData.append('attachments', file));
+    }
+
     const request$ = this.taskIdentifier
       ? this._apiService.put(
           `${API_Config.predefinedTasks.update}/${this.taskIdentifier}`,
@@ -110,6 +137,7 @@ export class LookupsPredefinedTasksEditorComponent
         },
       });
   }
+
   setAssigneeValue() {
     const ids: string[] = (this.formlyModel?.assigneeIds ?? [])
       .map((x: any) => (typeof x === 'object' ? x.value : x))
