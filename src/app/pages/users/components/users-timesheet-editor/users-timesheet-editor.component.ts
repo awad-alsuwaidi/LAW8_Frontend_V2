@@ -11,17 +11,25 @@ import { OverlayPanel, OverlayPanelModule } from 'primeng/overlaypanel';
 @Component({
   selector: 'app-users-timesheet-editor',
   standalone: true,
-  imports: [FormlyConfigModule, SharedModule,SharedButtonComponent,OverlayPanelModule],
+  imports: [
+    FormlyConfigModule,
+    SharedModule,
+    SharedButtonComponent,
+    OverlayPanelModule,
+  ],
   providers: [DatePipe],
   templateUrl: './users-timesheet-editor.component.html',
-  styleUrl: './users-timesheet-editor.component.scss'
+  styleUrl: './users-timesheet-editor.component.scss',
 })
-export class UsersTimesheetEditorComponent extends FormBaseClass implements OnInit, OnDestroy {
-@ViewChild('op') overlayPanel!: OverlayPanel;
+export class UsersTimesheetEditorComponent
+  extends FormBaseClass
+  implements OnInit, OnDestroy
+{
+  @ViewChild('op') overlayPanel!: OverlayPanel;
 
-  _datePipe = inject(DatePipe)
+  _datePipe = inject(DatePipe);
   ngOnInit(): void {
-    this.initForm()
+    this.initForm();
   }
   override initForm(): void {
     this.formlyFields = [
@@ -30,32 +38,46 @@ export class UsersTimesheetEditorComponent extends FormBaseClass implements OnIn
         key: 'TimeSheetDate',
         props: {
           required: true,
-        }
-      }
-    ]
+        },
+      },
+    ];
   }
   override onSubmit(): void {
     if (this.formly.invalid) {
       return;
     }
+    const date = new Date(this.formlyModel.TimeSheetDate)
+      .toISOString()
+      .split('T')[0];
 
-    let formData = new FormData();
+    const payload = { timesheetDate: date };
 
-    const date = new Date(this.formlyModel.TimeSheetDate).toISOString();
+    const url = `${API_Config.users.editTimeSheetDate}`;
 
-    formData.append('TimeSheetDate', date);
-
-    this._apiService.post(API_Config.users.editTimeSheetDate, formData)
+    this._apiService
+      .put(url, payload)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this.overlayPanel.hide()
+        next: (res: any) => {
+          if (res?.isSuccess || res?.success) {
+            this._toastrNotifiService.displaySuccess(
+              res?.message || 'Timesheet date updated successfully',
+            );
+            this.overlayPanel.hide();
+          } else {
+            this._toastrNotifiService.displayError(
+              res?.message || 'Failed to update timesheet date',
+            );
           }
-        }
+        },
+        error: (err) => {
+          this._toastrNotifiService.displayError(
+            err?.error?.message || err?.message || 'Something went wrong',
+          );
+        },
       });
   }
   ngOnDestroy(): void {
-    this._unsubscribe.destroy()
+    this._unsubscribe.destroy();
   }
 }

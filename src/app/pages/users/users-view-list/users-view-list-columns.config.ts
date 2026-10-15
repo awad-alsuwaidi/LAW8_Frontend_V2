@@ -1,23 +1,23 @@
 export const Users_Columns = [
   {
     header: 'users.code',
-    field: 'empNo',
+    field: 'code',
     isSort: true,
   },
   {
     header: 'users.user',
-    field: 'name',
+    field: 'nameEn',
     isCustom: true,
   },
   {
     header: 'users.mobiles',
     field: 'phoneNumber',
-    field2: 'telNo',
+    field2: 'phone',
   },
   {
     header: 'users.position',
-    field: 'title',
-    field2: 'depart',
+    field: 'titleName',
+    field2: 'departmentName',
   },
   {
     header: 'users.locked',

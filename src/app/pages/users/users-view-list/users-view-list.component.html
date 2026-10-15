@@ -1,5 +1,4 @@
 <section class="space-y-4">
-    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h1 class="text-colorsTextTextPrimary font-bold text-xl sm:text-2xl">
             {{"users.users" | translate}}
@@ -10,10 +9,8 @@
       " [routerLink]="['/users/add']" [requiredPermission]="'Add_Users'" />
     </div>
 
-    <!-- Table Container -->
     <div class="bg-white py-6 rounded-2xl shadow-md">
         <div class="px-4 sm:px-6 space-y-4">
-            <!-- Filters Row -->
             <div class="flex flex-col sm:flex-row justify-between gap-3">
                 <app-shared-search class="flex-1" (searchValueChange)="searchValueChange($event)" />
                 <div class="flex gap-3 justify-end">
@@ -22,13 +19,11 @@
                 </div>
             </div>
 
-            <!-- Table -->
             <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination"
                 (filterChange)="onFilterChange($event)" (onPageChange)="onPageChange($event)"
                 (onSort)="onSortChange($event)" (onToggleSwitch)="onToggleSwitch($event)">
 
 
-                <!-- Custom Column -->
                 <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
                     <div class="flex items-center gap-3">
                         <img [src]="'assets/images/user-avatar.svg'" alt="User"
@@ -45,14 +40,11 @@
                     </div>
                 </ng-template>
 
-                <!-- Actions Column -->
                 <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
                     <div class="font-medium text-sm text-textSecondary">
                         <div class="flex gap-4 sm:gap-6">
-                            <!-- View -->
                             <div class="cursor-pointer hover:scale-110 transition-transform" title="View Details"
                                 [requiredPermission]="'View_Users'" [routerLink]="['/users/view-list', rowData.id]">
-                                <!-- Eye Icon -->
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
                                     viewBox="0 0 24 24">
                                     <path
@@ -66,7 +58,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Edit -->
                             <div class="cursor-pointer hover:scale-110 transition-transform" title="Edit User"
                                 [requiredPermission]="'Update_Users'" [routerLink]="['/users/update', rowData.id]">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
@@ -79,7 +70,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Reset Password -->
                             <div class="cursor-pointer hover:scale-110 transition-transform" title="Reset Password"
                                 [requiredPermission]="'Change_password_Users'"
                                 (click)="openResetPasswordEditor(rowData)">

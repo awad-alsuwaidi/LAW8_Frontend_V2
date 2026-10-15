@@ -19,7 +19,6 @@ export const Users_API = {
     resetPassword: 'tenant/users',             
     toggleLock: 'tenant/users',                 
     toggleActive: 'tenant/users',   
-    // old  
-    editTimeSheetDate:'Law_User/UsersEditTimeSheetDate',         
+    editTimeSheetDate:'tenant/users/timesheet-date',         
   },
 };

@@ -49,22 +49,16 @@ export class UserInfoEditorComponent
   _permissionService = inject(PermissionService);
 
   userIdentifier: InputSignal<string | undefined> = input<string | undefined>();
+  private lookupsLoaded = false;
 
   ngOnInit(): void {
     this.getLookupsData();
   }
 
 
-  private unwrap(res: any): any {
-    return res?.data ?? res?.result ?? res;
-  }
-
-  private unwrapList(res: any): any[] {
-    const body = this.unwrap(res);
-    return body?.items ?? body?.dataList ?? (Array.isArray(body) ? body : []);
-  }
-
 override getLookupsData(): void {
+  if (this.lookupsLoaded) return;
+
   this.isLoading = true;
 
   combineLatest({
@@ -97,9 +91,12 @@ override getLookupsData(): void {
           branches: unwrap(res.branches),
           defUsrId: unwrap(res.defUsrId),
         };
-        console.log('🔍 lookupsData:', this.lookupsData);
 
+        this.lookupsLoaded = true;              
         this.initForm();
+
+        const userId = this.userIdentifier();
+        if (userId) this.loadUserData(userId);
       },
     });
 }
@@ -108,56 +105,35 @@ override getLookupsData(): void {
     this.formlyFields = userDetailsEditorFields(this);
   }
 
+signalEffect = effect(() => {
+  const userId = this.userIdentifier();
+  if (!this.lookupsLoaded) return;
 
-  signalEffect = effect(() => {
-    const userId = this.userIdentifier();
-    if (userId) {
-      this.loadUserData(userId);
-    }
-  });
-
+  if (userId) {
+    this.loadUserData(userId);
+  }
+});
 
 loadUserData(userId: string) {
+  if (!this.lookupsLoaded) return;
+
   this.isLoading = true;
   this.formly.reset();
   this.formlyModel = {};
-
-  combineLatest({
-    industry: this._apiService.get(API_Config.general.getIndustryModel),
-    rateType: this._apiService.get(API_Config.general.getRateTypeLookup),
-    department: this._apiService.get(API_Config.general.getDepartmentLookup),
-    branches: this._apiService.get(API_Config.general.getAllBranches),
-    defUsrId: this._apiService.get(API_Config.general.getLawyerMyPermission, { UserId: userId }),
-    userData: this._apiService.get(`${API_Config.users.getById}/${userId}`),
-  })
+  this._apiService
+    .get(`${API_Config.users.getById}/${userId}`)
     .pipe(
       finalize(() => (this.isLoading = false)),
       this._unsubscribe.takeUntilDestroy()
     )
     .subscribe({
       next: (res: any) => {
-        const unwrap = (r: any) => {
-          const body = r?.data ?? r?.result ?? r;
-          const items = body?.items ?? body?.dataList ?? (Array.isArray(body) ? body : []);
-          return { result: items };
-        };
-
-        this.lookupsData = {
-          industry: unwrap(res.industry),
-          rateType: unwrap(res.rateType),
-          department: unwrap(res.department),
-          branches: unwrap(res.branches),
-          defUsrId: unwrap(res.defUsrId),
-        };
-
-        this.initForm();
-
-        const userData = res?.userData?.data ?? res?.userData?.result ?? res?.userData;
+        const userData = res?.data ?? res?.result ?? res;
         if (userData) this.patchForm(userData);
       },
+      error: (err) => console.error(' loadUserData:', err),
     });
 }
-
 
 patchForm(data: any) {
   this.formlyModel = {

@@ -22,7 +22,6 @@ export interface UserDto {
   indst: string | null;
   depart: string | null;
   title: string | null;
-
   profileImageUrl: string | null;
   roles: string[];
   roleLabel: string;

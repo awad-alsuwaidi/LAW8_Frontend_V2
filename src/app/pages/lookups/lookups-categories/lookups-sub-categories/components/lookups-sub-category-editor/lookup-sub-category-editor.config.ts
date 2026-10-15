@@ -2,7 +2,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { LookupsSubCategoryEditorComponent } from './lookups-sub-category-editor.component';
 
 export function lookupsSubCategoryEditorConfig(
-  THIS: LookupsSubCategoryEditorComponent
+  THIS: LookupsSubCategoryEditorComponent,
 ): FormlyFieldConfig[] {
   return [
     {
@@ -39,7 +39,6 @@ export function lookupsSubCategoryEditorConfig(
           props: {
             type: 'number',
             label: THIS._languageService.getTransValue('lookups.appealPeriod'),
-            required: true,
             min: 0,
           },
         },
@@ -49,13 +48,14 @@ export function lookupsSubCategoryEditorConfig(
           className: 'col-span-1',
           props: {
             type: 'number',
-            label: THIS._languageService.getTransValue('lookups.cassationPeriod'),
-            required: true,
+            label: THIS._languageService.getTransValue(
+              'lookups.cassationPeriod',
+            ),
             min: 0,
           },
         },
         {
-          key: 'active', 
+          key: 'active',
           type: 'switch',
           defaultValue: true,
           className: 'col-span-2',

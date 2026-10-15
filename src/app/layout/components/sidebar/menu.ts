@@ -175,7 +175,7 @@ export class Menu {
           icon: 'icon-users',
           label: 'menu.users',
           route: '/users',
-          permission: 'View_Users',
+          // permission: 'View_Users',
           activeMatchers: [
             /^\/users\/.*/,
             /^\/users\/view\/[^/]+$/,

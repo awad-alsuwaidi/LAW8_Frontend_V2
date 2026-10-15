@@ -4,7 +4,6 @@ import { MenuItem } from 'primeng/api';
 import { TabMenuModule } from 'primeng/tabmenu';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
 import { SharedModule } from 'src/app/@shared/shared.module';
 import { UserDetailsDto } from '../interfaces/user-details.interface';
@@ -88,7 +87,7 @@ getUser(userIdentifier: string) {
           console.log('✅ user loaded:', this.user);
         }
       },
-      error: (err) => console.error('❌ getUser failed:', err),
+      error: (err) => console.error('getUser failed:', err),
     });
 }
 

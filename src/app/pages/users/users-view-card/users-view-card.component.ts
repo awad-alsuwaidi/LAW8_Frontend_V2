@@ -8,7 +8,6 @@ import { PAGESIZE } from 'src/app/@core/utilities/defines';
 import { finalize } from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
 import { UsersToggleViewComponent } from '../components/users-toggle-view/users-toggle-view.component';
 import { UsersTimesheetEditorComponent } from '../components/users-timesheet-editor/users-timesheet-editor.component';
@@ -85,8 +84,6 @@ getData() {
         nameEn: obj.nameEn,
         nameAr: obj.nameAr,
         name: obj.nameEn ?? obj.nameAr ?? obj.userName ?? '',
-
-        // ★ جديد
         profileImageUrl: obj.profileImageUrl ?? null,
         roles: obj.roles ?? [],
         roleLabel: Array.isArray(obj.roles) && obj.roles.length
@@ -97,8 +94,6 @@ getData() {
         active: obj.active ?? false,
         locked: obj.locked ?? false,
         timesheetDate: obj.timesheetDate ?? obj.createdAtUtc ?? null,
-
-        // ★ placeholders عشان الـ interface
         empNo: null,
         initial: '',
         industryId: 0,

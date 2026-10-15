@@ -1,6 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
 import { SharedTableComponent } from 'src/app/@shared/components/shared-table/shared-table.component';
 import { SharedModule } from 'src/app/@shared/shared.module';
@@ -20,6 +19,7 @@ import { ResetPasswordEditorComponent } from '../user-details/components/reset-p
 import { UsersTimesheetEditorComponent } from '../components/users-timesheet-editor/users-timesheet-editor.component';
 import { LanguageService } from 'src/app/@core/services';
 import { SortEvent } from 'primeng/api';
+import { Subject, debounceTime, switchMap } from 'rxjs'; // ★
 
 @Component({
   selector: 'app-users-view-list',
@@ -42,6 +42,9 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
   private _dialogService = inject(DialogService);
   private Language = inject(LanguageService);
 
+  // ★ Subject للـ debounce
+  private refresh$ = new Subject<void>();
+
   data: UserDto[] = [];
   isLoading = false;
 
@@ -49,6 +52,8 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
     pageNum: 1,
     pagSize: PAGESIZE,
     orderByDirection: 'ASC',
+    sortBy: 'id', // ★
+    isDescending: false, // ★
     filters: {},
   };
 
@@ -56,33 +61,116 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
   columns: any[] = [];
   usersData = [];
 
+  // ============================================================
+  // ★ ngOnInit — debounce + switchMap
+  // ============================================================
   ngOnInit(): void {
-    this.getData();
+    this.refresh$
+      .pipe(
+        debounceTime(50),
+        switchMap(() => {
+          const params = {
+            pageNum: this.pagination.pageNum,
+            pagSize: this.pagination.pagSize,
+            sortBy: this.pagination.sortBy,
+            isDescending: this.pagination.isDescending,
+            search: this.pagination.search,
+          };
+          return this._apiService.get(API_Config.users.get, params);
+        }),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => this.handleResponse(res),
+        error: (err) => {
+          console.error('❌ fetch users failed:', err);
+          this.isLoading = false;
+        },
+      });
+
     this.columns = Users_Columns.filter((col) => {
       if (col.permission) {
         return this.userPermissions.includes(col.permission);
       }
       return true;
     });
+
+    this.triggerRefresh();
   }
 
-  onSortChange(event: SortEvent) {
-    this.getData();
+  // ============================================================
+  // ★ triggerRefresh
+  // ============================================================
+  private triggerRefresh(): void {
+    this.isLoading = true;
+    this.refresh$.next();
   }
 
+  // ============================================================
+  // ★ handleResponse
+  // ============================================================
+  private handleResponse(res: any): void {
+    const body = res?.data ?? res?.result ?? {};
+    const items: any[] = body?.items ?? body?.dataList ?? [];
+
+    this.data = items.map((obj: any) => ({
+      id: obj.id,
+      userName: obj.userName,
+      nameEn: obj.nameEn,
+      nameAr: obj.nameAr,
+      name: obj.nameEn ?? obj.nameAr ?? obj.userName ?? '',
+      email: obj.email,
+      phoneNumber: obj.phoneNumber,
+      phone: obj.phone ?? obj.phone ?? null,
+      active: obj.active,
+      locked: obj.locked,
+      profileImageUrl: obj.profileImageUrl,
+      roles: obj.roles,
+      timesheetDate: obj.timesheetDate ?? obj.createdAtUtc,
+      code: obj.code ?? obj.code ?? null,
+      titleName: obj.titleName ?? null,
+      departmentName: obj.departmentName ?? null,
+    })) as any;
+
+    this.pagination.totalElements = body?.totalCount ?? 0;
+    this.pagination = { ...this.pagination };
+    this.isLoading = false;
+  }
+
+  // ============================================================
+  // Search
+  // ============================================================
   searchValueChange(value: string): void {
     this.pagination.search = value;
+    this.pagination.pageNum = 1;
     this.pagination = { ...this.pagination };
-    this.getData();
+    this.triggerRefresh();
   }
 
+  // ============================================================
+  // Sort
+  // ============================================================
+  onSortChange(event: SortEvent): void {
+    this.pagination.sortBy = event.field;
+    this.pagination.isDescending = event.order === -1;
+    this.pagination.pageNum = 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh();
+  }
+
+  // ============================================================
+  // Pagination
+  // ============================================================
   onPageChange(event: any): void {
     this.pagination.pagSize = Number(event.rows);
     this.pagination.pageNum = event.first / event.rows + 1;
     this.pagination = { ...this.pagination };
-    this.getData();
+    this.triggerRefresh();
   }
 
+  // ============================================================
+  // Toggle Switches
+  // ============================================================
   onToggleSwitch(e: any) {
     switch (e.col) {
       case 'active':
@@ -93,47 +181,6 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
         break;
     }
   }
-
-
- getData() {
-  this.isLoading = true;
-
-  this._apiService
-    .get(API_Config.users.get, this.pagination)
-    .pipe(
-      finalize(() => (this.isLoading = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe((res: any) => {
-      const body = res?.data ?? res?.result ?? {};
-      const items: any[] = body?.items ?? body?.dataList ?? [];
-
-      this.data = items.map((obj: any) => ({
-        id: obj.id,
-        userName: obj.userName,
-        nameEn: obj.nameEn,
-        nameAr: obj.nameAr,
-        name: obj.nameEn ?? obj.nameAr ?? obj.userName ?? '',
-        email: obj.email,
-        phoneNumber: obj.phoneNumber,
-        active: obj.active,
-        locked: obj.locked,
-        profileImageUrl: obj.profileImageUrl,
-        roles: obj.roles,
-        timesheetDate: obj.timesheetDate ?? obj.createdAtUtc,
-      })) as any;
-
-      this.pagination.totalElements = body?.totalCount ?? 0;
-      this.pagination = { ...this.pagination };
-    });
-}
-
-  onFilterChange(filter: any) {
-    this.pagination.filters = filter;
-    this.pagination = { ...this.pagination };
-    this.getData();
-  }
-
 
   toggleActiveUser(rowData: UserDto, activation: boolean) {
     const title = activation
@@ -166,17 +213,17 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
               this._apiService
                 .post(
                   `${API_Config.users.toggleActive}/${rowData.id}/toggle-active`,
-                  {}
+                  {},
                 )
                 .pipe(this._unsubscribe.takeUntilDestroy())
                 .subscribe({
                   next: () => {
                     ref.close(true);
-                    this.getData();
+                    this.triggerRefresh();
                   },
                   error: (err: any) => {
                     rowData.active = !activation;
-                    this.Language && console.error(err);
+                    console.error(err);
                   },
                 });
             },
@@ -185,8 +232,12 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
       },
     });
   }
-
-
+onFilterChange(filter: any): void {
+  this.pagination.filters = filter;
+  this.pagination.pageNum = 1;
+  this.pagination = { ...this.pagination };
+  this.triggerRefresh();
+}
   toggleLockedUser(rowData: UserDto, locked: boolean) {
     const title = locked
       ? this.Language.getTransValue('users.Locked')
@@ -219,13 +270,13 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
               this._apiService
                 .post(
                   `${API_Config.users.toggleLock}/${rowData.id}/toggle-lock`,
-                  {}
+                  {},
                 )
                 .pipe(this._unsubscribe.takeUntilDestroy())
                 .subscribe({
                   next: () => {
                     ref.close(true);
-                    this.getData();
+                    this.triggerRefresh();
                   },
                   error: (err: any) => {
                     rowData.locked = !locked;
