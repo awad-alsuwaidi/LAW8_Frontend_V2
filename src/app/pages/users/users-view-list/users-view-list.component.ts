@@ -185,7 +185,7 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
   toggleActiveUser(rowData: UserDto, activation: boolean) {
     const title = activation
       ? this.Language.getTransValue('users.activate')
-      : this.Language.getTransValue('users.Deactivate');
+      : this.Language.getTransValue('users.deactivate');
     const message = activation
       ? this.Language.getTransValue('users.confirmActivateMessage')
       : this.Language.getTransValue('users.confirmDeactivateMessage');
