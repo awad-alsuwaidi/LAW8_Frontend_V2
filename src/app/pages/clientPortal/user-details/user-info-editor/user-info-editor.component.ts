@@ -217,7 +217,7 @@ export class UserInfoEditorComponent
         message,
         btns: [
           {
-            label: this._languageService.getTransValue('users.Cancel'),
+            label: this._languageService.getTransValue('users.cancel'),
             styleClass: 'border border-grey500 text-grey500',
             command: () => {
               this.formlyModel.locked = !locked;

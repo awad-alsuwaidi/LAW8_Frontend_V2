@@ -177,7 +177,10 @@ export class LookupsSubRateTableComponent implements OnInit, OnDestroy {
   signalEffect = effect(() => {
     const rateDetails = this._lookupsRateTableService.getLookupRateDetails();
     if (!rateDetails) return;
-
+    if (this.rateTable?.id === rateDetails.id) {
+      this.rateTable = rateDetails; 
+      return;
+    }
     this.rateTable = rateDetails;
     this.rateTableIdentifier = rateDetails.id;
     this.triggerRefresh();

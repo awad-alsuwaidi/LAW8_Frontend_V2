@@ -18,6 +18,7 @@ export const General_API = {
     getGlAccountsTypeLookup: 'lookups/gl-account-types',
     getUsersLookup: 'predefinedtasks/lookups/users',
     getTaskPriority: 'lookups/task-priorities',
+    getContactsCategoryV2: 'lookups/contact-categories',
 
     // ============================================================
     // V1 Endpoints (القديمة) — بتستخدم دي

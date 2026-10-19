@@ -249,7 +249,6 @@ export const PAGES_ROUTES: Routes = [
     loadComponent: () =>
       import('./lookups/lookups.component').then((m) => m.LookupsComponent),
   },
-  
   {
     path: 'users',
     loadChildren: () =>

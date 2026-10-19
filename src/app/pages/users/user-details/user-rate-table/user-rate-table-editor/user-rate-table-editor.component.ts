@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { finalize } from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { FormBaseClass } from 'src/app/@core/classes/form-base.class';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
 import { SharedModule } from 'src/app/@shared/shared.module';
+import { UserDetailsService } from '../../services/user-details.service';
 
 @Component({
   selector: 'app-user-rate-table-editor',
@@ -13,10 +14,9 @@ import { SharedModule } from 'src/app/@shared/shared.module';
   templateUrl: './user-rate-table-editor.component.html',
   styleUrl: './user-rate-table-editor.component.scss',
 })
-export class UserRateTableEditorComponent
-  extends FormBaseClass
-  implements OnInit
-{
+export class UserRateTableEditorComponent extends FormBaseClass implements OnInit {
+  private _userDetailsService = inject(UserDetailsService);
+
   ngOnInit(): void {
     this.initForm();
   }
@@ -30,12 +30,9 @@ export class UserRateTableEditorComponent
           label: this._languageService.getTransValue('lookups.rate'),
           disabled: true,
         },
-        validators: {
-          validation: ['englishLetters'],
-        },
       },
       {
-        key: 'name',
+        key: 'name', 
         type: 'input',
         props: {
           label: this._languageService.getTransValue('lookups.rateName'),
@@ -52,6 +49,7 @@ export class UserRateTableEditorComponent
     ];
     this.setFormData();
   }
+
   setFormData() {
     this.formlyModel = this._dynamicDialogConfig.data.rowData;
   }
@@ -63,18 +61,22 @@ export class UserRateTableEditorComponent
     }
 
     const rowData = this._dynamicDialogConfig?.data?.rowData;
-    const userId = rowData?.userId ?? this._dynamicDialogConfig?.data?.userId;
+    
+    const userId = rowData?.userId 
+                ?? this._dynamicDialogConfig?.data?.userId 
+                ?? this._userDetailsService.getUserData()?.id; 
+                
     const rateId = rowData?.id;
 
     if (!userId || !rateId) {
       this._toastrNotifiService.displayError('Missing userId or rateId');
       return;
     }
-
     const payload = {
-      name: this.formlyModel.name,
+      rateName: this.formlyModel.name, 
       amount: +this.formlyModel.amount,
     };
+    
     const url = `${API_Config.usersRate.update}/${userId}/rates/${rateId}`;
 
     this.isLoading = true;

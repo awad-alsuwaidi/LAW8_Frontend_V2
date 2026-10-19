@@ -2,8 +2,6 @@ import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { TabMenuModule } from 'primeng/tabmenu';
-import { API_Config } from 'src/app/@core/api/api-config/api.config';
-import { ApiService } from 'src/app/@core/api/api.service';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
 import { SharedModule } from 'src/app/@shared/shared.module';
 import { UserDetailsDto } from '../interfaces/user-details.interface';
@@ -22,11 +20,12 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   protected _router = inject(Router);
   private _route = inject(ActivatedRoute);
   protected _languageService = inject(LanguageService);
-  private _apiService = inject(ApiService);
   private _unsubscribe = inject(UnsubscribeService);
-  private _userDetailsService = inject(UserDetailsService);
+  private _userDetailsService = inject(UserDetailsService); 
+  
   protected items: MenuItem[] = [];
   protected activeItem?: MenuItem;
+
   @Input() set userIdentifier(value: string) {
     this.getUser(value);
   }
@@ -73,23 +72,22 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       ) || this.items[0];
   }
 
-getUser(userIdentifier: string) {
-  if (!userIdentifier) return;
-  this._apiService
-    .get(`${API_Config.users.getById}/${userIdentifier}`)
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: any) => {
-        const body = res?.data ?? res?.result ?? res;
-        if (body) {
-          this.user = { ...body };
-          this._userDetailsService.updateUserData(this.user);
-          console.log('✅ user loaded:', this.user);
-        }
-      },
-      error: (err) => console.error('getUser failed:', err),
-    });
-}
+  getUser(userIdentifier: string) {
+    if (!userIdentifier) return;
+        this._userDetailsService
+      .getUserById(userIdentifier)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const body = res?.data ?? res?.result ?? res;
+          if (body) {
+            this.user = { ...body };
+            this._userDetailsService.updateUserData(this.user);
+          }
+        },
+        error: (err) => console.error('getUser failed:', err),
+      });
+  }
 
   ngOnDestroy(): void {
     this._unsubscribe.destroy();

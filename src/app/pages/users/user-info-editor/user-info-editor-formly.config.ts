@@ -45,8 +45,6 @@ export function userDetailsEditorFields(
                     },
                     validators: { validation: ['englishLetters'] },
                   },
-
-                  // Arabic Name
                   {
                     key: 'nameAr',
                     type: 'input',
@@ -75,7 +73,6 @@ export function userDetailsEditorFields(
                     },
                     validators: { validation: ['arabicLetters'] },
                   },
-
                   {
                     key: 'nameEn',
                     type: 'input',
@@ -133,13 +130,12 @@ export function userDetailsEditorFields(
               key: 'industryId',
               props: {
                 label: THIS._languageService.getTransValue('common.industry'),
-
+                // ★ التعديل هنا
                 optionsArr: getOptionsArray(
-                  THIS.lookupsData.industry.result,
+                  THIS.lookupsData?.industry?.result ?? [],
                   'id',
                   nameKey,
                 ),
-
                 readonly: !isAddOrUpdate,
                 required: true,
               },
@@ -149,12 +145,12 @@ export function userDetailsEditorFields(
               key: 'titleId',
               props: {
                 label: THIS._languageService.getTransValue('users.titleuser'),
+                // ★ التعديل هنا
                 optionsArr: getOptionsArray(
-                  THIS.lookupsData.rateType.result,
+                  THIS.lookupsData?.rateType?.result ?? [],
                   'id',
                   nameKey,
                 ),
-
                 readonly: !isAddOrUpdate,
                 required: true,
                 onChange: (e: DropdownChangeEvent) =>
@@ -166,13 +162,12 @@ export function userDetailsEditorFields(
               key: 'departmentId',
               props: {
                 label: THIS._languageService.getTransValue('common.department'),
-
+                // ★ التعديل هنا
                 optionsArr: getOptionsArray(
-                  THIS.lookupsData.department.result,
+                  THIS.lookupsData?.department?.result ?? [],
                   'id',
                   nameKey,
                 ),
-
                 readonly: !isAddOrUpdate,
                 required: true,
               },
@@ -203,71 +198,53 @@ export function userDetailsEditorFields(
               className: 'col-md-4',
               props: {
                 label: THIS._languageService.getTransValue('profile.defUsrId'),
+                // ★ التعديل هنا
                 optionsArr: getOptionsArray(
-                  THIS.lookupsData.defUsrId.result,
+                  THIS.lookupsData?.defUsrId?.result ?? [],
                   'id',
                   nameKey,
                 ),
-
                 readonly: !isAddOrUpdate,
               },
             },
-            {
-              type: 'radio',
-              key: 'locked',
-              props: {
-                label: THIS._languageService.getTransValue('users.locked'),
-                options: [
-                  {
-                    label: THIS._languageService.getTransValue('common.no'),
-                    value: false,
-                  },
-                  {
-                    label: THIS._languageService.getTransValue('common.yes'),
-                    value: true,
-                  },
-                ],
-                onChange: (e: any) => THIS.toggleLockedeUser(e.value),
-                disabled:
-                  !THIS._permissionService.hasPermission('Update_Users'),
-              },
-              expressions: {
-                hide: () =>
-                  isAddOrUpdate ||
-                  isViewList ||
-                  !THIS._permissionService.hasPermission('Unlock_Users'),
-              },
-            },
+// استبدل حقل locked
+// استبدل حقل locked
+{
+  key: 'locked',
+  type: isAddOrUpdate ? 'radio' : 'input',
+  props: {
+    label: THIS._languageService.getTransValue('users.locked'),
+    readonly: !isAddOrUpdate,
+    options: [
+      { label: THIS._languageService.getTransValue('common.no'), value: false },
+      { label: THIS._languageService.getTransValue('common.yes'), value: true },
+    ],
+    disabled: !isAddOrUpdate,
+  },
+  expressions: {
+    // ★ ضفنا isAdd هنا عشان يختفي في وضع الإضافة
+    hide: () => isViewList || isAdd,
+  },
+},
 
-            // 🔹 Active
-            {
-              type: 'radio',
-              key: 'active',
-              defaultValue: false,
-              props: {
-                label: THIS._languageService.getTransValue('common.activation'),
-                options: [
-                  {
-                    label:
-                      THIS._languageService.getTransValue('common.inactive'),
-                    value: false,
-                  },
-                  {
-                    label: THIS._languageService.getTransValue('common.active'),
-                    value: true,
-                  },
-                ],
-                onChange: (e: any) => THIS.toggleActiveUser(e.value),
-                disabled:
-                  !THIS._permissionService.hasPermission('Update_Users'),
-              },
-              expressions: {
-                hide: () =>
-                  isAddOrUpdate ||
-                  isViewList ||
-                  !THIS._permissionService.hasPermission('Deactivate_Users'),
-              },
-            },
+// استبدل حقل active
+{
+  key: 'active',
+  type: isAddOrUpdate ? 'radio' : 'input',
+  props: {
+    label: THIS._languageService.getTransValue('common.activation'),
+    readonly: !isAddOrUpdate,
+    options: [
+      { label: THIS._languageService.getTransValue('common.inactive'), value: false },
+      { label: THIS._languageService.getTransValue('common.active'), value: true },
+    ],
+    disabled: !isAddOrUpdate,
+  },
+  expressions: {
+    // ★ ضفنا isAdd هنا عشان يختفي في وضع الإضافة
+    hide: () => isViewList || isAdd,
+  },
+},
           ],
         },
       ],
@@ -282,8 +259,6 @@ export function userDetailsEditorFields(
         ${THIS._languageService.getTransValue('users.personal')}
       </h5>`,
         },
-
-        // 🔹 Telephone
         {
           type: 'phone',
           key: 'phone',
@@ -297,7 +272,6 @@ export function userDetailsEditorFields(
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
                   const validValue = value.replace(/[^0-9+ ]/g, '');
@@ -306,27 +280,19 @@ export function userDetailsEditorFields(
               });
             },
           },
-          // validators: { validation: ['phone'] },
-          // validation: {
-          //   messages: { phone: () => 'Invalid telephone number' },
-          // },
         },
-
-        // 🔹 Mobile Number
         {
           type: 'phone',
           key: 'phoneNumber',
           props: {
             label: THIS._languageService.getTransValue('users.mobileNumber'),
             readonly: !isAddOrUpdate,
-            // required: true,
             placeholder: 'Enter mobile number',
           },
           hooks: {
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
                   const validValue = value.replace(/[^0-9+ ]/g, '');
@@ -335,16 +301,7 @@ export function userDetailsEditorFields(
               });
             },
           },
-          // validators: { validation: ['phone'] },
-          validation: {
-            messages: {
-              // required: () => 'Mobile number is required',
-              // phone: () => 'Invalid mobile number',
-            },
-          },
         },
-
-        // 🔹 Email
         {
           type: 'input',
           key: 'email',
@@ -362,8 +319,6 @@ export function userDetailsEditorFields(
             },
           },
         },
-
-        // 🔹 Address
         {
           type: 'input',
           key: 'address1',
@@ -374,8 +329,6 @@ export function userDetailsEditorFields(
           },
           expressions: { hide: () => !isAddOrUpdate },
         },
-
-        // 🔹 Extension
         {
           type: 'input',
           key: 'extension',
@@ -385,7 +338,6 @@ export function userDetailsEditorFields(
           },
           expressions: { hide: () => !isAddOrUpdate },
         },
-        // 🔹 Timesheet Date
         {
           type: 'date',
           key: 'timesheetDate',
@@ -395,8 +347,6 @@ export function userDetailsEditorFields(
             readonly: !isAddOrUpdate,
           },
         },
-
-        // 🔹 Goal
         {
           type: 'input',
           key: 'goal',
@@ -415,16 +365,14 @@ export function userDetailsEditorFields(
             },
           },
         },
-
-        // 🔹 Branch
         {
           type: 'select',
           key: 'branchId',
           props: {
             label: THIS._languageService.getTransValue('common.branch'),
-
+            // ★ التعديل هنا
             optionsArr: getOptionsArray(
-              THIS.lookupsData.branches.result,
+              THIS.lookupsData?.branches?.result ?? [],
               'id',
               nameKey,
             ),

@@ -9,6 +9,7 @@ export interface UserDto {
   industryId: number;
   titleId: number;
   departmentId: number;
+  departmentName: string;
   branchId: number;
   active: boolean;
   locked: boolean;

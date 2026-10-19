@@ -122,14 +122,19 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
       email: obj.email,
       phoneNumber: obj.phoneNumber,
       phone: obj.phone ?? obj.phone ?? null,
-      active: obj.active,
-      locked: obj.locked,
       profileImageUrl: obj.profileImageUrl,
       roles: obj.roles,
       timesheetDate: obj.timesheetDate ?? obj.createdAtUtc,
       code: obj.code ?? obj.code ?? null,
       titleName: obj.titleName ?? null,
       departmentName: obj.departmentName ?? null,
+      active: obj.active
+        ? this.Language.getTransValue('common.active')
+        : this.Language.getTransValue('common.inactive'),
+
+      locked: obj.locked
+        ? this.Language.getTransValue('users.lockedv2')
+        : this.Language.getTransValue('users.unLocked'),
     })) as any;
 
     this.pagination.totalElements = body?.totalCount ?? 0;
@@ -232,12 +237,12 @@ export class UsersViewListComponent implements OnInit, OnDestroy {
       },
     });
   }
-onFilterChange(filter: any): void {
-  this.pagination.filters = filter;
-  this.pagination.pageNum = 1;
-  this.pagination = { ...this.pagination };
-  this.triggerRefresh();
-}
+  onFilterChange(filter: any): void {
+    this.pagination.filters = filter;
+    this.pagination.pageNum = 1;
+    this.pagination = { ...this.pagination };
+    this.triggerRefresh();
+  }
   toggleLockedUser(rowData: UserDto, locked: boolean) {
     const title = locked
       ? this.Language.getTransValue('users.Locked')
@@ -254,7 +259,7 @@ onFilterChange(filter: any): void {
         message,
         btns: [
           {
-            label: this.Language.getTransValue('users.Cancel'),
+            label: this.Language.getTransValue('users.cancel'),
             styleClass: 'border border-grey500 text-grey500',
             command: () => {
               rowData.locked = !locked;

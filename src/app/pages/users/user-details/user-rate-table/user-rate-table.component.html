@@ -2,7 +2,7 @@
     <div class="flex justify-between mb-4">
         <h3 class="text-lg font-bold text-grey500">{{'users.defaultRate'|translate}}</h3>
     </div>
-    <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination" (onPageChange)="onPageChange($event)">
+    <app-shared-table [data]="data" [columns]="columns" [pagination]="pagination" (onPageChange)="onPageChange($event)" (onSort)="handleSort($event)">
         <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
             <div class="font-medium text-sm text-textSecondary rounded-e-lg">
                 <div class="flex gap-6">

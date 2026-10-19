@@ -9,16 +9,12 @@ import { environment } from 'src/environments/environment';
 export class ApiService {
   constructor(private http: HttpClient) {}
 
-  /** ★ يحوّل شكل الباك الجديد { success, data } لـ { isSuccess, result } */
   private normalize<T>(source$: Observable<any>): Observable<T> {
     return source$.pipe(
       map((res: any) => {
-        // لو الـ response أصلاً بالشكل القديم، سيبه زي ما هو
         if (res && (res.isSuccess !== undefined || res.result !== undefined)) {
           return res;
         }
-
-        // لو بالشكل الجديد { success, data, message, error }
         if (res && res.success !== undefined) {
           return {
             isSuccess: res.success === true,
@@ -27,8 +23,6 @@ export class ApiService {
             error: res.error,
           };
         }
-
-        // أي شكل تاني — سيبه زي ما هو
         return res;
       })
     );
@@ -71,9 +65,12 @@ export class ApiService {
     if (params) url += this.getParams(params);
     return this.http.get(this.getFullUrl(url), { responseType: 'blob' });
   }
+patch<T = any>(url: string, body: any = {}, params?: {}): Observable<T> {
+  if (params) url += this.getParams(params);
+  return this.normalize<T>(this.http.patch(this.getFullUrl(url), body));
+}
 
-  // ==================== helpers (زي ما هي) ====================
-  private getParams(args: any): string {
+private getParams(args: any): string {
     if (!args) return '';
     const params = Object.keys(args)
       .filter((key) => args[key] != null)

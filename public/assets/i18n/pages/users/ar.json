@@ -10,6 +10,7 @@
         "Activate": "تفعيل",
         "Deactivate": "إلغاء التفعيل",
         "Locked": "مغلق",
+        "Lockedv2": "مغلق",
         "UnLocked": "مفتوح",
         "confirmActivateMessage": "هل أنت متأكد أنك تريد تفعيل هذا المستخدم؟",
         "confirmDeactivateMessage": "هل أنت متأكد أنك تريد إلغاء تفعيل هذا المستخدم؟",

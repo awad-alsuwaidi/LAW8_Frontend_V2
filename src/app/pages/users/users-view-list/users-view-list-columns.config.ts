@@ -23,13 +23,13 @@ export const Users_Columns = [
     header: 'users.locked',
     field: 'locked',
     class: 'switch-bg',
-    isSwitch: true,
+    // isSwitch: true,
     permission: 'Unlock_Users',
   },
   {
     header: 'users.activation',
     field: 'active',
-    isSwitch: true,
+    // isSwitch: true,
     permission: 'Deactivate_Users',
   },
 ];
