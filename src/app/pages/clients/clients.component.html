@@ -76,13 +76,13 @@
                   <div>
                     <h1
                       class="font-bold text-sm text-textSecondary mb-2 truncate max-w-[250px]"
-                      [innerHTML]="client.name | highlight: searchValue"
+                      [innerHTML]="client.nameEn | highlight: searchValue"
                     >
                       <!-- {{ client.name }} -->
                     </h1>
                     <p
                       class="font-medium text-grey500 text-xs truncate max-w-[120px]"
-                      [innerHTML]="client.email | highlight: searchValue"
+                      [innerHTML]="client.contact.email | highlight: searchValue"
                     >
                       <!-- {{ client.email }} -->
                     </p>
@@ -91,7 +91,7 @@
                 <div>
                   <h1
                     class="font-bold text-xs text-colorsTextTextPrimary mb-2"
-                    [innerHTML]="client.clntNo | highlight: searchValue"
+                    [innerHTML]="client.clientCode | highlight: searchValue"
                   >
                     <!-- {{ client.clntNo }} -->
                   </h1>

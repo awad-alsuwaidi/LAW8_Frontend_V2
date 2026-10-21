@@ -27,6 +27,7 @@ import { LanguageService } from 'src/app/@core/services';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { HighlightPipe } from '../../@shared/pipes/highlight.pipe';
 import { environment } from 'src/environments/environment';
+import { Subject, debounceTime, switchMap } from 'rxjs'; // ★ جديد
 
 @Component({
   selector: 'app-clients',
@@ -46,7 +47,9 @@ import { environment } from 'src/environments/environment';
 export class ClientsComponent implements OnInit, OnDestroy {
   @ViewChild(SharedSearchComponent)
   searchComp!: SharedSearchComponent;
+
   isInhouse = environment.brand === 'inhouse';
+
   _router = inject(Router);
   _route = inject(ActivatedRoute);
   _apiService = inject(ApiService);
@@ -55,29 +58,40 @@ export class ClientsComponent implements OnInit, OnDestroy {
   _unsubscribeService = inject(UnsubscribeService);
   _languageService = inject(LanguageService);
   private _breakpointObserver = inject(BreakpointObserver);
+
+  private refresh$ = new Subject<void>();
+
   data: any[] = [];
   isFirstLoad = true;
   searchValue = '';
   totalCount: number = 0;
+
   filterOptions: any = {
-    pageNum: 1,
-    pagSize: PAGESIZE,
-    orderByDirection: 'ASC',
+    pageNumber: 1,
+    pageSize: PAGESIZE ?? 10,
+    sortBy: 'id',
+    isDescending: false,
+    searchTerm: '',
   };
+
   searchText: string = '';
   isLoading!: boolean;
   first: number = 0;
+
+  isSmallScreen = signal(false);
+  titleKey = '';
+
   refreshData = effect(() => {
     if (this._clientService.getRefreshData()) {
-      console.log('refreshData effect triggered');
-      this.getData();
+      this.triggerRefresh();
     }
   });
+
   emptyConfig: EmptyConfig = {
     title: this._languageService.getTransValue('clients.clients'),
     messageTitle: this._languageService.getTransValue('clients.noClients'),
     description: this._languageService.getTransValue(
-      'clients.emptyDescription'
+      'clients.emptyDescription',
     ),
     addPermission: 'Add_Client',
     addButton: {
@@ -88,123 +102,131 @@ export class ClientsComponent implements OnInit, OnDestroy {
     },
   };
 
-  isSmallScreen = signal(false);
-  titleKey = '';
-
   ngOnInit(): void {
-      if (this._router.url.includes('inactive')) {
-    this.titleKey = this.isInhouse
-      ? 'clients.inactiveEntities'
-      : 'clients.inactiveClients';
-  } else {
-    this.titleKey = this.isInhouse
-      ? 'clients.entities'
-      : 'clients.clients';
-  }
+    this.refresh$
+      .pipe(
+        debounceTime(50),
+        switchMap(() => {
+          const isInactive = this._router.url.includes('inactive');
+
+          const params: any = {
+            pageNumber: this.filterOptions.pageNumber,
+            pageSize: this.filterOptions.pageSize,
+            sortBy: this.filterOptions.sortBy,
+            isDescending: this.filterOptions.isDescending,
+          };
+
+          if (this.filterOptions.searchTerm) {
+            params.searchTerm = this.filterOptions.searchTerm;
+          }
+          params.isActive = !isInactive;
+
+          return this._apiService.get(API_Config.client.get, params);
+        }),
+        this._unsubscribeService.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => this.handleResponse(res),
+        error: (err) => {
+          console.error('❌ fetch clients failed:', err);
+          this.isLoading = false;
+          this.isFirstLoad = false;
+        },
+      });
+
+    if (this._router.url.includes('inactive')) {
+      this.titleKey = this.isInhouse
+        ? 'clients.inactiveEntities'
+        : 'clients.inactiveClients';
+    } else {
+      this.titleKey = this.isInhouse ? 'clients.entities' : 'clients.clients';
+    }
+
     this._breakpointObserver
       .observe([Breakpoints.Handset])
       .subscribe((result) => {
         this.isSmallScreen.set(result.matches);
       });
+
     this.getQueryParams();
   }
 
+  private triggerRefresh(): void {
+    this.isLoading = true;
+    this.refresh$.next();
+  }
 
-getData(): void {
-  this.isLoading = true;
+  private handleResponse(res: any): void {
+    const body = res?.data ?? res?.result ?? {};
+    const items: any[] = body?.items ?? body?.dataList ?? [];
 
-  const path = this._router.url.includes('inactive')
-    ? API_Config.clientInActiveList.get
-    : API_Config.client.get;
+    this.data = items;
 
-  this._apiService.get(path, this.filterOptions).pipe(
-    finalize(() => {
-      this.isLoading = false;
-      this.isFirstLoad = false;  
-    }),
-    this._unsubscribeService.takeUntilDestroy()
-  ).subscribe((res: ApiRes) => {
+    this.totalCount = body?.totalCount ?? 0;
+    this.isLoading = false;
+    this.isFirstLoad = false;
 
-this.data = res?.result?.dataList ?? [];
-this.totalCount = res?.result?.totalCount ?? 0;
+    if (this.data.length > 0) {
+      let selectedClient = this.data[0];
 
-if (this.data.length > 0) {
+      if (this.searchValue) {
+        const matched = this.data.find(
+          (c: any) => c.clientCode === this.searchValue,
+        );
+        if (matched) selectedClient = matched;
+      }
 
-  let selectedClient = this.data[0];
-  if (this.searchValue) {
-    const matched = this.data.find(
-      (c: any) => c.clntNo === this.searchValue
-    );
+      const selectedId = selectedClient.id;
+      const isInactive = this._router.url.includes('inactive');
 
-    if (matched) {
-      selectedClient = matched;
+      this._router.navigate(
+        [isInactive ? '/clients/inactive/view' : '/clients/view', selectedId],
+        { replaceUrl: true },
+      );
     }
   }
 
-  const selectedId = selectedClient.id;
-
-  if (this._router.url.includes('inactive')) {
-    this._router.navigate(
-      ['/clients/inactive/view', selectedId],
-      { replaceUrl: true }
-    );
-  } else {
-    this._router.navigate(
-      ['/clients/view', selectedId],
-      { replaceUrl: true }
-    );
+  getData(): void {
+    this.triggerRefresh();
   }
-}
-  });
-}
 
-getQueryParams() {
-  this._route.queryParams.subscribe((params) => {
+  getQueryParams() {
+    this._route.queryParams.subscribe((params) => {
+      if (['add', 'update'].some((word) => this._router.url.includes(word)))
+        return;
 
-    if (['add', 'update'].some((word) => this._router.url.includes(word)))
-      return;
+      if (params['search']) {
+        this.searchValue = params['search'];
+        this.searchText = params['search'];
+        this.filterOptions.searchTerm = params['search'];
+      }
 
-    if (params['search']) {
-      this.searchValue = params['search'];
-      this.searchText = params['search'];
-      this.filterOptions.search = params['search'];
-    }
-setTimeout(() => {
-  const input = document.querySelector('app-shared-search input') as HTMLInputElement;
+      setTimeout(() => {
+        const input = document.querySelector(
+          'app-shared-search input',
+        ) as HTMLInputElement;
+        if (input) input.value = this.searchValue;
+      });
 
-  if (input) {
-    input.value = this.searchValue;
+      this.triggerRefresh();
+    });
   }
-});
-    this.getData();
-  });
-}
-  // getQueryParams() {
-  //   this._route.paramMap.subscribe((segments) => {
-  //     console.log(
-  //       'this._router.url',
-  //       ['add', 'update'].some((word) => this._router.url.includes(word))
-  //     );
-  //     if (['add', 'update'].some((word) => this._router.url.includes(word)))
-  //       return;
-  //     this.getData();
-  //   });
-  // }
-searchValueChange(value: string): void {
-  this.searchValue = value;
-  this.searchText = value;
-  this.filterOptions.search = value;
-  this.filterOptions = { ...this.filterOptions };
-  this.getData();
-}
+
+  searchValueChange(value: string): void {
+    this.searchValue = value;
+    this.searchText = value;
+    this.filterOptions.searchTerm = value;
+    this.filterOptions.pageNumber = 1;
+    this.filterOptions = { ...this.filterOptions };
+    this.triggerRefresh();
+  }
 
   onPageChange(event: any): void {
     this.first = event.first;
-    this.filterOptions.pagSize = Number(event.rows);
-    this.filterOptions.pageNum = event.first / event.rows + 1;
+    this.filterOptions.pageSize = Number(event.rows);
+    this.filterOptions.pageNumber = event.first / event.rows + 1;
     this.filterOptions = { ...this.filterOptions };
-    console.log('this.filterOptions', this.filterOptions);
-    this.getData();
+    this.triggerRefresh();
   }
 
   redirectToFirstClientInList() {
@@ -225,6 +247,7 @@ searchValueChange(value: string): void {
       this._router.navigate(['view', clientId], { relativeTo: this._route });
     }
   }
+
   ngOnDestroy(): void {
     this._unsubscribeService.destroy();
   }

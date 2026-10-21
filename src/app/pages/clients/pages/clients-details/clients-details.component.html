@@ -23,12 +23,14 @@
 
 
 
-        @if(!_router.url.includes('inactive')){
-        <app-shared-button [label]="'clients.edit'|translate" [requiredPermission]="'Update_Client'"
-            [styleClass]="'bg-primary text-white  !text-sm !py-1 !font-medium !leading-8'"
-            (onClick)="_router.navigate(['/clients/update',client.id])" />
-        }
-
+@if(!_router.url.includes('inactive')){
+  <app-shared-button 
+    [label]="'clients.edit'|translate" 
+    [requiredPermission]="'Update_Client'"
+    [disabled]="!client?.id"
+    [styleClass]="'bg-primary text-white !text-sm !py-1 !font-medium !leading-8'"
+    (onClick)="onGoToEdit()" />
+}
     </div>
     <div class="md:hidden">
         <p-menu #menu [model]="menuItems" [popup]="true" />

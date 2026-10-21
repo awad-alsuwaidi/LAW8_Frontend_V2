@@ -52,12 +52,13 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
   items: MenuItem[] = [];
   activeItem?: MenuItem;
   menuItems: MenuItem[] = [];
-    isInhouse = environment.brand === 'inhouse';
+  isInhouse = environment.brand === 'inhouse';
   breadcrumbItems: MenuItem[] = [
     {
-  label: this._languageService.getTransValue(
-    this.isInhouse ? 'clients.entities' : 'clients.clients'
-  ),      routerLink: '/clients',
+      label: this._languageService.getTransValue(
+        this.isInhouse ? 'clients.entities' : 'clients.clients',
+      ),
+      routerLink: '/clients',
     },
     {
       label: this._languageService.getTransValue('matters.view'),
@@ -83,17 +84,18 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
         visible: this._permissionService.hasPermission('View_ClientContact'),
         command: () => {
           this._router.navigate(['./contacts'], { relativeTo: this._route });
-          
         },
       },
-      {
-        label: this._languageService.getTransValue('clients.relatedMatters'),
-        command: () => {
-          this._router.navigate(['./related-matters'], {
-            relativeTo: this._route,
-          });
-        },
-      },
+
+      // after add matter طه طه طاااهااا
+      // {
+      //   label: this._languageService.getTransValue('clients.relatedMatters'),
+      //   command: () => {
+      //     this._router.navigate(['./related-matters'], {
+      //       relativeTo: this._route,
+      //     });
+      //   },
+      // },
     ];
     this.setActiveTab(this._router.url);
   }
@@ -111,8 +113,8 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
     this.activeItem =
       this.items.find((tab) =>
         normalizedUrl.includes(
-          (tab.label ?? '').replace(' ', '-').toLocaleLowerCase()
-        )
+          (tab.label ?? '').replace(' ', '-').toLocaleLowerCase(),
+        ),
       ) || this.items[0];
   }
 
@@ -130,7 +132,7 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
       .pipe(this._unsubscribeService.takeUntilDestroy())
       .subscribe({
         next: (res: any) => {
-          this.client = res;
+          this.client = res ?? {};
           this.setMenuItems();
         },
       });
@@ -141,7 +143,7 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
         label: this._languageService.getTransValue(
           this._router.url.includes('inactive')
             ? 'matters.activate'
-            : 'matters.deactivate'
+            : 'matters.deactivate',
         ),
         icon: 'icon-show',
         command: () => {
@@ -199,7 +201,7 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
             },
           ],
         },
-      }
+      },
     );
 
     this.confirmationRef.onClose.subscribe({
@@ -215,20 +217,35 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
 
   toggleActivation(): void {
     const isInactive = this._router.url.includes('inactive');
-    const params = {
-      clientId: this.clientIdentifier,
-      Status: isInactive,
-    };
+    const url = `${API_Config.client.activationClient}/${this.clientIdentifier}/activation`;
 
     this._apiService
-      .post(API_Config.client.activationClient, {}, params)
+      .patch(url, {})
       .pipe(this._unsubscribeService.takeUntilDestroy())
-      .subscribe((res: ApiRes) => {
-        if (res.isSuccess) {
-          this.confirmationRef?.close(true);
-          this._toastrNotifiService.displaySuccess(res.message);
-        }
+      .subscribe({
+        next: (res: any) => {
+          const ok = res?.isSuccess === true || res?.success === true;
+          if (ok) {
+            this.confirmationRef?.close(true);
+            this._toastrNotifiService.displaySuccess(
+              res.message ?? 'Updated successfully',
+            );
+          } else {
+            this._toastrNotifiService.displayError(
+              res?.message ?? 'Failed to update',
+            );
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(
+            err?.error?.message || 'Failed to update',
+          );
+        },
       });
+  }
+  onGoToEdit(): void {
+    if (!this.client?.id) return;
+    this._router.navigate(['/clients/update', this.client.id]);
   }
   ngOnDestroy(): void {
     this._unsubscribeService.destroy();

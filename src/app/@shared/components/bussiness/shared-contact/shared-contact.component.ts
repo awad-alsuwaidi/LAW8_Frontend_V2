@@ -4,7 +4,7 @@ import { SharedModule } from 'src/app/@shared/shared.module';
 import { SharedButtonComponent } from '../../shared-button/shared-button.component';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ApiService } from 'src/app/@core/api/api.service';
 import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
@@ -20,6 +20,7 @@ import { SharedEmptySectionComponent } from '../../shared-empty-section/shared-e
 import { PermissionService } from 'src/app/@core/services/permission.service';
 import { TableModule } from 'primeng/table';
 import { SharedContactColumns } from './shared-contact-columns.config';
+import { Subject, debounceTime, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-shared-contact',
@@ -56,33 +57,40 @@ export class SharedContactComponent implements OnInit, OnDestroy {
   routeData: any;
   id!: number;
 filterOptions = {
-  pageNum: 1,
-  pagSize: 10,
-  orderBy: '',
-  orderByDirection: 'ASC',
+  pageNumber: 1,
+  pageSize: 10,
+  sortBy: '',
+  isDescending: false,
 };
-  formlyModel: any;
-  // collect form data from pervious steps
 
+  formlyModel: any;
   getFormsData = effect(() => {
-    if (this._matterService.getMatter()) {
-      this.formlyModel = this._matterService.getMatter();
-      if (this.formlyModel?.law_MatterContactss)
-        this.contacts = [...this.formlyModel.law_MatterContactss];
-      if (!this.formlyModel.practsAreaId && this._router.url.includes('add'))
-        this._router.navigate(['/matters/add']);
+    if (!this._router.url.includes('/matters')) return;
+
+    const matter = this._matterService.getMatter();
+    if (!matter) return;
+
+    this.formlyModel = matter;
+    if (matter?.law_MatterContactss?.length) {
+      this.contacts = [...matter.law_MatterContactss];
+    }
+    if (!matter.practsAreaId && this._router.url.includes('add')) {
+      this._router.navigate(['/matters/add']);
     }
   });
+
   emptyConfig?: EmptyConfig;
   ngOnInit(): void {
     this.routeData = this._route.snapshot.data;
 
+    this.initRefreshStream(); 
+
     this.emptyConfig = {
       messageTitle: this._languageService.getTransValue(
-        'clients.noContactsTitle'
+        'clients.noContactsTitle',
       ),
       description: this._languageService.getTransValue(
-        'clients.noContactsDescription'
+        'clients.noContactsDescription',
       ),
       addPermission: this.routeData['addPermission'],
     };
@@ -100,54 +108,45 @@ filterOptions = {
     this.getParams();
     this.setMenuItems();
   }
-  loadData(event: any) {
-  this.filterOptions.pageNum = event.first / event.rows + 1;
-  this.filterOptions.pagSize = event.rows;
-
-  if (event.sortField) {
-    this.filterOptions.orderBy = event.sortField;
-    this.filterOptions.orderByDirection =
-      event.sortOrder === 1 ? 'ASC' : 'DSC';
-  }
-
-  this.refreshData();
-}
-  handleSort(event: any) {
-  if (!event?.field) return;
-
-  this.filterOptions.orderBy = event.field;
-  this.filterOptions.orderByDirection = event.order === 1 ? 'ASC' : 'DSC';
-
-  this.filterOptions.pageNum = 1;
+onPageChange(event: any): void {
+  this.filterOptions.pageSize = Number(event.rows);
+  this.filterOptions.pageNumber = event.first / event.rows + 1;
+  this.filterOptions = { ...this.filterOptions };
   this.refreshData();
 }
 onSort(field: string) {
   if (!field) return;
 
-  if (this.filterOptions.orderBy === field) {
-    this.filterOptions.orderByDirection =
-      this.filterOptions.orderByDirection === 'ASC' ? 'DSC' : 'ASC';
+  if (this.filterOptions.sortBy === field) {
+    this.filterOptions.isDescending = !this.filterOptions.isDescending;
   } else {
-    this.filterOptions.orderBy = field;
-    this.filterOptions.orderByDirection = 'ASC';
+    this.filterOptions.sortBy = field;
+    this.filterOptions.isDescending = false;
   }
 
-  this.filterOptions.pageNum = 1;
+  this.filterOptions.pageNumber = 1;
   this.refreshData();
 }
-  getParams() {
-    this._route.params
-      .pipe(this._unsubscribeService.takeUntilDestroy())
-      .subscribe({
-        next: (params: Params) => {
-          if (params['id']) {
-            this.id = params['id'];
-          }
-          this.refreshData();
-          this.getData();
-        },
-      });
+handleSort(event: any) {
+  if (!event?.field) return;
+
+  this.filterOptions.sortBy = event.field;
+  this.filterOptions.isDescending = event.order === -1;
+
+  this.filterOptions.pageNumber = 1;
+  this.refreshData();
+}
+loadData(event: any) {
+  this.filterOptions.pageNumber = event.first / event.rows + 1;
+  this.filterOptions.pageSize = event.rows;
+
+  if (event.sortField) {
+    this.filterOptions.sortBy = event.sortField;
+    this.filterOptions.isDescending = event.sortOrder === -1;
   }
+
+  this.refreshData();
+}
 
   getData() {
     if (this._route.snapshot.data['data']) {
@@ -164,7 +163,7 @@ onSort(field: string) {
         label: this._languageService.getTransValue('matters.viewDetails'),
         icon: 'icon-show',
         visible: this._permissionService.hasPermission(
-          this.routeData['permission']
+          this.routeData['permission'],
         ),
         command: () => {
           this.onOpenContactEditor('view');
@@ -175,7 +174,7 @@ onSort(field: string) {
         label: this._languageService.getTransValue('matters.edit'),
         icon: 'icon-edit',
         visible: this._permissionService.hasPermission(
-          this.routeData['editPermission']
+          this.routeData['editPermission'],
         ),
         command: () => {
           this.onOpenContactEditor('edit');
@@ -186,7 +185,7 @@ onSort(field: string) {
         label: this._languageService.getTransValue('matters.delete'),
         icon: 'icon-trash',
         visible: this._permissionService.hasPermission(
-          this.routeData['deletePermission']
+          this.routeData['deletePermission'],
         ),
         command: () => {
           this.onDelete();
@@ -231,12 +230,104 @@ onSort(field: string) {
           law_MatterContactss: this.contacts,
         });
       } else if (result) {
-        this.refreshData();
+        this.forceRefresh();
       }
     });
   }
+
+  getApiResult(res: any) {
+    return res?.data ?? res?.Data ?? res?.result ?? res?.Result ?? {};
+  }
+
+  getApiSuccess(res: any) {
+    return res?.success === true || res?.isSuccess === true;
+  }
+
+  getApiMessage(res: any) {
+    return res?.message ?? res?.Message ?? '';
+  }
+
+  private refresh$ = new Subject<void>();
+  private lastRequestKey = '';
+
+  refreshData(): void {
+    this.refresh$.next();
+  }
+
+  forceRefresh(): void {
+    this.lastRequestKey = '';
+    this.refresh$.next();
+  }
+
+private initRefreshStream(): void {
+  this.refresh$
+    .pipe(
+      debounceTime(0),
+      switchMap(() => {
+        const filterKey =
+          this.routeData['filterKey'] ?? this.routeData['idKey'];
+
+        this.filterOptions = {
+          ...this.filterOptions,
+          [filterKey]: this.id,
+        };
+
+        const key = JSON.stringify(this.filterOptions);
+        if (key === this.lastRequestKey) return [];
+        this.lastRequestKey = key;
+
+        return this._apiService.get(
+          this.routeData['endpoint'].get,
+          this.filterOptions,
+        );
+      }),
+      this._unsubscribeService.takeUntilDestroy(),
+    )
+      .subscribe({
+        next: (res: any) => {
+          if (!res) return;
+          if (!this.getApiSuccess(res)) return;
+
+          const result = this.getApiResult(res);
+          const items = result?.items ?? result?.dataList ?? [];
+
+          this.contacts = items.map((person: any) => {
+            const normalized: any = {};
+            for (const key in person) {
+              normalized[key] = person[key] == null ? '' : person[key];
+            }
+            normalized.fullName = [
+              person.firstName,
+              person.middleName,
+              person.lastName,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .trim();
+            normalized.phone = person.phone1 ?? person.phone ?? '';
+            normalized.mobile = person.mobile1 ?? person.mobile ?? '';
+            normalized.email = person.email ?? '';
+            return normalized;
+          });
+
+          this.totalRecords = result?.totalCount ?? 0;
+        },
+      });
+  }
+
+  getParams() {
+    this._route.params
+      .pipe(this._unsubscribeService.takeUntilDestroy())
+      .subscribe({
+        next: (params: Params) => {
+          if (params['id']) this.id = params['id'];
+          this.refreshData();
+        },
+      });
+  }
+
   onDelete() {
-    const confirmDeleteRef = this._dialogService.open(
+    const confirmDeleteRef: DynamicDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
       {
         data: {
@@ -247,104 +338,56 @@ onSort(field: string) {
             {
               label: this._languageService.getTransValue('common.cancel'),
               styleClass: 'border border-grey500 text-grey500',
-              command: () => {
-                confirmDeleteRef.close();
-              },
+              command: () => confirmDeleteRef.close(),
             },
             {
               label: 'Delete',
               styleClass: 'bg-textErrorBase text-white',
-              command: () => {
-                confirmDeleteRef.close(true);
-              },
+              command: () => confirmDeleteRef.close(true),
             },
           ],
         },
-      }
+      },
     );
+
     confirmDeleteRef.onClose.subscribe({
       next: (res) => {
-        if (res) {
-          if (this._router.url.includes('add')) {
-            this.contacts = this.contacts.filter(
-              (obj) => obj != this.selectedRow
-            );
-            this.totalRecords = this.contacts.length;
-            confirmDeleteRef.close();
-            return;
-          }
+        if (!res) return;
 
-          this._apiService
-            .post(
-              this.routeData['endpoint'].delete,
-              {},
-              { id: this.selectedRow.id }
-            )
-            .pipe(this._unsubscribeService.takeUntilDestroy())
-            .subscribe({
-              next: (res: ApiRes) => {
-                if (this.getApiSuccess(res)) {
-                  this._toastrNotifiService.displaySuccess(
-                    this.getApiMessage(res)
-                  );
-                  this.refreshData();
-                }
-              },
-            });
+        if (this._router.url.includes('add')) {
+          this.contacts = this.contacts.filter(
+            (obj) => obj !== this.selectedRow,
+          );
+          this.totalRecords = this.contacts.length;
+          return;
         }
+
+        const url = `${this.routeData['endpoint'].delete}/${this.selectedRow.id}`;
+
+        this._apiService
+          .delete(url)
+          .pipe(this._unsubscribeService.takeUntilDestroy())
+          .subscribe({
+            next: (res: any) => {
+              if (this.getApiSuccess(res)) {
+                this._toastrNotifiService.displaySuccess(
+                  this.getApiMessage(res),
+                );
+                this.forceRefresh();
+              } else {
+                this._toastrNotifiService.displayError(this.getApiMessage(res));
+              }
+            },
+            error: (err: any) => {
+              this._toastrNotifiService.displayError(
+                err?.error?.message ?? 'Delete failed',
+              );
+            },
+          });
       },
     });
   }
 
-  refreshData() {
-    this.filterOptions = {
-      ...this.filterOptions,
-      [this.routeData['idKey']]: this.id,
-    };
-
-    this._apiService
-      .get(this.routeData['endpoint'].get, this.filterOptions)
-      .pipe(this._unsubscribeService.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (this.getApiSuccess(res)) {
-            const result = this.getApiResult(res);
-            this.contacts = (result.dataList ?? []).map((person: any) => {
-              const normalizedPerson: any = {};
-
-              for (const key in person) {
-                const value = person[key];
-                normalizedPerson[key] =
-                  value === null || value === undefined ? '' : value;
-              }
-
-              return normalizedPerson;
-            });
-
-            this.totalRecords = result.totalCount ?? 0;
-          }
-        },
-      });
-  }
-
-  getApiResult(res: any) {
-    return res.Result ?? res.result ?? {};
-  }
-
-  getApiSuccess(res: any) {
-    return res.IsSuccess ?? res.isSuccess ?? false;
-  }
-
-  getApiMessage(res: any) {
-    return res.Message ?? res.message ?? '';
-  }
-
-  onPageChange(event: any): void {
-    this.filterOptions.pagSize = Number(event.rows);
-    this.filterOptions.pageNum = event.first / event.rows + 1;
-    this.filterOptions = { ...this.filterOptions };
-    this.refreshData();
-  }
   nextPage() {
     this._router.navigate(['../billing'], { relativeTo: this._route });
   }

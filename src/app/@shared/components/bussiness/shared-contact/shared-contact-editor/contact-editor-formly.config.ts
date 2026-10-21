@@ -3,8 +3,18 @@ import { SharedContactEditorComponent } from './shared-contact-editor.component'
 import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 
 export function contactEditorFormlyConfig(
-  THIS: SharedContactEditorComponent
+  THIS: SharedContactEditorComponent,
 ): FormlyFieldConfig[] {
+  const lang = (THIS._languageService.getSelectedLanguage() || '').toLowerCase();
+  const nameKey = lang.startsWith('en') ? 'nameEn' : 'nameAr';
+
+  // 🔑 بنجهز الـ options مرة واحدة هنا قبل بناء الـ fields
+  const categoryOptions = getOptionsArray(
+    THIS.lookupsData?.category || [],
+    'id',
+    nameKey,
+  );
+
   return [
     {
       fieldGroupClassName: 'grid grid-cols-2 gap-4',
@@ -17,7 +27,6 @@ export function contactEditorFormlyConfig(
             label: THIS._languageService.getTransValue('clients.firstName'),
             required: true,
           },
-
           expressions: {
             'props.readonly': 'formState.readonly',
           },
@@ -33,49 +42,30 @@ export function contactEditorFormlyConfig(
             'props.readonly': 'formState.readonly',
           },
         },
-        // {
-        //   key: 'categoryId',
-        //   type: 'select',
-        //   props: {
-        //     label: THIS._languageService.getTransValue('common.category'),
-        //     optionsArr: getOptionsArray(
-        //       THIS.lookupsData?.category || [],
-        //       'id',
-        //       'name'
-        //     ),
-        //     required: true,
-        //   },
-        //   expressions: {
-        //     'props.readonly': 'formState.readonly',
-        //   },
-        // },
 {
   key: 'categoryId',
   type: 'select',
-  hideExpression: (model, formState) => formState.isViewMode,
+  hideExpression: (_model: any, formState: any) => !!formState?.isViewMode,
   props: {
     label: THIS._languageService.getTransValue('common.category'),
-    optionsArr: getOptionsArray(
-      THIS.lookupsData?.category || [],
-      'id',
-      'name'
-    ),
+    optionsArr: categoryOptions,
+    options: categoryOptions,   // ✅ fallback لو الـ select بيقرأ من props.options
     required: true,
   },
   expressions: {
     'props.readonly': 'formState.readonly',
   },
 },
-
-{
-  key: 'categoryName',
-  type: 'input',
-  hideExpression: '!formState.isViewMode',
-  props: {
-    label: THIS._languageService.getTransValue('common.category'),
-    readonly: true,
-  },
-},
+        {
+          key: 'categoryName',
+          type: 'input',
+          hideExpression: (_model: any, formState: any) =>
+            !formState?.isViewMode,
+          props: {
+            label: THIS._languageService.getTransValue('common.category'),
+            readonly: true,
+          },
+        },
         {
           key: 'position',
           type: 'input',
@@ -105,7 +95,6 @@ export function contactEditorFormlyConfig(
         {
           key: 'address',
           type: 'input',
-          // hide: THIS._router.url.includes('client'),
           props: {
             optionsArr: [],
             label: THIS._languageService.getTransValue('common.address'),
@@ -121,13 +110,12 @@ export function contactEditorFormlyConfig(
           props: {
             optionsArr: [],
             label: THIS._languageService.getTransValue('clients.phone'),
-           required: true,
+            required: true,
           },
           hooks: {
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
                   const validValue = value.replace(/[^0-9+ ]/g, '');
@@ -136,12 +124,10 @@ export function contactEditorFormlyConfig(
               });
             },
           },
-
           expressions: {
             'props.readonly': 'formState.readonly',
           },
         },
-
         {
           key: 'mobile',
           type: 'phone',
@@ -153,7 +139,6 @@ export function contactEditorFormlyConfig(
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
                   const validValue = value.replace(/[^0-9+ ]/g, '');

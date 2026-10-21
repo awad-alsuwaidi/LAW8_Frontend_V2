@@ -250,6 +250,40 @@ export const PAGES_ROUTES: Routes = [
       import('./lookups/lookups.component').then((m) => m.LookupsComponent),
   },
   {
+    path: 'clients',
+    loadComponent: () =>
+      import('./clients/clients.component').then((m) => m.ClientsComponent),
+    loadChildren: () =>
+      import('./clients/clients.routes').then((m) => m.clientsRoutes),
+    data: { permission: 'View_Client', breadcrumb: 'menu.clients.title' },
+  },
+  {
+    path: 'clients/details/:id',
+    loadComponent: () =>
+      import('./clients/pages/clients-details/clients-details.component').then(
+        (m) => m.ClientsDetailsComponent,
+      ),
+    loadChildren: () =>
+      import('./clients/pages/clients-details/client-details.routes').then(
+        (m) => m.ClientDetailsRoutes,
+      ),
+  },
+  {
+    path: 'clients/inactive',
+    loadComponent: () =>
+      import('./clients/clients.component').then((m) => m.ClientsComponent),
+    loadChildren: () =>
+      import('./clients/clients.routes').then((m) => m.clientsRoutes),
+  },
+  {
+    path: 'clients/add',
+    loadComponent: () =>
+      import('./clients/pages/clients-editor/clients-editor.component').then(
+        (m) => m.ClientsEditorComponent,
+      ),
+    data: { permission: 'Add_Client', breadcrumb: 'menu.clients.title' },
+  },
+  {
     path: 'users',
     loadChildren: () =>
       import('./users/users.routes').then((mod) => mod.USERS_ROUTES),

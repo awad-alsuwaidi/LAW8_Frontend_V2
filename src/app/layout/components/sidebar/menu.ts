@@ -16,17 +16,17 @@ export class Menu {
           icon: 'icon-clients',
           label: isInhouse ? 'menu.entities' : 'menu.clients',
           route: '/clients',
-          permission: 'View_Client',
+          // permission: 'View_Client',
           children: [
             {
               label: isInhouse ? 'menu.newEntity' : 'menu.newclients',
               route: '/clients/add',
-              permission: 'Add_Client',
+              // permission: 'Add_Client',
             },
             {
               label: isInhouse ? 'menu.entityList' : 'menu.clientsList',
               route: '/clients',
-              permission: 'View_Client',
+              // permission: 'View_Client',
               activeMatchers: [
                 /^\/clients\/view\/[^/]+$/,
                 /^\/clients\/edit\/[^/]+$/,
@@ -39,7 +39,7 @@ export class Menu {
                 ? 'menu.inactiveEntities'
                 : 'menu.inactiveClients',
               route: '/clients/inactive',
-              permission: 'View_InactiveClient',
+              // permission: 'View_InactiveClient',
               activeMatchers: [
                 /^\/clients\/inactive\/view\/[^/]+$/,
                 /^\/clients\/inactive\/edit\/[^/]+$/,

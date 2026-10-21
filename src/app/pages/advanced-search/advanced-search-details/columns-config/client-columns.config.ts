@@ -1,12 +1,12 @@
 export const Clients_Columns = [
   {
     header: 'search.clientCode',
-    field: 'clntNo',
+    field: 'clientCode',
     isSort: true,
   },
   {
     header: 'search.clientName',
-    field: 'name',
+    field: 'nameEn',
     isSort: true,
   },
   {

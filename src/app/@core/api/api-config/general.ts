@@ -1,8 +1,11 @@
 export const General_API = {
   general: {
-    // ============================================================
-    // V2 Endpoints (الجديدة) — بتستخدم دي
-    // ============================================================
+    // ============ NEW ============
+    getLookups: 'lookups',
+    searchClients: 'lookups/clients',
+    getMainMatters: 'lookups/matters',
+
+    // ============ V2 ============
     getIndustryModel: 'lookups/industries',
     getRateTypeLookup: 'lookups/rate-types',
     getDepartmentLookup: 'lookups/departments',
@@ -19,10 +22,29 @@ export const General_API = {
     getUsersLookup: 'predefinedtasks/lookups/users',
     getTaskPriority: 'lookups/task-priorities',
     getContactsCategoryV2: 'lookups/contact-categories',
+    getClients: 'lookups/clients',
+    getPractsAreaLookup: 'lookups/practice-areas',
+    getMatterStatus: 'lookups/matter-statuses',
+    getMatterCategoriesLookup: 'lookups/matter-categories',
+    getMatterTypesByCategoryId: 'lookups/matter-types',
+    getJurisdictionLookup: 'lookups/jurisdictions',
+    getStages: 'lookups/matter-stages',
+    getReferralType: 'lookups/referral-types',
+    getMatterParties: 'api/v1/MatterParties', 
+    
+    // ============ ⚠️ DEPRECATED — مؤقتاً لحد ما الـ components تتحدث ============
+    /** @deprecated استخدم getLookups (types=...) */
+    getPartyTypes: 'lookups/party-types',
+    /** @deprecated استخدم getLookups (types=partyDescriptions) */
+    getPartiesDescription: 'lookups/party-descriptions',
+    /** @deprecated استخدم practiceArea.isLitigation من getLookups */
+    checkIsLitigation: 'AppLookup/CheckIsLitigation',
+    /** @deprecated استخدم getLookups (judicatures) وفلتر بـ parentId */
+    getJudicatureByJurisdictionId: 'AppLookup/GetLaw_JudicatureLookup',
+    /** @deprecated استخدم getMainMatters (lookups/matters?mainOnly=true) */
+    getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
 
-    // ============================================================
-    // V1 Endpoints (القديمة) — بتستخدم دي
-    // ============================================================
+    // ============ V1 (شغالة) ============
     getLawyer: '/GetSPList',
     getClientGroups: 'AppLookup/GetClientGroupLookup',
     getCountryLookup: 'AppLookup/GetCountryLookup',
@@ -30,34 +52,17 @@ export const General_API = {
     getStatesByCountry: 'AppLookup/GetCountryLookup',
     getLawyers: '/GetSPList',
     gettaskCodesGroup: 'Law_TaskCodesGroup/GetList',
-    getPractsAreaLookup: 'AppLookup/GetLaw_PractsAreaLookup',
-    getJurisdictionLookup: 'AppLookup/GetJurisdictionLookup',
-    getMatterCategoriesLookup: 'AppLookup/GetLaw_MatCatLookup',
-    checkIsLitigation: 'AppLookup/CheckIsLitigation',
     getItemLookup: 'AppLookup/GetLaw_SEC_ItmLookup',
-    getLawyerMyPermissionCalendar:
-      'AppLookup/GetLaw_LawyerMyPermissionCalander',
+    getLawyerMyPermissionCalendar: 'AppLookup/GetLaw_LawyerMyPermissionCalander',
     getLawTaskCodesByMatterId: 'AppLookup/GetLaw_TaskCodesByMatterId',
-    getMatterStatus: 'AppLookup/GetLaw_MattStatusLookup',
-    getStages: 'AppLookup/GetLaw_StageLookup',
     getTaskCode: 'AppLookup/GetLaw_TaskCodeLookup',
-    getClients: 'AppLookup/GetClientsLookup',
-    getMatterTypesByCategoryId: 'AppLookup/GetLaw_MtrTypeByMatCatIdLookup',
-    getJudicatureByJurisdictionId: 'AppLookup/GetLaw_JudicatureLookup',
-    getReferralType: 'AppLookup/GetLaw_ReferralTypeLookup',
-    getPartiesDescription: 'AppLookup/GetLaw_PartiesDescriptionModelLookup',
     getRecentMatters: 'AppLookup/GetRecentMatterCodeForUserLookup',
     getMatterCodes: 'AppLookup/GetLawMattertCodeLookup',
-    getAssignedUsersCalender:
-      'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
+    getAssignedUsersCalender: 'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
     getLawyerShort: 'AppLookup/GetLaw_LawyerShortLookup',
-    getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
-    getPartyTypes: 'AppLookup/GetLawpartyTypeLookup',
     getPartyPosition: 'AppLookup/GetLaw_MatterPartiesPositionsLookup',
-    getUsersInitialSaparateForTimeShet:
-      'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
-    getUsersInitialViewForTimeShet:
-      'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
+    getUsersInitialSaparateForTimeShet: 'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
+    getUsersInitialViewForTimeShet: 'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
     getAllMatterTypes: 'AppLookup/GetLaw_MtrTyppLookup',
     getAllMatter: 'AppLookup/GetLawMattertLookup',
     getAllCurrencies: 'AppLookup/GetCurrencyLookup',

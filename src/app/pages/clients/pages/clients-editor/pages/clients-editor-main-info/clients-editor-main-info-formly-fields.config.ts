@@ -1,12 +1,13 @@
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ClientsEditorMainInfoComponent } from './clients-editor-main-info.component';
-import { CLIENT_TYPE_OPTIONS, ClientType } from 'src/app/pages/clients/services/client-type';
 
 export function clientsEditorMainInfoFormlyFieldsConfig(
   THIS: ClientsEditorMainInfoComponent,
 ): FormlyFieldConfig[] {
   const isView =
     THIS._router.url.includes('view') || THIS._router.url.includes('details');
+  const isEn = THIS._languageService.getSelectedLanguage() === 'en';
+  const nameKey = isEn ? 'nameEn' : 'nameAr';
 
   return [
     {
@@ -31,9 +32,8 @@ export function clientsEditorMainInfoFormlyFieldsConfig(
           key: 'clientCode',
           type: 'input',
           className: 'md:col-span-2',
-          defaultValue: THIS.lookupsData?.clientCode?.result,
+          defaultValue: THIS.lookupsData?.clientCode?.result ?? '',
           props: {
-            // label: THIS._languageService.getTransValue('clients.clientCode'),
             label: THIS._languageService.getTransValue(
               THIS.isInhouse ? 'common.entitycode' : 'clients.clientCode',
             ),
@@ -52,16 +52,13 @@ export function clientsEditorMainInfoFormlyFieldsConfig(
           type: 'input',
           className: 'md:col-span-2',
           props: {
-            // label: THIS._languageService.getTransValue('clients.name'),
             label: THIS._languageService.getTransValue(
               THIS.isInhouse ? 'common.entityname' : 'clients.name',
             ),
             required: true,
             placeholder: 'Name',
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key:
@@ -76,32 +73,38 @@ export function clientsEditorMainInfoFormlyFieldsConfig(
             btnClass: '!p-0',
             placeholder: 'Foreign name',
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'clientGroupId',
           type: 'select',
           className: 'md:col-span-2',
-          defaultValue: 1,
           props: {
-            // label: THIS._languageService.getTransValue('clients.clientGroup'),
             label: THIS._languageService.getTransValue(
               THIS.isInhouse ? 'common.entityGroup' : 'clients.clientGroup',
             ),
             optionsArr: [],
             selectedObj: {},
-            optionLabel: 'name',
+            optionLabel: nameKey,
             optionValue: 'id',
             placeholder: 'Select group',
-            onChange: () => {
-              THIS.getClientGroupOptions();
-              THIS.setClientGroupValue();
-            },
           },
           expressions: {
-            'props.readonly': 'formState.readonly',
+            hide: 'formState.readonly',
+          },
+        },
+        {
+          key: 'clientGroupName',
+          type: 'input',
+          className: 'md:col-span-2',
+          props: {
+            label: THIS._languageService.getTransValue(
+              THIS.isInhouse ? 'common.entityGroup' : 'clients.clientGroup',
+            ),
+          },
+          expressions: {
+            hide: '!formState.readonly',
+            'props.readonly': 'true',
           },
         },
         {
@@ -114,27 +117,38 @@ export function clientsEditorMainInfoFormlyFieldsConfig(
             ),
             optionsArr: [],
             selectedObj: {},
-            optionLabel: 'name',
-            optionValue: 'id',
+            optionLabel: nameKey,
+            optionValue: 'userId',
             placeholder: 'Select lawyer',
           },
           expressions: {
-            'props.readonly': 'formState.readonly',
+            hide: 'formState.readonly',
           },
         },
         {
-          key: 'clientType',
+          key: 'introducingLawyerName',
+          type: 'input',
+          className: 'md:col-span-2',
+          props: {
+            label: THIS._languageService.getTransValue(
+              'clients.introducingLawyer',
+            ),
+          },
+          expressions: {
+            hide: '!formState.readonly',
+            'props.readonly': 'true',
+          },
+        },
+        {
+          key: 'clientTypeId',
           type: 'select',
           className: 'md:col-span-2',
-          defaultValue: ClientType.Individual,
+          defaultValue: 1,
           props: {
             label: THIS._languageService.getTransValue('clients.clientType'),
             required: true,
-            showFilter:false,
-            optionsArr: CLIENT_TYPE_OPTIONS.map((opt) => ({
-              label: THIS._languageService.getTransValue(opt.label),
-              value: opt.value,
-            })),
+            showFilter: false,
+            optionsArr: [],
             optionLabel: 'label',
             optionValue: 'value',
             placeholder: THIS._languageService.getTransValue(
@@ -142,9 +156,7 @@ export function clientsEditorMainInfoFormlyFieldsConfig(
             ),
             selectedObj: {},
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
       ],
     },
