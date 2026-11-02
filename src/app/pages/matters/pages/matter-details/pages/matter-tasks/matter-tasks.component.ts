@@ -2,7 +2,6 @@ import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
 import { PAGESIZE } from 'src/app/@core/utilities/defines';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
@@ -28,6 +27,7 @@ import { finalize } from 'rxjs';
 interface StatusMenuItem extends MenuItem {
   value: any;
 }
+
 @Component({
   selector: 'app-matter-tasks',
   standalone: true,
@@ -49,34 +49,45 @@ export class MatterTasksComponent implements OnInit, OnDestroy {
   _dialogService = inject(DialogService);
   _languageService = inject(LanguageService);
   _route = inject(ActivatedRoute);
-  _toastrNotifiService = inject(ToastrNotifiService)
+  _toastrNotifiService = inject(ToastrNotifiService);
   _router = inject(Router);
+
   data: MatterTaskDto[] = [];
   statusItems: StatusMenuItem[] = [];
   columns: any[] = Matter_Task_Columns;
   statusConfig = matterTask_statusConfig;
   priorityConfig = matterTask_priorityConfig;
-  pagination: any = { pagSize: PAGESIZE, pageNum: 1, orderByDirection: 'ASC' };
+
+  pagination: any = {
+    PageSize: PAGESIZE,
+    PageNumber: 1,
+    SortBy: 'startDate',
+    IsDescending: false,
+    Filters: {},
+    totalElements: 0,
+  };
+
   first!: number;
   deleteDialogRef!: DynamicDialogRef;
+  isLoading!: boolean;
+
   @Input() set id(value: number) {
     this.matterIdentifier = value;
   }
   matterIdentifier: any;
+
   ngOnInit(): void {
     this.getTask();
     this.getStatusMenu();
   }
 
   openTaskEditor(rowData?: MatterTaskDto, mode?: string) {
-    console.log('openTaskEditor:', { rowData, mode });
     const ref = this._dialogService.open(MatterTaskEditorComponent, {
       header: mode
         ? mode === 'view'
           ? this._languageService.getTransValue('matters.viewTask')
           : this._languageService.getTransValue('matters.editTask')
         : this._languageService.getTransValue('matters.addTask'),
-
       data: { rowData, matterIdentifier: this.matterIdentifier, mode },
       width: '720px',
     });
@@ -86,59 +97,28 @@ export class MatterTasksComponent implements OnInit, OnDestroy {
       },
     });
   }
-onSort(e: any) {
-  const field = e.field;
-  if (!field) return;
 
-  if (this.pagination.orderBy !== field) {
-    this.pagination.orderBy = field;
-    this.pagination.orderByDirection = 'DESC';
-  } else {
-    this.pagination.orderByDirection =
-      this.pagination.orderByDirection === 'DESC' ? 'ASC' : 'DESC';
-  }
+  onSort(e: any) {
+    const field = e.field;
+    if (!field) return;
 
-  console.log("Sorting:", this.pagination.orderBy, this.pagination.orderByDirection);
+    if (this.pagination.SortBy !== field) {
+      this.pagination.SortBy = field;
+      this.pagination.IsDescending = true;
+    } else {
+      this.pagination.IsDescending = !this.pagination.IsDescending;
+    }
 
-  this.pagination.pageNum = 1;
-  this.first = 0;
-  this.getTask();
-}
-
-  onPageChange(e: any) {
-    this.pagination.pagSize = Number(e.rows);
-    this.pagination.pageNum = e.first / e.rows + 1;
-    this.first = e?.first;
+    this.pagination.PageNumber = 1;
+    this.first = 0;
     this.getTask();
   }
 
-  isLoading!: boolean;
-
-  getTask() {
-    this.pagination = {
-      ...this.pagination,
-      matterId: this.matterIdentifier,
-    };
-
-    this.isLoading = true;
-
-    this._apiService
-      .get(API_Config.matterTask.get, this.pagination)
-      .pipe(
-        this._unsubscribe.takeUntilDestroy(),
-        finalize(() => (this.isLoading = false))
-      )
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data = res.result.dataList;
-            this.pagination.totalElements = res.result.totalCount;
-            this.pagination = { ...this.pagination };
-          }
-        },
-        error: (err) => {
-        },
-      });
+  onPageChange(e: any) {
+    this.pagination.PageSize = Number(e.rows);
+    this.pagination.PageNumber = e.first / e.rows + 1;
+    this.first = e?.first;
+    this.getTask();
   }
 
   onDelete(rowData: MatterTaskDto) {
@@ -151,73 +131,71 @@ onSort(e: any) {
           type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
             'matters.deleteTaskTitle',
-            { value: rowData?.id }
+            { value: rowData?.id },
           ),
           message: this._languageService.getTransValue(
-            'matters.deleteTaskMessage'
+            'matters.deleteTaskMessage',
           ),
           btns: [
             {
               label: 'Discard',
               styleClass: 'border border-grey500 text-grey500',
-              command: () => {
-                this.deleteDialogRef.close();
-              },
+              command: () => this.deleteDialogRef.close(),
             },
             {
               label: 'Delete',
               styleClass: 'bg-textErrorBase text-white',
-              command: () => {
-                this.deleteTask(rowData.id);
-              },
+              command: () => this.deleteTask(rowData.id),
             },
           ],
         },
-      }
+      },
     );
   }
 
-deleteTask(TaskId: number) {
-  this._apiService
-    .post(API_Config.matterTask.delete, {}, { id: TaskId })
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
-      next: (res: ApiRes) => {
+  deleteTask(TaskId: number) {
+    const url = API_Config.matterTask.delete.includes('{id}')
+      ? API_Config.matterTask.delete.replace('{id}', String(TaskId))
+      : `${API_Config.matterTask.delete}/${TaskId}`;
 
-        if (res?.isSuccess) {
-
-          this._toastrNotifiService.displaySuccess(
-            res.message || 'Task deleted successfully'
-          );
-
-          this.data.length == 1 ? this.pagination.pageNum-- : null;
-          this.getTask();
-          this.deleteDialogRef.close();
-
-        } else {
+    this._apiService
+      .delete(url)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          if (isSuccess) {
+            this._toastrNotifiService.displaySuccess(
+              res.message || 'Task deleted successfully',
+            );
+            if (this.data.length === 1) this.pagination.PageNumber--;
+            this.getTask();
+            this.deleteDialogRef.close();
+          } else {
+            this._toastrNotifiService.displayError(
+              res?.message || 'Failed to delete task',
+            );
+          }
+        },
+        error: () => {
           this._toastrNotifiService.displayError(
-            res?.message || 'Failed to delete task'
+            'Something went wrong while deleting task',
           );
-        }
-      },
+        },
+      });
+  }
 
-      error: () => {
-        this._toastrNotifiService.displayError(
-          'Something went wrong while deleting task'
-        );
-      }
-    });
-}
-  
   getStatusMenu() {
     this._apiService
       .get(API_Config.general.getActivityStatus)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this.statusItems = getOptionsArray(res.result, 'id', 'name');
-            console.log(this.statusItems);
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const data =
+            res?.data?.items ?? res?.result?.items ?? res?.result ?? res?.data;
+          if (isSuccess && Array.isArray(data)) {
+            this.statusItems = getOptionsArray(data, 'id', 'nameEn') || [];
           }
         },
       });
@@ -227,42 +205,85 @@ deleteTask(TaskId: number) {
     this._router.navigate([this.matterIdentifier], { relativeTo: this._route });
   }
 
-  updateStatus(newStatusId: string, rowData: any) {
-    console.log('Selected Status:', newStatusId, 'for row:', rowData);
+  getTask() {
+    this.pagination.Filters = {
+      ...this.pagination.Filters,
+      MatterId: this.matterIdentifier,
+    };
 
-    const originalStatus = rowData.status;
-    const originalStatusName = rowData.statusName;
+    this.isLoading = true;
 
-    rowData.status = newStatusId;
-    const statusItem = this.statusItems.find(
-      (item) => (item as any).value === newStatusId
-    );
-    rowData.statusName = statusItem ? statusItem.label : originalStatusName;
     this._apiService
-      .post(
-        API_Config.matterTask.changeStatus,
-        {},
-        {
-          TaskId: rowData.id,
-          newStatusId: newStatusId,
-        }
+      .get(API_Config.matterTask.get, this.pagination)
+      .pipe(
+        this._unsubscribe.takeUntilDestroy(),
+        finalize(() => (this.isLoading = false)),
       )
-      .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            console.log('Status updated successfully');
-          } else {
-            rowData.status = originalStatus;
-            rowData.statusName = originalStatusName;
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const result = res?.data ?? res?.result;
+
+          if (isSuccess && result) {
+            // 👇 بناخد الداتا مباشرة من غير أي تعديل
+            this.data = result.items || [];
+            
+            this.pagination.totalElements = result.totalCount;
+            this.pagination = { ...this.pagination };
           }
         },
-        error: (error) => {
-          rowData.status = originalStatus;
-          rowData.statusName = originalStatusName;
-        },
+        error: (err) => {},
       });
   }
+updateStatus(newStatusId: string, rowData: any) {
+  const originalStatus = rowData.matterTaskStatusId;
+  const originalStatusName = rowData.matterTaskStatusName;
+
+  // تحديث الواجهة فوراً (Optimistic UI)
+  rowData.matterTaskStatusId = newStatusId;
+  const statusItem = this.statusItems.find(
+    (item) => (item as any).value === newStatusId,
+  );
+  rowData.matterTaskStatusName = statusItem
+    ? statusItem.label
+    : originalStatusName;
+
+  // 1️⃣ تجهيز الـ URL
+  const url = API_Config.matterTask.changeStatus.includes('{id}')
+    ? API_Config.matterTask.changeStatus.replace('{id}', String(rowData.id))
+    : `${API_Config.matterTask.changeStatus}/${rowData.id}/status`;
+
+  // 2️⃣ تجهيز الـ Body
+  const payload = {
+    matterTaskStatusId: Number(newStatusId),
+    percentComplete: rowData.percentComplete || 0,
+  };
+
+  // 3️⃣ إرسال الريكوست باستخدام PATCH
+  // (لو الـ ApiService عندك مش فيه دالة patch، استخدم request أو السطر اللي بيبعتها)
+  this._apiService
+    .patch(url, payload) 
+    .pipe(this._unsubscribe.takeUntilDestroy())
+    .subscribe({
+      next: (res: any) => {
+        const isSuccess = res?.success ?? res?.isSuccess;
+        if (isSuccess) {
+          this._toastrNotifiService.displaySuccess(
+            'Status updated successfully',
+          );
+        } else {
+          // رجّع القيمة القديمة في حالة الفشل
+          rowData.matterTaskStatusId = originalStatus;
+          rowData.matterTaskStatusName = originalStatusName;
+        }
+      },
+      error: () => {
+        // رجّع القيمة القديمة في حالة حدوث خطأ
+        rowData.matterTaskStatusId = originalStatus;
+        rowData.matterTaskStatusName = originalStatusName;
+      },
+    });
+}
 
   ngOnDestroy(): void {
     this._unsubscribe.destroy();

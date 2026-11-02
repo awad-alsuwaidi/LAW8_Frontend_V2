@@ -341,6 +341,17 @@ export function taskManagementActivityEditorFields(
         },
       },
       {
+        key: 'rollNumber',
+        type: 'input',
+        props: {
+          label: THIS._languageService.getTransValue('matters.rollNumber'),
+        },
+
+        expressions: {
+          'props.readonly': 'formState.readonly',
+        },
+      },
+      {
         key: 'chamber',
         type: 'input',
         props: {
@@ -350,49 +361,38 @@ export function taskManagementActivityEditorFields(
           'props.readonly': 'formState.readonly',
         },
       },
+
       // {
       //   key: 'rollNumber',
       //   type: 'input',
       //   props: {
+      //     type: 'text',
       //     label: THIS._languageService.getTransValue('matters.rollNumber'),
+      //     inputmode: 'numeric',
       //   },
+      //   hooks: {
+      //     onInit: (field) => {
+      //       const control = field?.formControl;
+      //       if (!control) return;
 
+      //       control.valueChanges.subscribe((value: string) => {
+      //         if (value && /[^0-9]/.test(value)) {
+      //           const numericOnly = value.replace(/[^0-9]/g, '');
+      //           control.setValue(numericOnly, { emitEvent: false });
+      //         }
+      //       });
+      //     },
+      //   },
       //   expressions: {
       //     'props.readonly': 'formState.readonly',
       //   },
+      //   validation: {
+      //     messages: {
+      //       required: () =>
+      //         THIS._languageService.getTransValue('matters.required'),
+      //     },
+      //   },
       // },
-
-      {
-        key: 'rollNumber',
-        type: 'input',
-        props: {
-          type: 'text',
-          label: THIS._languageService.getTransValue('matters.rollNumber'),
-          inputmode: 'numeric',
-        },
-        hooks: {
-          onInit: (field) => {
-            const control = field?.formControl;
-            if (!control) return;
-
-            control.valueChanges.subscribe((value: string) => {
-              if (value && /[^0-9]/.test(value)) {
-                const numericOnly = value.replace(/[^0-9]/g, '');
-                control.setValue(numericOnly, { emitEvent: false });
-              }
-            });
-          },
-        },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
-        validation: {
-          messages: {
-            required: () =>
-              THIS._languageService.getTransValue('matters.required'),
-          },
-        },
-      },
       {
         key: 'law_AdjournmentReasonsId',
         type: 'select',
@@ -786,6 +786,24 @@ export function taskManagementActivityEditorFields(
               'props.readonly': 'formState.readonly',
             },
           },
+          
+    {
+      key: 'rollNumber',
+      type: 'input',
+      props: {
+        type: 'text',
+        label: THIS._languageService.getTransValue('matters.rollNumber'),
+      },
+      expressions: {
+        'props.readonly': 'formState.readonly',
+      },
+      validation: {
+        messages: {
+          required: () =>
+            THIS._languageService.getTransValue('matters.required'),
+        },
+      },
+    },
           {
             key: 'chamber',
             type: 'input',
@@ -796,37 +814,7 @@ export function taskManagementActivityEditorFields(
               'props.readonly': 'formState.readonly',
             },
           },
-          {
-            key: 'rollNumber',
-            type: 'input',
-            props: {
-              type: 'text',
-              label: THIS._languageService.getTransValue('matters.rollNumber'),
-              inputmode: 'numeric',
-            },
-            hooks: {
-              onInit: (field) => {
-                const control = field?.formControl;
-                if (!control) return;
 
-                control.valueChanges.subscribe((value: string) => {
-                  if (value && /[^0-9]/.test(value)) {
-                    const numericOnly = value.replace(/[^0-9]/g, '');
-                    control.setValue(numericOnly, { emitEvent: false });
-                  }
-                });
-              },
-            },
-            expressions: {
-              'props.readonly': 'formState.readonly',
-            },
-            validation: {
-              messages: {
-                required: () =>
-                  THIS._languageService.getTransValue('matters.required'),
-              },
-            },
-          },
           {
             key: 'litigatorId',
             type: 'select',
@@ -1112,3 +1100,4 @@ export function taskManagementActivityEditorFields(
     createMeetingAttendeesSection(),
   ];
 }
+[]

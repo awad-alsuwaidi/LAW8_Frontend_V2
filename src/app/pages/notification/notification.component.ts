@@ -14,15 +14,11 @@ import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { DialogService } from 'primeng/dynamicdialog';
 
-//import { DialogService } from 'primeng/dynamicdialog';
-//import { ChipModule } from 'primeng/chip';
-
 @Component({
   selector: 'app-notification',
   standalone: true,
   imports: [
     SharedModule,
-    //SharedButtonComponent,
     TabMenuModule,
     TableModule,
     FormlyConfigModule,
@@ -33,7 +29,6 @@ import { DialogService } from 'primeng/dynamicdialog';
 export class NotificationComponent implements OnInit {
   @Output() onFilter = new EventEmitter(); // Event Emitter
 
-  // Starndrad Formly Setup
   formly: FormGroup = new FormGroup({}); // Type of form
   formlyModel: any; // Data
   formlyFields: FormlyFieldConfig[] = []; // Form Field - Data  Detailes

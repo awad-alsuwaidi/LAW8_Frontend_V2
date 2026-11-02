@@ -3,8 +3,14 @@ import { MatterAddressEditorComponent } from './matter-address-editor.component'
 import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 
 export function matterAddressFormlyFields(
-  THIS: MatterAddressEditorComponent
+  THIS: MatterAddressEditorComponent,
 ): FormlyFieldConfig[] {
+  const countryOptions = getOptionsArray(
+    THIS.lookupsData?.country?.result ?? [],
+    'id',
+    'name',
+  );
+
   return [
     {
       fieldGroupClassName: 'grid gap-4 md:grid-cols-2',
@@ -37,20 +43,11 @@ export function matterAddressFormlyFields(
           type: 'select',
           props: {
             label: THIS._languageService.getTransValue('matters.country'),
-            optionsArr: getOptionsArray(
-              THIS.lookupsData.country.result,
-              'id',
-              'name'
-            ),
-            onChange: (e: any) => {
-              THIS.formly
-                ?.get('country')
-                ?.setValue(e?.originalEvent.target.innerText);
-            },
+            optionsArr: countryOptions,
+            // placeholder: THIS._languageService.getTransValue(
+            //   'common.select',
+            // ),
           },
-        },
-        {
-          key: 'country',
         },
         {
           key: 'city',

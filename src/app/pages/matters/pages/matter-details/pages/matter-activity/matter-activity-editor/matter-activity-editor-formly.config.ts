@@ -119,7 +119,7 @@ export function matterActivityEditorFields(
         },
         {
           className: 'col-span-2',
-          key: 'decission',
+          key: 'decision',
           type: 'input',
           props: {
             label: THIS._languageService.getTransValue('matters.decision'),
@@ -154,7 +154,6 @@ export function matterActivityEditorFields(
             'props.readonly': 'formState.readonly',
           },
         },
-
         {
           key: 'law_AdjournmentReasonsId',
           type: 'select',
@@ -174,14 +173,34 @@ export function matterActivityEditorFields(
             //     console.log('change');
             //     THIS.formly?.get('law_ActivityStatusId')?.setValue(4);
             // },
+            // onChange: (field: FormlyFieldConfig) => {
+            //   THIS.formly?.get('law_ActivityStatusId')?.setValue(4);
+            //   THIS.formly?.get('isNewHearingSession')?.setValue(true);
+            // },
             onChange: (field: FormlyFieldConfig) => {
-              THIS.formly?.get('law_ActivityStatusId')?.setValue(4);
-              THIS.formly?.get('isNewHearingSession')?.setValue(true);
+              THIS.onAdjournmentReasonChange(field);
             },
           },
           expressions: {
             hide: () => !THIS._dynamicDialogConfig.data.rowData,
             'props.readonly': 'formState.readonly',
+          },
+        },
+        {
+          key: 'rollNumber',
+          type: 'input',
+          props: {
+            type: 'text',
+            label: THIS._languageService.getTransValue('matters.rollNumber'),
+          },
+          expressions: {
+            'props.readonly': 'formState.readonly',
+          },
+          validation: {
+            messages: {
+              required: () =>
+                THIS._languageService.getTransValue('matters.required'),
+            },
           },
         },
         {
@@ -192,37 +211,6 @@ export function matterActivityEditorFields(
           },
           expressions: {
             'props.readonly': 'formState.readonly',
-          },
-        },
-        {
-          key: 'rollNumber',
-          type: 'input',
-          props: {
-            type: 'text',
-            label: THIS._languageService.getTransValue('matters.rollNumber'),
-            inputmode: 'numeric',
-          },
-          hooks: {
-            onInit: (field) => {
-              const control = field?.formControl;
-              if (!control) return;
-
-              control.valueChanges.subscribe((value: string) => {
-                if (value && /[^0-9]/.test(value)) {
-                  const numericOnly = value.replace(/[^0-9]/g, '');
-                  control.setValue(numericOnly, { emitEvent: false });
-                }
-              });
-            },
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-          validation: {
-            messages: {
-              required: () =>
-                THIS._languageService.getTransValue('matters.required'),
-            },
           },
         },
         {
@@ -358,13 +346,20 @@ export function matterActivityEditorFields(
               return activityStatus === MatterActivityType.Completed;
             },
           },
+          // hooks: {
+          //   onInit: (field: any) => {
+          //     if (
+          //       field.formControl.value === null ||
+          //       field.formControl.value === undefined
+          //     ) {
+          //       field.formControl.setValue(true);
+          //     }
+          //   },
+          // },
           hooks: {
             onInit: (field: any) => {
-              if (
-                field.formControl.value === null ||
-                field.formControl.value === undefined
-              ) {
-                field.formControl.setValue(true);
+              if (field.formControl.value == null) {
+                field.formControl.setValue(true, { emitEvent: false });
               }
             },
           },
@@ -403,17 +398,33 @@ export function matterActivityEditorFields(
           key: 'newSession',
           className: 'col-span-2',
           expressions: {
+            // hide: (field: FormlyFieldConfig) => {
+            //   const isNewHearingSession = field.form?.get(
+            //     'isNewHearingSession',
+            //   )?.value;
+            //   const activityStatus =
+            //     field.model?.law_ActivityStatusId ||
+            //     THIS._dynamicDialogConfig?.data?.rowData?.law_ActivityStatusId;
+            //   return (
+            //     !isNewHearingSession ||
+            //     activityStatus === MatterActivityType.Completed
+            //   );
+            // },
             hide: (field: FormlyFieldConfig) => {
               const isNewHearingSession = field.form?.get(
                 'isNewHearingSession',
               )?.value;
-              const activityStatus =
-                field.model?.law_ActivityStatusId ||
-                THIS._dynamicDialogConfig?.data?.rowData?.law_ActivityStatusId;
-              return (
-                !isNewHearingSession ||
-                activityStatus === MatterActivityType.Completed
-              );
+              if (!isNewHearingSession) return true;
+              const isEdit = !!THIS._dynamicDialogConfig?.data?.rowData;
+              if (isEdit) {
+                const originalStatus =
+                  THIS._dynamicDialogConfig?.data?.rowData
+                    ?.law_ActivityStatusId;
+                return originalStatus === MatterActivityType.Completed;
+              }
+
+              // ✅ 3. في وضع الإضافة: نعرض عادي
+              return false;
             },
             onInit: (field: FormlyFieldConfig) => {
               const startDateControl = field?.formControl?.get(
@@ -449,35 +460,13 @@ export function matterActivityEditorFields(
               },
             },
             {
-              key: 'chamber',
-              type: 'input',
-              props: {
-                label: THIS._languageService.getTransValue('matters.chamber'),
-              },
-            },
-            {
               key: 'rollNumber',
               type: 'input',
               props: {
                 type: 'text',
                 label:
                   THIS._languageService.getTransValue('matters.rollNumber'),
-                inputmode: 'numeric',
               },
-              hooks: {
-                onInit: (field) => {
-                  const control = field?.formControl;
-                  if (!control) return;
-
-                  control.valueChanges.subscribe((value: string) => {
-                    if (value && /[^0-9]/.test(value)) {
-                      const numericOnly = value.replace(/[^0-9]/g, '');
-                      control.setValue(numericOnly, { emitEvent: false });
-                    }
-                  });
-                },
-              },
-
               validation: {
                 messages: {
                   required: () =>
@@ -485,6 +474,14 @@ export function matterActivityEditorFields(
                 },
               },
             },
+            {
+              key: 'chamber',
+              type: 'input',
+              props: {
+                label: THIS._languageService.getTransValue('matters.chamber'),
+              },
+            },
+
             {
               key: 'litigatorId',
               type: 'select',

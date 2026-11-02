@@ -284,6 +284,75 @@ export const PAGES_ROUTES: Routes = [
     data: { permission: 'Add_Client', breadcrumb: 'menu.clients.title' },
   },
   {
+    path: 'matters',
+    loadComponent: () =>
+      import('./matters/matters.component').then((m) => m.MattersComponent),
+    loadChildren: () =>
+      import('./matters/matters.route').then((m) => m.mattersRoutes),
+    data: { breadcrumb: 'Matters' },
+  },
+
+  {
+    path: 'matters/inactive',
+    loadComponent: () =>
+      import('../@shared/components/bussiness/shared-matter/shared-matter.component').then(
+        (m) => m.SharedMatterComponent,
+      ),
+    resolve: { data: DataResolverService },
+    data: {
+      endpoint: API_Config.inActiveMatters,
+      title: 'menu.inactiveMatters',
+    },
+  },
+  {
+    path: 'matters/add',
+    loadComponent: () =>
+      import('./matters/pages/matter-editor/matter-editor.component').then(
+        (comp) => comp.MatterEditorComponent,
+      ),
+    loadChildren: () =>
+      import('./matters/pages/matter-editor/matter-editor.routes').then(
+        (m) => m.Matter_Editor_Routes,
+      ),
+  },
+  {
+    path: 'matters/:id',
+    loadComponent: () =>
+      import('./matters/pages/matter-details/matter-details.component').then(
+        (comp) => comp.MatterDetailsComponent,
+      ),
+    loadChildren: () =>
+      import('./matters/pages/matter-details/matter-details.routes').then(
+        (mod) => mod.Matter_Details_Routes,
+      ),
+    data: { breadcrumb: 'View' },
+  },
+  {
+    path: 'matters/inactive/:id',
+    loadComponent: () =>
+      import('./matters/pages/matter-details/matter-details.component').then(
+        (comp) => comp.MatterDetailsComponent,
+      ),
+    loadChildren: () =>
+      import('./matters/pages/matter-details/matter-details.routes').then(
+        (mod) => mod.Matter_Details_Routes,
+      ),
+  },
+  {
+    path: 'matters/edit/:id',
+    loadComponent: () =>
+      import('./matters/pages/matter-editor/pages/matter-details-editor/matter-details-editor.component').then(
+        (comp) => comp.MatterDetailsEditorComponent,
+      ),
+  },
+  {
+    path: 'matters/:id/tasks/:taskId',
+    loadComponent: () =>
+      import('./matters/pages/matter-details/pages/matter-tasks/pages/matter-task-group/matter-task-group.component').then(
+        (comp) => comp.MatterTaskGroupComponent,
+      ),
+  },
+  {
     path: 'users',
     loadChildren: () =>
       import('./users/users.routes').then((mod) => mod.USERS_ROUTES),

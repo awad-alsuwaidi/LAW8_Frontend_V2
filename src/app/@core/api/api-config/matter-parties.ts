@@ -1,10 +1,16 @@
 export const Matters_Parties_API = {
-    matterParties: {
-      get: 'Law_MattParties/GetList',
-      update: 'Law_MattParties/Update',
-      create: 'Law_MattParties/Create',
-      // getById: 'Law_MattParties/GetById',
-      delete: 'Law_MattParties/Delete',
-    },
-  };
-  
+  matterParties: {
+    // get: 'Law_MattParties/GetList',
+    // update: 'Law_MattParties/Update',
+    // create: 'Law_MattParties/Create',
+    // getById: 'Law_MattParties/GetById',
+    // delete: 'Law_MattParties/Delete',
+
+    /////////////////////////////////////////////
+    get: 'MatterParties',
+    create: 'MatterParties',
+    update: 'MatterParties',
+    delete: 'MatterParties',
+    availablePositions: 'MatterParties/available-positions',
+  },
+};

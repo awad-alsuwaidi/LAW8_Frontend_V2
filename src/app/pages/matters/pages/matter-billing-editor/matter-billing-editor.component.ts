@@ -119,15 +119,18 @@ export class MatterBillingEditorComponent
   private getLookupArray(lookupKey: keyof typeof this.lookupsData): any[] {
     const result = this.lookupsData?.[lookupKey]?.result;
 
-    if (Array.isArray(result)) return result; // normal lookups
-    if (Array.isArray(result?.dataList)) return result.dataList; // paged lookups (taskGroup)
+    if (Array.isArray(result)) return result; 
+    
+    if (Array.isArray(result?.dataList)) return result.dataList; 
+    
     return [];
   }
 
   private getLookupLabelKey(lookupKey: keyof typeof this.lookupsData): string {
-    if (lookupKey === 'taskGroup') return 'nameEn'; // أو nameAr حسب اللغة
-    return 'name';
+   
+    return this._languageService.getSelectedLanguage() === 'ar' ? 'nameAr' : 'nameEn'; 
   }
+
   setSelectedValue(
     key: keyof typeof this.formlyModel,
     lookupKey: keyof typeof this.lookupsData,
@@ -149,40 +152,102 @@ export class MatterBillingEditorComponent
     };
   }
 
+  // loadLookups(done?: () => void): void {
+  //   this.isLoading = true;
+
+  //   combineLatest({
+  //     frequency: this._apiService.get(API_Config.general.getFrequency),
+  //     billingTemplate: this._apiService.get(
+  //       API_Config.general.getBillingTempletsList,
+  //     ),
+  //     emailTemplate: this._apiService.get(API_Config.general.getEmailTemplate),
+  //     taskGroup: this._apiService.get(API_Config.general.gettaskCodesGroup, {
+  //       pageNum: 1,
+  //       pagSize: 100,
+  //       orderByDirection: 'ASC',
+  //     }),
+  //     quote: this._apiService.get(API_Config.general.getQouteType),
+  //     defaultRate: this._apiService.get(API_Config.general.getDefaultRate),
+  //     taskCode: this._apiService.get(API_Config.general.getTaskCode),
+  //     type: this._apiService.get(API_Config.general.getAllBillingType),
+  //     disbursement: this._apiService.get(API_Config.general.getDisbursements),
+  //   })
+  //     .pipe(this._unsubscribe.takeUntilDestroy())
+  //     .subscribe({
+  //       next: (res) => {
+  //         this.lookupsData = res;
+  //         this.isLoading = false;
+
+  //         if (done) done();
+  //       },
+  //       error: () => {
+  //         this.isLoading = false;
+  //         if (done) done();
+  //       },
+  //     });
+  // }
+
   loadLookups(done?: () => void): void {
     this.isLoading = true;
 
-    combineLatest({
-      frequency: this._apiService.get(API_Config.general.getFrequency),
-      billingTemplate: this._apiService.get(
-        API_Config.general.getBillingTempletsList,
-      ),
-      emailTemplate: this._apiService.get(API_Config.general.getEmailTemplate),
-      taskGroup: this._apiService.get(API_Config.general.gettaskCodesGroup, {
-        pageNum: 1,
-        pagSize: 100,
-        orderByDirection: 'ASC',
-      }),
-      quote: this._apiService.get(API_Config.general.getQouteType),
-      defaultRate: this._apiService.get(API_Config.general.getDefaultRate),
-      taskCode: this._apiService.get(API_Config.general.getTaskCode),
-      type: this._apiService.get(API_Config.general.getAllBillingType),
-      disbursement: this._apiService.get(API_Config.general.getDisbursements),
-    })
+    const types = [
+      'billingFrequencies',
+      'billingTemplates',
+      'emailTemplates',
+      'taskCodeGroups',
+      'quoteTypes',
+      'rateLevels',      
+      'taskCodes',
+      'disbursementItems',
+      'disbursementTypes'
+    ];
+
+    this._apiService
+      .get(API_Config.general.getLookups, { types }) 
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res) => {
-          this.lookupsData = res;
-          this.isLoading = false;
+        next: (res: any) => {
+          const data = res?.data ?? res?.result ?? {};
 
+          this.lookupsData = {
+            frequency: { result: data.billingFrequencies || [] },
+            billingTemplate: { result: data.billingTemplates || [] },
+            emailTemplate: { result: data.emailTemplates || [] },
+            taskGroup: { result: data.taskCodeGroups || [] }, 
+            quote: { result: data.quoteTypes || [] },
+            defaultRate: { result: data.rateLevels || [] },
+            taskCode: { result: data.taskCodes || [] },
+            disbursement: { result: data.disbursementItems || [] },
+            type: { result: data.disbursementTypes || [] }, 
+          } as any;
+
+          this.isLoading = false;
           if (done) done();
         },
-        error: () => {
+        error: (err) => {
+          console.error('Failed to load lookups', err);
           this.isLoading = false;
           if (done) done();
         },
       });
   }
+
+  getDefaultTasksByGroup(taskGroupId: number) {
+    if (!taskGroupId) return;
+
+    const allTaskCodes = this.lookupsData?.taskCode?.result || [];
+    
+    const filteredTasks = allTaskCodes.filter(
+      (task: any) => task.taskCodeGroupId == taskGroupId || task.parentId == taskGroupId
+    );
+
+    const field = this.findFieldByKey('defaultTaskTypeId');
+    if (field) {
+      field.props.optionsArr = getOptionsArray(filteredTasks, 'id', 'nameEn'); // أو nameAr
+    }
+  }
+
+  
 
   getFormValue() {
     this.formly.valueChanges.subscribe({
@@ -251,7 +316,7 @@ export class MatterBillingEditorComponent
       });
   }
 
-  private findFieldByKey(key: string) {
+   findFieldByKey(key: string) {
     return findField(this.formlyFields, key);
   }
 
@@ -271,29 +336,6 @@ export class MatterBillingEditorComponent
       readonly: false,
     };
   }
-  //   viewMode() {
-  //     this.formlyOptions.formState = {
-  //       readonly: true,
-  //     };
-  //   }
-
-  ///////////////////////////////////////////////////////
-
-  // getMatterBillingById() {
-  //   const matterId = this.matterIdentifier;
-
-  //   this._apiService
-  //     .post(`${API_Config.matterBilling.getById}?MatterId=${matterId}`, null)
-  //     .pipe(this._unsubscribe.takeUntilDestroy())
-  //     .subscribe({
-  //       next: (res: any) => {
-  //         if (res?.isSuccess && res.result) {
-  //           this.formlyModel = { ...res.result };
-  //           this.formly.setValue(this.formlyModel);
-  //         }
-  //       },
-  //     });
-  // }
 
   viewMode() {
     if (this.originalModel) {
@@ -317,7 +359,7 @@ export class MatterBillingEditorComponent
       .subscribe({
         next: (res: any) => {
           if (res?.isSuccess && res.result) {
-            this.originalModel = { ...res.result }; // 🔥 مهم جدًا
+            this.originalModel = { ...res.result }; 
 
             this.formlyModel = { ...res.result };
 
@@ -328,28 +370,109 @@ export class MatterBillingEditorComponent
         },
       });
   }
-  override onSubmit(): void {
+  // override onSubmit(): void {
+  //   console.log('Submit Billing Settings');
+  //   this.isLoading = true;
+
+  //   if (this.formly.invalid) {
+  //     const text = this._languageService.getTransValue(
+  //       'common.pleaseFillRequiredData',
+  //     );
+  //     this._toastrNotifiService.displayError(text);
+  //     this.isLoading = false;
+  //     return;
+  //   }
+
+  //   const requestPayload = this.removeNullOrUndefinedValues({
+  //     ...this.formlyModel,
+  //     law_Matter_Id: this.matterIdentifier,
+  //   });
+
+  //   const pathApi = API_Config.matterBilling.update;
+
+  //   this._apiService
+  //     .post(pathApi, requestPayload)
+  //     .pipe(
+  //       finalize(() => (this.isLoading = false)),
+  //       this._unsubscribe.takeUntilDestroy(),
+  //     )
+  //     .subscribe({
+  //       next: (res: any) => {
+  //         if (res?.isSuccess) {
+  //           this._toastrNotifiService.displaySuccess(
+  //             res?.message || 'Updated successfully',
+  //           );
+  //           this.viewMode();
+  //           this.getMatterBillingById();
+  //         } else {
+  //           this._toastrNotifiService.displayError(
+  //             res?.message || 'Update failed',
+  //           );
+  //         }
+  //       },
+  //       error: (err: any) => {
+  //         this._toastrNotifiService.displayError(
+  //           err?.error?.message || 'Unexpected error occurred',
+  //         );
+  //       },
+  //     });
+  // }
+
+    override onSubmit(): void {
     console.log('Submit Billing Settings');
     this.isLoading = true;
 
     if (this.formly.invalid) {
-      const text = this._languageService.getTransValue(
-        'common.pleaseFillRequiredData',
-      );
+      const text = this._languageService.getTransValue('common.pleaseFillRequiredData');
       this._toastrNotifiService.displayError(text);
       this.isLoading = false;
       return;
     }
 
-    const requestPayload = this.removeNullOrUndefinedValues({
-      ...this.formlyModel,
-      law_Matter_Id: this.matterIdentifier,
+    const m = this.formlyModel;
+
+    let defaultRateCode = null;
+    if (m.billingTypeId === 1 && m.defaultRateId) {
+      const rateObj = this.lookupsData?.defaultRate?.result?.find(
+        (r: any) => r.id == m.defaultRateId
+      );
+      if (rateObj) {
+        defaultRateCode = rateObj.code; 
+      }
+    }
+
+    const billingPayload = this.removeNullOrUndefinedValues({
+      frequencyId: m.feesFrequencyId,
+      billingTemplateId: m.billingTemplatId,
+      emailTemplateId: m.emailTemplatId,
+      taskBasedBilling: m.isBasedBilling === true,
+      taskCodeGroupId: m.feesTaskGroupId,
+      defaultTaskCodeId: m.defaultTaskTypeId,
+      billingType: m.billingTypeId,
+      hourlyAmount: m.rateAmount,
+      defaultRateCode: defaultRateCode, 
+      discountPercent: m.isDiscountFees ? m.discountValue : null,
+      quoteTypeId: m.feesQuoteTypeId,
+      quoteAmount: m.amount,
+      billOption: m.billOption === 'noOfBillRadio' ? 1 : (m.billOption === 'everyBillRadio' ? 2 : null),
+      numberOfBills: m.numbersOfBill,
+      maxFees: m.maxFees,
+      billedAmount: m.billedAmount,
+      autoCreateDisbursement: m.isCreateDisbursement === true,
+      disbursementItemId: m.disbursementId,
+      disbursementTypeId: m.typeId,
+      disbursementAmount: m.amountDisbursements,
+      disbursementExplanation: m.explanationId,
+      taxesEnabled: m.isTaxes === true,
+      feesTaxRate: m.salesTaxOnFees,
+      expensesTaxRate: m.salesTaxOnDisbursement,
     });
 
-    const pathApi = API_Config.matterBilling.update;
+    const billingId = this.originalModel?.id || this.matterIdentifier;
+    const pathApi = `${API_Config.matterBilling.update}/${billingId}`;
 
     this._apiService
-      .post(pathApi, requestPayload)
+      .put(pathApi, billingPayload)
       .pipe(
         finalize(() => (this.isLoading = false)),
         this._unsubscribe.takeUntilDestroy(),
@@ -357,24 +480,19 @@ export class MatterBillingEditorComponent
       .subscribe({
         next: (res: any) => {
           if (res?.isSuccess) {
-            this._toastrNotifiService.displaySuccess(
-              res?.message || 'Updated successfully',
-            );
+            this._toastrNotifiService.displaySuccess(res?.message || 'Updated successfully');
             this.viewMode();
             this.getMatterBillingById();
           } else {
-            this._toastrNotifiService.displayError(
-              res?.message || 'Update failed',
-            );
+            this._toastrNotifiService.displayError(res?.message || 'Update failed');
           }
         },
         error: (err: any) => {
-          this._toastrNotifiService.displayError(
-            err?.error?.message || 'Unexpected error occurred',
-          );
+          this._toastrNotifiService.displayError(err?.error?.message || 'Unexpected error occurred');
         },
       });
   }
+
   private removeNullOrUndefinedValues(obj: { [key: string]: any }): {
     [key: string]: any;
   } {

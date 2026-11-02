@@ -4,7 +4,7 @@ import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-a
 import { DropdownChangeEvent } from 'primeng/dropdown';
 
 export function matterBillingEditorFieldsConfig(
-  THIS: MatterBillingEditorComponent
+  THIS: MatterBillingEditorComponent,
 ): FormlyFieldConfig[] {
   return [
     {
@@ -35,7 +35,7 @@ export function matterBillingEditorFieldsConfig(
           className: 'col-span-1',
           props: {
             label: THIS._languageService.getTransValue(
-              'matters.billingTemplate'
+              'matters.billingTemplate',
             ),
             optionsArr: [],
             loading: false,
@@ -53,12 +53,68 @@ export function matterBillingEditorFieldsConfig(
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-                {
+        // {
+        //   type: 'radio',
+        //   key: 'isBasedBilling',
+        //   props: {
+        //     label: THIS._languageService.getTransValue(
+        //       'Use Task Based Billing',
+        //     ),
+        //     options: [
+        //       {
+        //         label: THIS._languageService.getTransValue('Yes'),
+        //         value: true,
+        //       },
+        //       {
+        //         label: THIS._languageService.getTransValue('No'),
+        //         value: false,
+        //       },
+        //     ],
+        //     onChange: (e: DropdownChangeEvent) => {},
+        //   },
+        //   expressions: {
+        //     'props.readonly': 'formState.readonly',
+        //   },
+        // },
+
+        // {
+        //   type: 'select',
+        //   key: 'feesTaskGroupId',
+        //   props: {
+        //     label: THIS._languageService.getTransValue(
+        //       'matters.billingTaskGroup',
+        //     ),
+        //   },
+        //   expressionProperties: {
+        //     'props.optionsArr': () => {
+        //       const list = THIS.lookupsData?.taskGroup?.result?.dataList || [];
+        //       return getOptionsArray(list, 'id', 'nameEn');
+        //     },
+        //     // 'props.disabled': (field) => field.model?.isBasedBilling !== false,
+        //   },
+        //   expressions: {
+        //     'props.readonly': 'formState.readonly',
+        //   },
+        // },
+        // {
+        //   type: 'select',
+        //   key: 'defaultTaskTypeId',
+        //   defaultValue: 1,
+        //   className: 'col-span-1',
+        //   props: {
+        //     label: THIS._languageService.getTransValue('matters.defaultTask'),
+        //     optionsArr: [],
+        //     loading: false,
+        //   },
+        //   expressions: { 'props.readonly': 'formState.readonly' },
+        // },
+        // 1. حقل Use Task Based Billing (مستقل تماماً)
+        {
           type: 'radio',
           key: 'isBasedBilling',
           props: {
             label: THIS._languageService.getTransValue(
-              'Use Task Based Billing'
+              'Use Task Based Billing',
             ),
             options: [
               {
@@ -70,68 +126,65 @@ export function matterBillingEditorFieldsConfig(
                 value: false,
               },
             ],
-            onChange: (e: DropdownChangeEvent) => {},
           },
           expressions: {
             'props.readonly': 'formState.readonly',
           },
         },
+        {
+          type: 'select',
+          key: 'feesTaskGroupId',
+          props: {
+            label: THIS._languageService.getTransValue(
+              'matters.billingTaskGroup',
+            ),
+            // طه تاسك طه طه طااااااااهاااا
 
-        // {
-        //   type: 'select',
-        //   key: 'feesTaskGroupId',
-        //   props: {
-        //     label: THIS._languageService.getTransValue('TaskGroup'),
-        //     optionsArr: getOptionsArray(
-        //       THIS.lookupsData?.taskGroup?.result || [],
+            //   onChange: (e: any) => {
+            //     if (e.value) {
+            //       THIS.getDefaultTasksByGroup(e.value);
+            //     } else {
+            //       THIS.formly?.get('defaultTaskTypeId')?.setValue(null);
+            //       const taskField = THIS.findFieldByKey('defaultTaskTypeId');
+            //       if (taskField && taskField.props) {
+            //         taskField.props['optionsArr'] = [];
+            //       }
+            //     }
+            //   },
+          },
+          expressionProperties: {
+            'props.optionsArr': () => {
+              const list = THIS.lookupsData?.taskGroup?.result || [];
+              return getOptionsArray(list, 'id', 'nameEn');
+            },
+          },
+          // طه تاسك طه طه طااااااااهاااا
 
-        //       'id',
-        //       'name'
-        //     ),
-        //   },
-        //   expressions: {
-        //     'props.readonly': 'formState.readonly',
-        //   },
-        // },
-//         {
-//   type: 'select',
-//   key: 'feesTaskGroupId',
-//   props: {
-//     label: THIS._languageService.getTransValue('matters.billingTaskGroup'),
-//     optionsArr: [], 
-//   },
-//   expressions: {
-//     'props.disabled': (field) => field.model?.isBasedBilling !== true,
-//     'props.readonly': 'formState.readonly',
-//   },
-// },
-{
-  type: 'select',
-  key: 'feesTaskGroupId',
-  props: {
-    label: THIS._languageService.getTransValue('matters.billingTaskGroup'),
-  },
-  expressionProperties: {
-    'props.optionsArr': () => {
-      const list = THIS.lookupsData?.taskGroup?.result?.dataList || [];
-return getOptionsArray(list, 'id', 'nameEn');    },
-    // 'props.disabled': (field) => field.model?.isBasedBilling !== false,
-  },
-  expressions: {
-    'props.readonly': 'formState.readonly',
-  },
-},
+          // expressions: {
+          //   'props.readonly': 'formState.readonly',
+          // },
+        },
         {
           type: 'select',
           key: 'defaultTaskTypeId',
-          defaultValue: 1,
           className: 'col-span-1',
           props: {
             label: THIS._languageService.getTransValue('matters.defaultTask'),
             optionsArr: [],
             loading: false,
           },
-          expressions: { 'props.readonly': 'formState.readonly' },
+          // طه تاسك طه طه طااااااااهاااا
+          // expressions: {
+          //   'props.readonly': 'formState.readonly',
+          //   'props.disabled': (field: any) => !field.model?.feesTaskGroupId,
+          // },
+          // hooks: {
+          //   onInit: (field) => {
+          //     if (!field.model?.feesTaskGroupId && field.props) {
+          //       field.props['optionsArr'] = [];
+          //     }
+          //   },
+          // },
         },
         {
           type: 'radio',
@@ -147,7 +200,7 @@ return getOptionsArray(list, 'id', 'nameEn');    },
               },
               {
                 label: THIS._languageService.getTransValue(
-                  'billing.defaultRate'
+                  'billing.defaultRate',
                 ),
                 value: 1,
               },
@@ -212,17 +265,16 @@ return getOptionsArray(list, 'id', 'nameEn');    },
         {
           className: 'col-span-2',
           template: `<h5 class="mb-4 text-grey500 text-lg font-bold"> ${THIS._languageService.getTransValue(
-            'matters.fees'
+            'matters.fees',
           )}</h5>`,
         },
-       
 
         {
           type: 'radio',
           key: 'isDiscountFees',
           props: {
             label: THIS._languageService.getTransValue(
-              'Apply Discount To Fees'
+              'Apply Discount To Fees',
             ),
             options: [
               {
@@ -273,42 +325,42 @@ return getOptionsArray(list, 'id', 'nameEn');    },
         //   },
         // },
         {
-  type: 'input',
-  key: 'discountValue',
-  props: {
-    label: THIS._languageService.getTransValue('Discount Percentage'),
-    type: 'number',
-  },
-  expressions: {
-    'props.disabled': (field) => field.model?.isDiscountFees !== true,
-    'props.readonly': 'formState.readonly',
-  },
-},
-{
-  type: 'select',
-  key: 'feesQuoteTypeId',
-  hooks: {
-    onInit: (field) => {
-      field.formControl?.valueChanges.subscribe(() => {
-        if (field.options?.formState?.readonly) return;
+          type: 'input',
+          key: 'discountValue',
+          props: {
+            label: THIS._languageService.getTransValue('Discount Percentage'),
+            type: 'number',
+          },
+          expressions: {
+            'props.disabled': (field) => field.model?.isDiscountFees !== true,
+            'props.readonly': 'formState.readonly',
+          },
+        },
+        {
+          type: 'select',
+          key: 'feesQuoteTypeId',
+          hooks: {
+            onInit: (field) => {
+              field.formControl?.valueChanges.subscribe(() => {
+                if (field.options?.formState?.readonly) return;
 
-        field.form?.get('billOption')?.setValue(null);
-        field.form?.get('numbersOfBill')?.setValue(null);
-      });
-    },
-  },
-  props: {
-    label: THIS._languageService.getTransValue('matters.quoteType'),
-    optionsArr: getOptionsArray(
-      THIS.lookupsData?.quote?.result || [],
-      'id',
-      'name'
-    ),
-  },
-  expressions: {
-    'props.readonly': 'formState.readonly',
-  },
-},
+                field.form?.get('billOption')?.setValue(null);
+                field.form?.get('numbersOfBill')?.setValue(null);
+              });
+            },
+          },
+          props: {
+            label: THIS._languageService.getTransValue('matters.quoteType'),
+            optionsArr: getOptionsArray(
+              THIS.lookupsData?.quote?.result || [],
+              'id',
+              'name',
+            ),
+          },
+          expressions: {
+            'props.readonly': 'formState.readonly',
+          },
+        },
         // {
         //   type: 'input',
         //   key: 'hours',
@@ -351,26 +403,27 @@ return getOptionsArray(list, 'id', 'nameEn');    },
         //     labelClass: 'empty-label',
         //   },
         // },
-{
-  type: 'radio',
-  key: 'billOption',
-  props: {
-    label: THIS._languageService.getTransValue('Bill Frequency'),
-    options: [
-      { label: 'No of Bills', value: 'noOfBillRadio' },
-      { label: 'Every Bill', value: 'everyBillRadio' },
-    ],
-    labelClass: 'empty-label',
-  },
-  expressions: {
-    'props.disabled': (field: any) => {
-      const isReadonly = field.options?.formState?.readonly === true;
-      const isQuoteTypeInvalid = ![1, 2, 3, 4].includes(field.model?.feesQuoteTypeId);
-      return isReadonly || isQuoteTypeInvalid;
-    }
-    
-  }
-},
+        {
+          type: 'radio',
+          key: 'billOption',
+          props: {
+            label: THIS._languageService.getTransValue('Bill Frequency'),
+            options: [
+              { label: 'No of Bills', value: 'noOfBillRadio' },
+              { label: 'Every Bill', value: 'everyBillRadio' },
+            ],
+            labelClass: 'empty-label',
+          },
+          expressions: {
+            'props.disabled': (field: any) => {
+              const isReadonly = field.options?.formState?.readonly === true;
+              const isQuoteTypeInvalid = ![1, 2, 3, 4].includes(
+                field.model?.feesQuoteTypeId,
+              );
+              return isReadonly || isQuoteTypeInvalid;
+            },
+          },
+        },
         // {
         //   type: 'input',
         //   key: 'numbersOfBill',
@@ -381,18 +434,18 @@ return getOptionsArray(list, 'id', 'nameEn');    },
         //     'props.readonly': 'formState.readonly',
         //   },
         // },
-{
-  type: 'input',
-  key: 'numbersOfBill',
-  props: {
-    label: THIS._languageService.getTransValue('Numbers of Bills'),
-  },
-  expressions: {
-    'props.disabled': (field) =>
-      field.model?.billOption !== 'noOfBillRadio',
-    'props.readonly': 'formState.readonly',
-  },
-},
+        {
+          type: 'input',
+          key: 'numbersOfBill',
+          props: {
+            label: THIS._languageService.getTransValue('Numbers of Bills'),
+          },
+          expressions: {
+            'props.disabled': (field) =>
+              field.model?.billOption !== 'noOfBillRadio',
+            'props.readonly': 'formState.readonly',
+          },
+        },
 
         {
           type: 'input',
@@ -430,7 +483,7 @@ return getOptionsArray(list, 'id', 'nameEn');    },
           className: 'col-span-3',
           props: {
             label: THIS._languageService.getTransValue(
-              'Automatically Create Disbursements'
+              'Automatically Create Disbursements',
             ),
           },
           expressions: {
@@ -442,15 +495,15 @@ return getOptionsArray(list, 'id', 'nameEn');    },
           type: 'select',
           key: 'disbursementId',
           props: {
-            showFilter:false,
+            showFilter: false,
             label: THIS._languageService.getTransValue(
-              'Automatically Create Disbursements'
+              'Automatically Create Disbursements',
             ),
             optionsArr: getOptionsArray(
               THIS.lookupsData?.disbursement?.result || [],
 
               'id',
-              'name'
+              'name',
             ),
           },
           expressions: {
@@ -466,7 +519,7 @@ return getOptionsArray(list, 'id', 'nameEn');    },
               THIS.lookupsData?.type?.result || [],
 
               'id',
-              'name'
+              'name',
             ),
           },
           expressions: {
@@ -474,8 +527,7 @@ return getOptionsArray(list, 'id', 'nameEn');    },
           },
         },
 
-      
-         {
+        {
           type: 'input',
           key: 'amountDisbursements',
           props: {
@@ -484,11 +536,11 @@ return getOptionsArray(list, 'id', 'nameEn');    },
           expressions: {
             'props.readonly': 'formState.readonly',
           },
-    },
-      {
+        },
+        {
           type: 'input',
           key: 'explanationId',
-         className: 'col-span-3',
+          className: 'col-span-3',
           props: {
             label: THIS._languageService.getTransValue('Explanation'),
           },
@@ -523,7 +575,7 @@ return getOptionsArray(list, 'id', 'nameEn');    },
           key: 'salesTaxOnDisbursement',
           props: {
             label: THIS._languageService.getTransValue(
-              'Sales Tax on Disbursements'
+              'Sales Tax on Disbursements',
             ),
             type: 'number',
           },

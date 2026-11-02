@@ -12,7 +12,7 @@ import { MatterTaskDto } from 'src/app/pages/matters/interfaces/matter-task.inte
 import { matterTask_priorityConfig } from '../../matter-task-priority.config';
 import { matterTask_statusConfig } from '../../matter-task-status.config';
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
-import { combineLatest, finalize } from 'rxjs';
+import { finalize } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { Matter_Task_Group_Columns } from './matter-task-group-columns.config';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
@@ -37,41 +37,123 @@ import { TranslateModule } from '@ngx-translate/core';
 export class MatterTaskGroupComponent implements OnInit, OnDestroy {
   lookupsData: any;
   formlyFields: any[] = [];
-  formly: FormGroup = new FormGroup({})
+  formly: FormGroup = new FormGroup({});
   formlyModel: any;
-  isLoading!: boolean;
-  _apiService = inject(ApiService)
+  isLoading = false;
+  
+  _apiService = inject(ApiService);
   _unsubscribe = inject(UnsubscribeService);
   _dialogService = inject(DialogService);
   _languageService = inject(LanguageService);
   _toastrNotifiService = inject(ToastrNotifiService);
   _router = inject(Router);
   _route = inject(ActivatedRoute);
+
   data: MatterTaskDto[] = [];
   selectedTasks: MatterTaskDto[] = [];
   columns: any[] = Matter_Task_Group_Columns;
   statusConfig = matterTask_statusConfig;
   priorityConfig = matterTask_priorityConfig;
+
   @Input() set id(value: number) {
-    this.matterIdentifier = value
+    this.matterIdentifier = value;
   }
   matterIdentifier!: number;
   taskGroupIdentifier!: number;
+
   ngOnInit(): void {
-    this.getLookupsData()
+    this.getLookupsData();
   }
+
+  private extractList(res: any): any[] {
+    if (Array.isArray(res?.result)) return res.result;
+    if (Array.isArray(res?.result?.items)) return res.result.items;
+    if (Array.isArray(res?.data)) return res.data;
+    if (Array.isArray(res?.data?.items)) return res.data.items;
+    if (Array.isArray(res)) return res;
+    return [];
+  }
+
   getLookupsData(): void {
-    combineLatest({
-      taskTemplate: this._apiService.get(API_Config.general.getTaskTemplatesLookup),
-    }).pipe(
-      this._unsubscribe.takeUntilDestroy()
-    ).subscribe({
-      next: (res: any) => {
-        this.lookupsData = res;
-        this.initForm()
-      }
-    })
+    this._apiService.get('lookups/task-groups')
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const items = this.extractList(res);
+          this.lookupsData = { taskTemplate: { result: items } };
+          this.initForm();
+        },
+        error: (err) => {
+          this._toastrNotifiService.displayError(err?.error?.message || 'Error loading groups');
+        }
+      });
   }
+
+    onSubmit(): void {
+    if (!this.taskGroupIdentifier) return; // لو مفيش جروب متختار
+    
+    this.isLoading = true;
+    
+    const payload = {
+      matterId: this.matterIdentifier,
+      taskGroupId: this.taskGroupIdentifier,
+      matterTaskStatusId: 1, // الافتراضي "Created"
+      // 👇 بناخد الـ taskId مش الـ id
+      predefinedTaskIds: this.selectedTasks.map(obj => obj.taskId)
+    };
+
+    this._apiService.post('MatterTasks/from-group', payload)
+      .pipe(
+        finalize(() => this.isLoading = false),
+        this._unsubscribe.takeUntilDestroy()
+      )
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this._toastrNotifiService.displaySuccess(res.message || 'Tasks added successfully');
+            this.back();
+          } else {
+            this._toastrNotifiService.displayError(res?.message);
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(err?.error?.message || 'Something went wrong');
+        },
+      });
+  }
+    getTasksByGroup(id: number) {
+    this.taskGroupIdentifier = id;
+    this.isLoading = true;
+
+    this._apiService.get(`lookups/task-groups/${id}`)
+      .pipe(
+        this._unsubscribe.takeUntilDestroy(),
+        finalize(() => this.isLoading = false)
+      )
+      .subscribe({
+        next: (res: any) => {
+          // الـ ApiService بيرجع الداتا في res.result (أو res.data)
+          const groupData = res.result || res.data;
+          
+          // المهام موجودة جوه items
+          const items = groupData?.items || [];
+          
+          this.data = items.map((item: any) => {
+            return {
+              ...item,
+              // بنحط الاسم في description عشان يظهر في عمود الوصف
+              taskDescription: item.taskNameEn || item.taskNameAr || '---',
+            };
+          });
+          
+          this.selectedTasks = [];
+        },
+        error: (err: any) => {
+           this._toastrNotifiService.displayError('Error loading group tasks');
+        }
+      });
+  }
+
   initForm(): void {
     this.formlyFields = [
       {
@@ -82,74 +164,37 @@ export class MatterTaskGroupComponent implements OnInit, OnDestroy {
             type: 'select',
             props: {
               label: this._languageService.getTransValue('matters.taskGroupitle'),
-              optionsArr: this.lookupsData.taskTemplate.result.map((obj: any) => ({ label: obj.name, value: obj.id })),
+              optionsArr: this.lookupsData.taskTemplate.result.map((obj: any) => ({ 
+                label: obj.nameEn || obj.nameAr || obj.name, 
+                value: obj.id 
+              })),
               required: true,
               onChange: (e: any) => {
-                this.getTasksByGroup(e.value)
+                this.getTasksByGroup(e.value);
               }
             },
           }
         ]
       }
-    ]
-  }
-  getTasksByGroup(id: number) {
-    this.taskGroupIdentifier = id
-    const params = {
-      id: id
-    }
-    this._apiService.get(API_Config.general.getTaskByGroupId, params).pipe(
-      this._unsubscribe.takeUntilDestroy()
-    ).subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this.data = [...res.result];
-          this.selectedTasks = []
-        }
-      }
-    })
+    ];
   }
   onRowSelectChange(e: MatterTaskDto[]) {
-    this.selectedTasks = e
+    this.selectedTasks = e;
   }
+
   openTaskDetails(rowData: MatterTaskDto) {
     this._dialogService.open(MatterTaskEditorComponent, {
-      header: 'View Task',
-      data: { rowData, matterIdentifier: this.matterIdentifier, mode:'view' },
+      header: this._languageService.getTransValue('matters.viewTask'),
+      data: { rowData, matterIdentifier: this.matterIdentifier, mode: 'view' },
       width: '720px'
-    })
-  }
-  onSubmit(): void {
-    if (this.selectedTasks.length == 0) return
-    this.isLoading = true;
-    const payload = {
-      "matterId": this.matterIdentifier,
-      "groupId": this.taskGroupIdentifier,
-      "tasksIds": this.selectedTasks.map(obj => obj.id)
-    }
-    this._apiService.post(API_Config.matterTaskGroup.create, payload).pipe(
-      finalize(() => this.isLoading = false),
-      this._unsubscribe.takeUntilDestroy()
-    ).subscribe({
-      next: (res: ApiRes) => {
-        if (res && res.isSuccess) {
-          this._toastrNotifiService.displaySuccess(res.message);
-          this.back()
-        } else {
-          this._toastrNotifiService.displayError(res?.message);
-        }
-      },
-      error: (err: any) => {
-        this._toastrNotifiService.displayError(err?.error?.message);
-      },
-    })
+    });
   }
 
   back() {
-    this._router.navigate(['../'], { relativeTo: this._route })
+    this._router.navigate(['../'], { relativeTo: this._route });
   }
+
   ngOnDestroy(): void {
-    this._unsubscribe.destroy()
+    this._unsubscribe.destroy();
   }
 }
-

@@ -1,14 +1,26 @@
-export interface MatterAttachmentDto{
-    id: number;
-    law_MatterId: number;
-    description: string;
-    receivedDate: string;
-    documentDate: string;
-    expirationDate: string;
-    fileName: string;
-    filePathe: string;
-    attachment:Blob;
-   attachmentPath?: string | null;
-   attachmentName?: string | null;
-   isLinkedToHearingSession:boolean;
+export interface MatterAttachmentDto {
+  id: number;
+  matterId: number;
+  
+  name: string;                  
+  description: string;
+  
+  receivedDate: string | null;
+  documentDate: string | null;
+  expirationDate: string | null;
+  
+  isLink: boolean;               
+  url: string | null;           
+  
+  originalFileName: string;      
+  extension: string;             
+  sizeBytes: number;             
+  contentType: string;          
+  
+  isActive: boolean;            
+  sharedWithClient: boolean;     
+  uploadedByClient: boolean;    
+  
+  services: string[];            
+    isLinkedToHearingSession?: boolean;
 }

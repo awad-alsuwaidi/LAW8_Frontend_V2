@@ -1,22 +1,8 @@
 export const Matter_Activity_Columns = [
-  {
-    header: 'matters.code',
-    field: 'id',
-  },
-  {
-    header: 'matters.activityType',
-    field: 'law_ActivityType',
-  },
-  {
-    header: 'matters.description',
-    field: 'description',
-    isLargeText: true,
-  },
-  {
-    header: 'matters.user',
-    field: 'user',
-  },
-
+  { header: 'matters.code', field: 'id' },
+  { header: 'matters.activityType', field: 'activityTypeName' },
+  { header: 'matters.description', field: 'description', isLargeText: true },
+  { header: 'matters.user', field: 'createdByName' },
   {
     header: 'matters.date',
     field: 'startDate',
@@ -24,11 +10,10 @@ export const Matter_Activity_Columns = [
     isDate: true,
     isSort: true,
   },
-
   {
     header: 'matters.status',
-    field: 'law_ActivityStatusId',
-    statusLabel: 'law_ActivityStatus',
+    field: 'activityStatusId',
+    statusLabel: 'activityStatusName',
     isStatus: true,
   },
 ];

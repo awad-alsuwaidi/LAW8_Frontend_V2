@@ -1,15 +1,27 @@
 import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 import { MatterTaskEditorComponent } from './matter-task-editor.component';
+
 export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
   return [
     {
       fieldGroupClassName: 'grid gap-4 md:grid-cols-2 bg-white rounded-2xl',
       fieldGroup: [
         {
+          key: 'title',
+          type: 'input',
+          className: 'col-span-2',
+          props: {
+            required: true,
+            label: THIS._languageService.getTransValue('matters.taskTitle'),
+          },
+          expressions: {
+            'props.readonly': 'formState.readonly',
+          },
+        },
+        {
           key: 'description',
           type: 'textarea',
           className: 'col-span-2',
-
           props: {
             required: true,
             label: THIS._languageService.getTransValue('matters.description'),
@@ -19,10 +31,9 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'StartDate',
+          key: 'startDate',
           type: 'date',
           defaultValue: new Date(),
-
           props: {
             label: THIS._languageService.getTransValue('matters.startDate'),
             required: true,
@@ -32,7 +43,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'DueDate',
+          key: 'dueDate',
           type: 'date',
           defaultValue: new Date(),
           props: {
@@ -44,7 +55,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'assigneeList',
+          key: 'assignedUserIds',
           type: 'multi-select',
           className: 'col-span-2',
           props: {
@@ -53,7 +64,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
             optionsArr: getOptionsArray(
               THIS.lookupsData.lawyers.result,
               'id',
-              'name',
+              'name'
             ),
           },
           expressions: {
@@ -61,7 +72,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'Periority',
+          key: 'priorityId',
           type: 'select',
           defaultValue: 4,
           props: {
@@ -69,7 +80,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
             optionsArr: getOptionsArray(
               THIS.lookupsData.taskPriority.result,
               'id',
-              'name',
+              'name'
             ),
             selectedObj: {},
           },
@@ -78,7 +89,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'status',
+          key: 'matterTaskStatusId',
           type: 'select',
           defaultValue: 1,
           props: {
@@ -86,7 +97,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
             optionsArr: getOptionsArray(
               THIS.lookupsData.taskStatus.result,
               'id',
-              'name',
+              'name'
             ),
             selectedObj: {},
           },
@@ -94,6 +105,29 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
             'props.readonly': 'formState.readonly',
           },
         },
+        // {
+        //   key: 'percentComplete',
+        //   type: 'input',
+        //   props: {
+        //     type: 'number',
+        //     label: THIS._languageService.getTransValue('matters.percentComplete') || 'Percent Complete (%)',
+        //     min: 0,
+        //     max: 100,
+        //   },
+        //   expressions: {
+        //     'props.readonly': 'formState.readonly',
+        //   },
+        // },
+        // {
+        //   key: 'isPrivate',
+        //   type: 'switch',
+        //   props: {
+        //     label: THIS._languageService.getTransValue('matters.isPrivate'),
+        //   },
+        //   expressions: {
+        //     'props.readonly': 'formState.readonly',
+        //   },
+        // },
         {
           key: 'note',
           type: 'textarea',
@@ -106,7 +140,7 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           },
         },
         {
-          key: 'AttachmentList',
+          key: 'attachments',
           type: 'attachment-list',
           className: 'col-span-2',
           props: {
@@ -127,9 +161,9 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
           {
             name: 'dateRange',
             options: {
-              startDate: 'StartDate',
-              endDate: 'DueDate',
-              errorPath: 'DueDate',
+              startDate: 'startDate',
+              endDate: 'dueDate',
+              errorPath: 'dueDate',
             },
           },
         ],

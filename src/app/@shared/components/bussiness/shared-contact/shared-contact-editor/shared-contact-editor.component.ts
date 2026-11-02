@@ -34,22 +34,6 @@ export class SharedContactEditorComponent
     });
   }
 
-  private extractItems(res: any): any[] {
-    if (!res) return [];
-    if (res?.success === true && Array.isArray(res?.data?.items))
-      return res.data.items;
-    if (Array.isArray(res?.data?.items)) return res.data.items;
-    if (Array.isArray(res?.items)) return res.items;
-    if (Array.isArray(res?.result?.items)) return res.result.items;
-    if (Array.isArray(res?.result)) return res.result;
-    if (Array.isArray(res)) return res;
-    return [];
-  }
-
-  loadCategories() {
-    return this._apiService.get(API_Config.general.getContactsCategoryV2);
-  }
-
   initForm(): void {
     this.formlyFields = [...contactEditorFormlyConfig(this)];
     if (this._dynamicDialogConfig?.data?.rowData) {
@@ -133,6 +117,24 @@ private _applyRow(row: any) {
     );
     this.formlyFields = [...contactEditorFormlyConfig(this)];
   }
+  private extractItems(res: any): any[] {
+  if (!res) return [];
+  const body = res?.data ?? res?.result ?? res;
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body.items)) return body.items;
+  if (Array.isArray(body.dataList)) return body.dataList;
+  // ✅ grouped lookups
+  if (Array.isArray(body.contactCategories)) return body.contactCategories;
+  if (Array.isArray(body?.items?.contactCategories))
+    return body.items.contactCategories;
+  return [];
+}
+loadCategories() {
+  return this._apiService.get(API_Config.general.getLookups, {
+    'types[0]': 'contactCategories',
+  });
+}
+
 
 onSubmit(): void {
   if (this.formly.invalid) {
@@ -171,18 +173,16 @@ onSubmit(): void {
     contactCategoryId: Number(this.formlyModel.categoryId),
   };
 
+  // ✅ v2: بيبعت matterId مباشرة (مش law_MatterId)
   if (idKey && relatedId != null) {
-    const finalKey = idKey === 'matterId' ? 'law_MatterId' : idKey;
-    apiPayload[finalKey] = Number(relatedId);
+    apiPayload[idKey] = Number(relatedId);
   }
 
   Object.keys(apiPayload).forEach(
     (k) => apiPayload[k] === undefined && delete apiPayload[k],
   );
 
-  const url = isEdit
-    ? `${endpoint.update}/${row.id}`
-    : endpoint.create;
+  const url = isEdit ? `${endpoint.update}/${row.id}` : endpoint.create;
 
   const request$ = isEdit
     ? this._apiService.put(url, apiPayload)
@@ -200,7 +200,6 @@ onSubmit(): void {
         }
       },
       error: (err: any) => {
-        console.error('[onSubmit] error:', err);
         this._toastrNotifiService.displayError(err?.error?.message);
       },
     });

@@ -60,29 +60,39 @@
   <app-shared-table [columns]="columns" [data]="data" [pagination]="pagination" [statusConfig]="priorityConfig" (onSort)="onSort($event)"
     (onPageChange)="onPageChange($event)">
 
-    <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
-      <p-menu #menu [model]="statusItems" [popup]="true" appendTo="body">
-        <ng-template pTemplate="content" let-item>
-          <div class="flex flex-col p-0 w-full">
-            <div class="p-2 cursor-pointer hover:bg-blue-50 flex items-center gap-2"
-              (click)="updateStatus(item['value'], rowData); menu.hide()">
-              <p-radioButton [name]="'status_'+rowIndex" [ngModel]="rowData.status" [value]="item['value']"
-                [inputId]="'status_' + rowIndex + '_' + item['value']" />
-              <label [for]="'status_' + rowIndex + '_' + item['value']" class="cursor-pointer w-full">
-                {{ item.label }}
-              </label>
-            </div>
-          </div>
-        </ng-template>
-      </p-menu>
-      <div class="relative inline-block">
-        @if (rowData.haveAttachment) {
-        <img src="/assets/images/icons/attachment.svg" alt="Attachment" class="absolute end-0 -top-1">
-        }
-        <app-shared-status [label]="rowData.statusName" [data]="rowData.status" [statusConfig]="statusConfig"
-          (click)="menu.toggle($event);" />
+<ng-template #customColumn let-rowData let-rowIndex="rowIndex">
+  <p-menu #menu [model]="statusItems" [popup]="true" appendTo="body">
+    <ng-template pTemplate="content" let-item>
+      <div class="flex flex-col p-0 w-full">
+        <div class="p-2 cursor-pointer hover:bg-blue-50 flex items-center gap-2"
+          (click)="updateStatus(item['value'], rowData); menu.hide()">
+          <p-radioButton 
+            [name]="'status_' + rowIndex" 
+            [ngModel]="rowData.matterTaskStatusId" 
+            [value]="item['value']"
+            [inputId]="'status_' + rowIndex + '_' + item['value']" />
+          <label [for]="'status_' + rowIndex + '_' + item['value']" class="cursor-pointer w-full">
+            {{ item.label }}
+          </label>
+        </div>
       </div>
     </ng-template>
+  </p-menu>
+
+  <div class="relative inline-block">
+    @if (rowData.attachmentCount > 0) { <!-- أو rowData.haveAttachment لو دي اللي عندك -->
+      <img src="/assets/images/icons/attachment.svg" alt="Attachment" class="absolute end-0 -top-1">
+    }
+    
+    <!-- 👇 نستخدم الـ ID والـ Name الجداد -->
+    <app-shared-status 
+      [label]="rowData.matterTaskStatusName" 
+      [data]="rowData.matterTaskStatusId" 
+      [statusConfig]="statusConfig"
+      class="cursor-pointer"
+      (click)="menu.toggle($event);" />
+  </div>
+</ng-template>
     @if(!_router.url.includes('inactive')){
     <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
       <div class="font-medium text-sm text-textSecondary rounded-e-lg">

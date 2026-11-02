@@ -54,13 +54,13 @@ export class Menu {
           icon: 'icon-matters',
           label: 'menu.matters',
           route: '/matters',
-          permission: 'View_Matter',
+          // permission: 'View_Matter',
 
           children: [
             {
               label: 'menu.newMatter',
               route: '/matters/add',
-              permission: 'Add_Matter',
+              // permission: 'Add_Matter',
               activeMatchers: [
                 /^\/matters\/add$/,
                 /^\/matters\/add\/applicant$/,
@@ -71,7 +71,7 @@ export class Menu {
             {
               label: 'menu.menu',
               route: '/matters',
-              permission: 'View_Matter',
+              // permission: 'View_Matter',
               activeMatchers: [
                 /^\/matters\/\d+$/,
                 /^\/matters\/favourite$/,
@@ -91,7 +91,7 @@ export class Menu {
             {
               label: 'menu.inactiveMatters',
               route: '/matters/inactive',
-              permission: 'Inactivate_MatterList_View',
+              // permission: 'Inactivate_MatterList_View',
               activeMatchers: [
                 /^\/matters\/inactive\/\d+$/,
                 /^\/matters\/inactive\/\d+\/details$/,

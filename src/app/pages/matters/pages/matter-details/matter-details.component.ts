@@ -1,4 +1,12 @@
-import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { MenuItem } from 'primeng/api';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
@@ -33,7 +41,7 @@ import { MatterService } from '../../services/matter.service';
   templateUrl: './matter-details.component.html',
   styleUrl: './matter-details.component.scss',
 })
-export class MatterDetailsComponent implements OnInit, OnDestroy {
+export class MatterDetailsComponent implements OnInit, OnDestroy, OnChanges {
   _languageService = inject(LanguageService);
   isLoading: boolean = true;
   _router = inject(Router);
@@ -51,7 +59,6 @@ export class MatterDetailsComponent implements OnInit, OnDestroy {
   activeItem?: MenuItem;
   @Input() set id(value: number) {
     this.matterIdentifier = value;
-    this.getMatterById();
   }
   menuItems: MenuItem[] = [];
   matterIdentifier: any;
@@ -66,169 +73,36 @@ export class MatterDetailsComponent implements OnInit, OnDestroy {
         label: this._languageService.getTransValue('matters.view'),
       },
     ];
-    this.activeItem =
-      this.tabs.find((obj) =>
-        this._router.url.includes(
-          obj?.label?.replace(' ', '-').toLocaleLowerCase() || '',
-        ),
-      ) || this.tabs[0];
-    this.getMatterById();
-    console.log('current route', this._router.url);
     document.body.classList.add('page-matter');
+
+    this._route.params
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe((params) => {
+        const idFromRoute = params['id'];
+        console.log(
+          '[MatterDetails] route params =',
+          params,
+          '| id =',
+          idFromRoute,
+        );
+        if (idFromRoute) {
+          this.matterIdentifier = idFromRoute;
+          this.getMatterById();
+        }
+      });
   }
 
-  // setTabsBasedOnPracticeArea() {
-  //   this.tabs = [
-  //     {
-  //       label: this._languageService.getTransValue('matters.details'),
-  //       //label: 'Details',
-  //       command: () => {
-  //         this._router.navigate(['./'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.parties'),
-  //       //label: 'Parties',
-  //       visible:
-  //         this.data.practsAreaId == this.practiceArea.Litigation &&
-  //         this._permissionService.hasPermission('View_Matter_Parties'),
-  //       command: () => {
-  //         this._router.navigate(['./parties'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.applicant'),
-  //       //label: 'Applicant',
-  //       visible:
-  //         ![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(
-  //           this.data.practsAreaId || 0
-  //         ) && this._permissionService.hasPermission('View_Matter_Applicants'),
-  //       command: () => {
-  //         this._router.navigate(['./applicant'], { relativeTo: this._route });
-  //       },
-  //     },
-  //      {
-  //       label: this._languageService.getTransValue('matters.class'),
-  //       //label: 'Class',
-  //       visible:
-  //         ![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(
-  //           this.data.practsAreaId || 0
-  //         ) &&
-  //         this.data.law_MtrCatId == 8 &&
-  //         this._permissionService.hasPermission('View_Matter_Classes'),
-  //       command: () => {
-  //         this._router.navigate(['./class'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.activities'),
-  //       //label: 'Activities',
-  //       visible: this._permissionService.hasPermission('View_TaskManagement'),
-  //       command: () => {
-  //         this._router.navigate(['./activities'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.tasks'),
-  //       //label: 'Tasks',
-  //       visible: this._permissionService.hasPermission('View_TaskManagement'),
-  //       command: () => {
-  //         this._router.navigate(['./tasks'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.attachments'),
-  //       //label: 'Attachments',
-  //       visible: this._permissionService.hasPermission('Add_Matter_Documents'),
-  //       command: () => {
-  //         this._router.navigate(['./attachments'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.contacts'),
-  //       //label: 'Contacts',
-  //       visible:
-  //         (this.data.practsAreaId == this.practiceArea.Litigation ||
-  //           this.data.practsAreaId == this.practiceArea.Corporate) &&
-  //         this._permissionService.hasPermission('View_Matter_Contacts'),
-  //       command: () => {
-  //         this._router.navigate(['./contacts'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.relatedmatters'),
-  //       //label: 'Related matters',
-  //       visible: this._permissionService.hasPermission('View_Matter'),
-  //       command: () => {
-  //         this._router.navigate(['./related-matters'], {
-  //           relativeTo: this._route,
-  //         });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.billing'),
-  //       //label: 'Billing',
-  //       visible:
-  //         false &&
-  //         this._permissionService.hasPermission('View_Billing_Settings'),
-  //       command: () => {
-  //         this._router.navigate(['./billing'], { relativeTo: this._route });
-  //       },
-  //     },
-
-  //     // {
-  //     //   label: this._languageService.getTransValue('matters.activities'),
-  //     //   //label: 'Activities',
-  //     //   visible: this._permissionService.hasPermission('View_TaskManagement'),
-  //     //   command: () => {
-  //     //     this._router.navigate(['./activities'], { relativeTo: this._route })
-  //     //   }
-  //     // },
-  //     // {
-  //     //   label: this._languageService.getTransValue('matters.tasks'),
-  //     //   //label: 'Tasks',
-  //     //   visible: this._permissionService.hasPermission('View_Law_Matter_Tasks'),
-  //     //   command: () => {
-  //     //     this._router.navigate(['./tasks'], { relativeTo: this._route })
-  //     //   }
-  //     // },
-  //     {
-  //       label: this._languageService.getTransValue('matters.timesheet'),
-  //       //label: 'Timesheet',
-  //       visible: this._permissionService.hasPermission('View_Matter_Timesheet'),
-  //       command: () => {
-  //         this._router.navigate(['./timesheet'], { relativeTo: this._route });
-  //       },
-  //     },
-  //     {
-  //       label: this._languageService.getTransValue('matters.invoice'),
-  //       //label: 'Invoice',
-  //       visible: this._permissionService.hasPermission('View_Matter_Invoices'),
-  //       command: () => {
-  //         this._router.navigate(['./invoice'], { relativeTo: this._route });
-  //       },
-  //     },
-
-  //     // {
-  //     //   label: this._languageService.getTransValue('matters.applicant'),
-  //     //   //label: 'Applicant',
-  //     //   visible:
-  //     //     (![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(this.data.practsAreaId || 0)) &&
-  //     //     this._permissionService.hasPermission('View_Matter_Applicants')
-  //     //   ,
-  //     //   command: () => {
-  //     //     this._router.navigate(['./applicant'], { relativeTo: this._route })
-  //     //   }
-  //     // },
-  //     {
-  //       label: this._languageService.getTransValue('matters.billing'),
-  //       visible: this._permissionService.hasPermission('View_Billing_Settings'),
-  //       command: () => {
-  //         this._router.navigate(['./billing'], { relativeTo: this._route });
-  //       },
-  //     },
-  //   ];
-  // }
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      changes['id'] &&
+      changes['id'].currentValue &&
+      !this._route.snapshot.params['id']
+    ) {
+      console.log('[MatterDetails] input id =', changes['id'].currentValue);
+      this.matterIdentifier = changes['id'].currentValue;
+      this.getMatterById();
+    }
+  }
 
   setTabsBasedOnPracticeArea() {
     this.tabs = [
@@ -294,127 +168,169 @@ export class MatterDetailsComponent implements OnInit, OnDestroy {
         routerLink: 'timesheet',
         visible: this._permissionService.hasPermission('View_Matter_Timesheet'),
       },
-      {
-        label: this._languageService.getTransValue('matters.invoice'),
-        routerLink: 'invoice',
-        visible: this._permissionService.hasPermission('View_Matter_Invoices'),
-      },
-      {
-        label: this._languageService.getTransValue('matters.billing'),
-        routerLink: 'billing',
-        visible: this._permissionService.hasPermission('View_Billing_Settings'),
-      },
+      // {
+      //   label: this._languageService.getTransValue('matters.invoice'),
+      //   routerLink: 'invoice',
+      //   visible: this._permissionService.hasPermission('View_Matter_Invoices'),
+      // },
+      // {
+      //   label: this._languageService.getTransValue('matters.billing'),
+      //   routerLink: 'billing',
+      //   visible: this._permissionService.hasPermission('View_Billing_Settings'),
+      // },
     ];
   }
 
   getMatterById() {
     this.isLoading = true;
-    const params = {
-      id: this.matterIdentifier,
-      LoadFile: false,
-    };
+
+    const baseUrl = API_Config.matters.getById;
+    const url = baseUrl.includes('{id}')
+      ? baseUrl.replace('{id}', String(this.matterIdentifier))
+      : `${baseUrl.replace(/\/+$/, '')}/${this.matterIdentifier}`;
+
+    console.log('FINAL URL =', url);
 
     this._apiService
-      .get(API_Config.matters.getById, params)
+      .get(url, { LoadFile: false })
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
+        next: (res: any) => {
+          console.log('🟢 RAW RESPONSE =', res);
           this.isLoading = false;
-          if (res && res.isSuccess) {
-            this.data = res.result;
-            this.isImportant = this.data.isImportent;
-            this._matterService.updateMatterDetails(this.data);
-            this.setTabsBasedOnPracticeArea();
+          const body = res?.data ?? res?.result ?? res;
+          const success = res?.success !== false && res?.isSuccess !== false;
 
-            if (this.tabs && this.tabs.length > 0 && this.tabs[0]?.label) {
-              const currentTabLabel =
-                this._router.url.split('/').pop()?.replace('-', ' ') || '';
+          if (!success) {
+            console.warn(' success flag is false', res);
+            return;
+          }
 
-              const matchedTab = this.tabs.find(
-                (tab) => tab.label?.toLowerCase() === currentTabLabel,
-              );
-              console.log('matchedTab', matchedTab);
-              if (matchedTab) {
-                this.activeItem = matchedTab;
-              } else {
-                this.activeItem = this.tabs[0];
-                if (this.tabs[0].label) {
-                  this._router.navigate(
-                    [
-                      './' +
-                        this.tabs[0].label.toLowerCase().replace(/\s+/g, '-'),
-                    ],
-                    { relativeTo: this._route },
-                  );
-                }
+          const rawData = Array.isArray(body?.items)
+            ? body.items[0]
+            : Array.isArray(body?.dataList)
+              ? body.dataList[0]
+              : body;
+
+          if (!rawData || typeof rawData !== 'object' || !rawData.id) {
+            console.warn('rawData is not a matter object', rawData);
+            return;
+          }
+          this.data = {
+            ...rawData,
+            mtrNo: rawData.matterCode,
+            client: rawData.clientName,
+            law_Branch: rawData.branchName,
+            practsArea: rawData.practiceAreaName,
+            practsAreaId: rawData.practiceAreaId,
+            law_MtrCat: rawData.matterCategoryName,
+            law_MtrCatId: rawData.matterCategoryId,
+            mtrType: rawData.matterTypeName,
+            jurisdiction: rawData.jurisdictionName,
+            judicature: rawData.judicatureName,
+            stage: rawData.stageName,
+            status: rawData.statusName,
+            law_ResponsibleLaywer: rawData.responsibleLawyerName,
+            law_AssignedLaywerList: rawData.assignedLawyers || [],
+            law_OtherStaffList: rawData.otherStaff || [],
+            law_ClientIntroducing: rawData.clientIntroducingUserName,
+            law_MatterIntroducingLawyer: rawData.matterIntroducingLawyerName,
+            law_ReferralType: rawData.referralTypeName,
+            logoFilePath: rawData.trademarkLogoUrl,
+            tradmarkTypeId: rawData.trademarkTypeId,
+            isImportent: rawData.isImportantForMe,
+          };
+
+          console.log('✅ FINAL DATA =', this.data);
+
+          this.isImportant = this.data.isImportent;
+          this._matterService.updateMatterDetails(this.data);
+          this.setTabsBasedOnPracticeArea();
+          if (this.tabs && this.tabs.length > 0 && this.tabs[0]?.label) {
+            const currentTabLabel =
+              this._router.url.split('/').pop()?.replace('-', ' ') || '';
+
+            const matchedTab = this.tabs.find(
+              (tab) => tab.label?.toLowerCase() === currentTabLabel,
+            );
+            if (matchedTab) {
+              this.activeItem = matchedTab;
+            } else {
+              this.activeItem = this.tabs[0];
+              if (this.tabs[0].label) {
+                this._router.navigate(
+                  [
+                    './' +
+                      this.tabs[0].label.toLowerCase().replace(/\s+/g, '-'),
+                  ],
+                  { relativeTo: this._route },
+                );
               }
             }
-
-            const isActive = this.data.isActive;
-            this.menuItems = [
-              {
-                label: isActive
-                  ? this._languageService.getTransValue('matters.deactivate')
-                  : this._languageService.getTransValue('matters.activate'),
-                permission: 'Deactivate_Matter',
-                command: () => {
-                  const confirmRef = this._dialogService.open(
-                    SharedConfirmDialogComponent,
-                    {
-                      data: {
-                        type: ConfirmDialogType.Question,
-                        title: this._languageService.getTransValue(
-                          isActive
-                            ? 'matters.confirmDeactivationTitle'
-                            : 'matters.confirmActivationTitle',
-                        ),
-
-                        message: this._languageService.getTransValue(
-                          isActive
-                            ? 'matters.confirmDeactivationMessage'
-                            : 'matters.confirmActivationMessage',
-                        ),
-
-                        btns: [
-                          {
-                            label:
-                              this._languageService.getTransValue('matters.no'),
-                            styleClass: 'border border-grey500 text-grey500',
-                            command: () => {
-                              confirmRef.close();
-                            },
-                          },
-                          {
-                            label:
-                              this._languageService.getTransValue(
-                                'matters.yes',
-                              ),
-                            styleClass: 'bg-textErrorBase text-white',
-                            command: () => {
-                              confirmRef.close(true);
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  );
-
-                  confirmRef.onClose
-                    .pipe(this._unsubscribe.takeUntilDestroy())
-                    .subscribe({
-                      next: (res: boolean) => {
-                        if (res) {
-                          this.toggleMatter({
-                            matterId: +this.matterIdentifier,
-                            isActive: !isActive,
-                          });
-                        }
-                      },
-                    });
-                },
-              },
-            ];
           }
+          const isActive = this.data.isActive;
+          this.menuItems = [
+            {
+              label: isActive
+                ? this._languageService.getTransValue('matters.deactivate')
+                : this._languageService.getTransValue('matters.activate'),
+              permission: 'Deactivate_Matter',
+              command: () => {
+                const confirmRef = this._dialogService.open(
+                  SharedConfirmDialogComponent,
+                  {
+                    data: {
+                      type: ConfirmDialogType.Question,
+                      title: this._languageService.getTransValue(
+                        isActive
+                          ? 'matters.confirmDeactivationTitle'
+                          : 'matters.confirmActivationTitle',
+                      ),
+                      message: this._languageService.getTransValue(
+                        isActive
+                          ? 'matters.confirmDeactivationMessage'
+                          : 'matters.confirmActivationMessage',
+                      ),
+                      btns: [
+                        {
+                          label:
+                            this._languageService.getTransValue('matters.no'),
+                          styleClass: 'border border-grey500 text-grey500',
+                          command: () => {
+                            confirmRef.close();
+                          },
+                        },
+                        {
+                          label:
+                            this._languageService.getTransValue('matters.yes'),
+                          styleClass: 'bg-textErrorBase text-white',
+                          command: () => {
+                            confirmRef.close(true);
+                          },
+                        },
+                      ],
+                    },
+                  },
+                );
+
+                confirmRef.onClose
+                  .pipe(this._unsubscribe.takeUntilDestroy())
+                  .subscribe({
+                    next: (res: boolean) => {
+                      if (res) {
+                        this.toggleMatter({
+                          matterId: +this.matterIdentifier,
+                          isActive: !isActive,
+                        });
+                      }
+                    },
+                  });
+              },
+            },
+          ];
+        },
+        error: (err) => {
+          this.isLoading = false;
         },
       });
   }
@@ -425,15 +341,31 @@ export class MatterDetailsComponent implements OnInit, OnDestroy {
   }
 
   toggleMatter(payload: { matterId: number; isActive: boolean }) {
+    let path = API_Config.matters.deactiveMatter;
+    if (path.includes('{id}')) {
+      path = path.replace('{id}', String(payload.matterId));
+    }
+
     this._apiService
-      .post(API_Config.matters.deactiveMatter, payload)
+      .patch(path, { isActive: payload.isActive })
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
+          const ok =
+            (res as any)?.success === true || (res as any)?.isSuccess === true;
+          if (ok) {
             this._toastrNotifiService.displaySuccess(res.message);
             this._router.navigate(['/matters']);
+          } else {
+            this._toastrNotifiService.displayError(
+              res?.message || 'Failed to toggle status',
+            );
           }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(
+            err?.error?.message || 'Something went wrong',
+          );
         },
       });
   }

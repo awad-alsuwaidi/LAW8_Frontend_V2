@@ -31,7 +31,8 @@ export const General_API = {
     getStages: 'lookups/matter-stages',
     getReferralType: 'lookups/referral-types',
     getMatterParties: 'api/v1/MatterParties', 
-    
+    getBatchLookups: 'lookups',
+    getClientsLookup:'lookups/clients',
     // ============ ⚠️ DEPRECATED — مؤقتاً لحد ما الـ components تتحدث ============
     /** @deprecated استخدم getLookups (types=...) */
     getPartyTypes: 'lookups/party-types',

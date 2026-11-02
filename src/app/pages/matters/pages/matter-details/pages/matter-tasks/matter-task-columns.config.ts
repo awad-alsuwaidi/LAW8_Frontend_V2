@@ -1,21 +1,69 @@
+// export const Matter_Task_Columns = [
+//   {
+//     header: 'matters.taskTitle',
+//     field: 'title',
+//     isSort: true,
+//   },
+//   {
+//     header: 'matters.description',
+//     field: 'description',
+//     isLargeText: true,
+//   },
+//   {
+//     header: 'matters.priority',
+//     field: 'priorityId',
+//     statusLabel: 'priorityName',
+//     isStatus: true,
+//   },
+//   {
+//     header: 'matters.startDate',
+//     field: 'startDate',
+//     format: 'yyyy-MM-dd',
+//     isSort: true,
+//     isDate: true,
+//   },
+//   {
+//     header: 'matters.dueDate',
+//     field: 'dueDate',
+//     format: 'yyyy-MM-dd',
+//     isDate: true,
+//   },
+//   {
+//     header: 'matters.assignee',
+//     field: 'assignedUserIds',
+//     label: 'assigneeInitial',
+//     tooltip: 'assigneeName',
+//     isColumnNumber: true,
+//   },
+//   {
+//     header: 'matters.status',
+//     field: 'matterTaskStatusId',
+//     statusLabel: 'statusName',
+//     isCustom: true,
+//   },
+// ];
+
 export const Matter_Task_Columns = [
+  {
+    header: 'matters.taskTitle',
+    field: 'title',
+    isSort: true,
+  },
   {
     header: 'matters.description',
     field: 'description',
-    isSort:true,
-    isLargeText: true,
   },
   {
     header: 'matters.priority',
-    field: 'periority',
-    statusLabel: 'periorityName',
+    field: 'priorityId',
+    statusLabel: 'priorityName',
     isStatus: true,
   },
   {
     header: 'matters.startDate',
     field: 'startDate',
     format: 'yyyy-MM-dd',
-    isSort:true,
+    isSort: true,
     isDate: true,
   },
   {
@@ -26,16 +74,16 @@ export const Matter_Task_Columns = [
   },
   {
     header: 'matters.assignee',
-    field: 'assigneeList',
-    label: 'assigneeInitial',
-    tooltip: 'assigneeName',
+    field: 'assignees',
+    label: 'initial',
+    tooltip: 'name',
     isColumnNumber: true,
   },
-
   {
     header: 'matters.status',
-    field: 'status',
-    statusLabel: 'statusName',
+    field: 'matterTaskStatusId',
+    statusLabel: 'matterTaskStatusName',
     isCustom: true,
+    isclickable:true
   },
 ];

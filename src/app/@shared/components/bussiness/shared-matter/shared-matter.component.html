@@ -90,20 +90,20 @@
                 (click)="
                   !_router.url.includes('timesheet') && openInNewTab(rowData.id)
                 "
-                [innerHTML]="rowData.mtrNo | highlight: searchValue"
+                [innerHTML]="rowData.matterCode | highlight: searchValue"
               >
                 <!-- {{rowData.mtrNo}} -->
               </span>
               <app-shared-status
-                [label]="rowData.law_AppStatus"
+                [label]="rowData.statusName"
                 [data]="rowData.statusId"
                 [statusConfig]="statusConfig"
               />
               <app-shared-status
-                *ngIf="rowData.stage"
+                *ngIf="rowData.stageName"
                 class="ms-2"
-                [label]="rowData.stage"
-                [data]="rowData.stage"
+                [label]="rowData.stageName"
+                [data]="rowData.stageName"
                 [statusConfig]="stageConfig"
               />
               <p
@@ -159,7 +159,7 @@
                   (click)="toggleFavourite(rowData)"
                   title="Add to Favourite"
                 >
-                  @if (rowData.isImportent) {
+                  @if (rowData.isImportantForMe) {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"

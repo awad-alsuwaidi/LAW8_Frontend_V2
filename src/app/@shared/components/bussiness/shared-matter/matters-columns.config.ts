@@ -1,24 +1,24 @@
 export const Matter_Columns = [
   {
-    field: 'mtrNo',
+    field: 'matterCode', 
     header: 'matters.matter',
     class: '!w-auto',
     isCustom: true,
   },
   {
-    field: 'law_PractsArea',
+    field: 'practiceAreaName', 
     field2: 'courtNumber',
     header: 'matters.practiceArea',
     isPracticeArea: true,
   },
   {
-    field: 'law_MtrCat',
-    field2: 'mtrType',
+    field: 'matterCategoryName', 
+    field2: 'matterTypeName', 
     header: 'matters.category',
   },
   {
-    field: 'law_Client',
+    field: 'clientName', 
     header: 'matters.client',
-    isClient: true, 
+    isClient: true,
   },
 ];

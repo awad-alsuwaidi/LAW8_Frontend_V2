@@ -33,7 +33,7 @@ export function matterAdditionalFilterFields(
         },
         {
           type: 'select',
-          key: 'categoryId',
+          key: 'matterCategoryId', 
           props: {
             label: THIS._languageService.getTransValue('matters.category'),
             virtualScroll: true,

@@ -12,8 +12,6 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ChipModule } from 'primeng/chip';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
 import { ApiService } from 'src/app/@core/api/api.service';
-import { API_Config } from 'src/app/@core/api/api-config/api.config';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { MatterAddressComponent } from './components/matter-address/matter-address.component';
 import {
   MatterTradeMark,
@@ -27,6 +25,7 @@ import { PracticeArea } from 'src/app/pages/matters/enums/matter-practicearea';
 import { MatterService } from 'src/app/pages/matters/services/matter.service';
 import { PermissionService } from 'src/app/@core/services/permission.service';
 import { environment } from 'src/environments/environment';
+
 @Component({
   selector: 'app-matter-detail-info',
   standalone: true,
@@ -56,42 +55,28 @@ export class MatterDetailInfoComponent implements OnInit, OnDestroy {
   statusConfig = matter_statusConfig;
   MatterTradeMarkLabels: any = MatterTradeMarkLabels;
   MatterTradeMark = MatterTradeMark;
-
-  @Input() set id(value: number) {
-    this.matterIdentifier = value;
-  }
   matterIdentifier: any;
-  getMatterData = effect(() => {
-    if (this._matterService.getMatterDetails()) {
-      this.data = this._matterService.getMatterDetails() as MatterDetailsDto;
-    }
-  });
-  ngOnInit(): void {
-  }
+
+  @Input() requiredPermission?: string;
+
   hasPermission(permission: string): boolean {
     return this._permissionService.hasPermission(permission);
   }
 
-  getMatterById() {
-    const params = {
-      id: this.matterIdentifier,
-      LoadFile: false,
-    };
-    this._apiService
-      .get(API_Config.matters.getById, params)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) this.data = res.result as MatterDetailsDto;
-        },
-      });
+getMatterData = effect(() => {
+  const matterData = this._matterService.getMatterDetails();
+  if (matterData) {
+    this.data = matterData as any;
+    this.matterIdentifier = this.data?.id ?? null;   
   }
-  @Input() requiredPermission?: string;
+});
 
   get canShow(): boolean {
-    if (!this.requiredPermission) return true; 
+    if (!this.requiredPermission) return true;
     return this._permissionService.hasPermission(this.requiredPermission);
   }
+
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     this._unsubscribe.destroy();

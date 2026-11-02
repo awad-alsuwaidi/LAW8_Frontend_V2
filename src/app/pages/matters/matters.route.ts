@@ -14,8 +14,7 @@ export const mattersRoutes: Routes = [
     {
         path: 'favourite',
         loadComponent: () => import('../../@shared/components/bussiness/shared-matter/shared-matter.component').then(comp => comp.SharedMatterComponent),
-        resolve: { data: DataResolverService },
-        data: { endpoint: API_Config.importantMatterDashboard }
+        data: { endpoint: API_Config.matters}
     },
 
 ]

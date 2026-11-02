@@ -1,4 +1,5 @@
 export interface MatterTaskDto{
+    taskId: any;
     id: number;
     matterId: number;
     assignee: string;

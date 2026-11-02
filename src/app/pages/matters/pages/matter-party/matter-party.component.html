@@ -61,7 +61,7 @@
         <td>
           <app-shared-status
             [data]="party.partyTypeId"
-            [label]="party.partyType"
+            [label]="party.partyTypeName || party.partyType"
             [statusConfig]="partiesStatusConfig"
           />
         </td>
@@ -75,9 +75,9 @@
         <td
           class="font-medium text-sm text-textSecondary border-y border-grey100"
         >
-          <span class="bg-grey100 px-3 py-1 rounded-full">{{
-            party.law_PartiesDescription
-          }}</span>
+          <span class="bg-grey100 px-3 py-1 rounded-full">
+            {{ party.partyDescriptionName || party.partyDescription }}
+          </span>
         </td>
         @if (!_router.url.includes("inactive")) {
           <td

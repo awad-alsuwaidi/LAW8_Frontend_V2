@@ -56,12 +56,12 @@ export class SharedContactComponent implements OnInit, OnDestroy {
 
   routeData: any;
   id!: number;
-filterOptions = {
-  pageNumber: 1,
-  pageSize: 10,
-  sortBy: '',
-  isDescending: false,
-};
+  filterOptions = {
+    pageNumber: 1,
+    pageSize: 10,
+    sortBy: '',
+    isDescending: false,
+  };
 
   formlyModel: any;
   getFormsData = effect(() => {
@@ -83,7 +83,11 @@ filterOptions = {
   ngOnInit(): void {
     this.routeData = this._route.snapshot.data;
 
-    this.initRefreshStream(); 
+    const routeId = this._route.snapshot.params['id'];
+    if (routeId) this.id = routeId;
+    this.getData();
+
+    this.initRefreshStream();
 
     this.emptyConfig = {
       messageTitle: this._languageService.getTransValue(
@@ -96,65 +100,110 @@ filterOptions = {
     };
 
     if (!this._router.url.includes('matters/inactive')) {
-      const addButton = {
+      this.emptyConfig.addButton = {
         label: this._languageService.getTransValue('clients.addNewContact'),
-        command: () => {
-          this.onOpenContactEditor();
-        },
+        command: () => this.onOpenContactEditor(),
       };
-      this.emptyConfig.addButton = addButton;
     }
 
     this.getParams();
+
     this.setMenuItems();
   }
-onPageChange(event: any): void {
-  this.filterOptions.pageSize = Number(event.rows);
-  this.filterOptions.pageNumber = event.first / event.rows + 1;
-  this.filterOptions = { ...this.filterOptions };
-  this.refreshData();
-}
-onSort(field: string) {
-  if (!field) return;
 
-  if (this.filterOptions.sortBy === field) {
-    this.filterOptions.isDescending = !this.filterOptions.isDescending;
-  } else {
-    this.filterOptions.sortBy = field;
-    this.filterOptions.isDescending = false;
+  onPageChange(event: any): void {
+    this.filterOptions.pageSize = Number(event.rows);
+    this.filterOptions.pageNumber = event.first / event.rows + 1;
+    this.filterOptions = { ...this.filterOptions };
+    this.refreshData();
   }
+  onSort(field: string) {
+    if (!field) return;
 
-  this.filterOptions.pageNumber = 1;
-  this.refreshData();
-}
-handleSort(event: any) {
-  if (!event?.field) return;
-
-  this.filterOptions.sortBy = event.field;
-  this.filterOptions.isDescending = event.order === -1;
-
-  this.filterOptions.pageNumber = 1;
-  this.refreshData();
-}
-loadData(event: any) {
-  this.filterOptions.pageNumber = event.first / event.rows + 1;
-  this.filterOptions.pageSize = event.rows;
-
-  if (event.sortField) {
-    this.filterOptions.sortBy = event.sortField;
-    this.filterOptions.isDescending = event.sortOrder === -1;
-  }
-
-  this.refreshData();
-}
-
-  getData() {
-    if (this._route.snapshot.data['data']) {
-      this.contacts = [...this._route.snapshot.data['data'].result.dataList];
-
-      this.totalRecords = this._route.snapshot.data['data'].result.totalCount;
-      this.setMenuItems();
+    if (this.filterOptions.sortBy === field) {
+      this.filterOptions.isDescending = !this.filterOptions.isDescending;
+    } else {
+      this.filterOptions.sortBy = field;
+      this.filterOptions.isDescending = false;
     }
+
+    this.filterOptions.pageNumber = 1;
+    this.refreshData();
+  }
+  handleSort(event: any) {
+    if (!event?.field) return;
+
+    this.filterOptions.sortBy = event.field;
+    this.filterOptions.isDescending = event.order === -1;
+
+    this.filterOptions.pageNumber = 1;
+    this.refreshData();
+  }
+  loadData(event: any) {
+    this.filterOptions.pageNumber = event.first / event.rows + 1;
+    this.filterOptions.pageSize = event.rows;
+
+    if (event.sortField) {
+      this.filterOptions.sortBy = event.sortField;
+      this.filterOptions.isDescending = event.sortOrder === -1;
+    }
+
+    this.refreshData();
+  }
+
+  private initRefreshStream(): void {
+    this.refresh$
+      .pipe(
+        debounceTime(0),
+        switchMap(() => {
+          const filterKey =
+            this.routeData['filterKey'] ?? this.routeData['idKey'];
+          const params: any = {
+            pageNumber: this.filterOptions.pageNumber,
+            pageSize: this.filterOptions.pageSize,
+            sortBy: this.filterOptions.sortBy || '',
+            isDescending: this.filterOptions.isDescending,
+            [`filters[${filterKey}]`]: this.id,
+          };
+
+          const key = JSON.stringify(params);
+          if (key === this.lastRequestKey) return [];
+          this.lastRequestKey = key;
+
+          return this._apiService.get(this.routeData['endpoint'].get, params);
+        }),
+        this._unsubscribeService.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => {
+          if (!res) return;
+          if (!this.getApiSuccess(res)) return;
+
+          const result = this.getApiResult(res);
+          const items = result?.items ?? result?.dataList ?? [];
+
+          this.contacts = items.map((person: any) => {
+            const normalized: any = {};
+            for (const key in person) {
+              normalized[key] = person[key] == null ? '' : person[key];
+            }
+            normalized.fullName = [
+              person.firstName,
+              person.middleName,
+              person.lastName,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .trim();
+            normalized.phone = person.phone1 ?? person.phone ?? '';
+            normalized.mobile = person.mobile1 ?? person.mobile ?? '';
+            normalized.email = person.email ?? '';
+            return normalized;
+          });
+
+          this.totalRecords = result?.totalCount ?? 0;
+        },
+      });
   }
 
   setMenuItems() {
@@ -259,68 +308,48 @@ loadData(event: any) {
     this.refresh$.next();
   }
 
-private initRefreshStream(): void {
-  this.refresh$
-    .pipe(
-      debounceTime(0),
-      switchMap(() => {
-        const filterKey =
-          this.routeData['filterKey'] ?? this.routeData['idKey'];
+  getData() {
+    const data = this._route.snapshot.data['data'];
+    if (!data) return;
+    const result = data?.data ?? data?.result ?? {};
+    const items = result?.items ?? result?.dataList ?? [];
 
-        this.filterOptions = {
-          ...this.filterOptions,
-          [filterKey]: this.id,
-        };
+    this.contacts = items.map((person: any) => ({
+      ...person,
+      fullName: [person.firstName, person.middleName, person.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim(),
+      phone: person.phone1 ?? person.phone ?? '',
+      mobile: person.mobile1 ?? person.mobile ?? '',
+      email: person.email ?? '',
+    }));
 
-        const key = JSON.stringify(this.filterOptions);
-        if (key === this.lastRequestKey) return [];
-        this.lastRequestKey = key;
-
-        return this._apiService.get(
-          this.routeData['endpoint'].get,
-          this.filterOptions,
-        );
-      }),
-      this._unsubscribeService.takeUntilDestroy(),
-    )
-      .subscribe({
-        next: (res: any) => {
-          if (!res) return;
-          if (!this.getApiSuccess(res)) return;
-
-          const result = this.getApiResult(res);
-          const items = result?.items ?? result?.dataList ?? [];
-
-          this.contacts = items.map((person: any) => {
-            const normalized: any = {};
-            for (const key in person) {
-              normalized[key] = person[key] == null ? '' : person[key];
-            }
-            normalized.fullName = [
-              person.firstName,
-              person.middleName,
-              person.lastName,
-            ]
-              .filter(Boolean)
-              .join(' ')
-              .trim();
-            normalized.phone = person.phone1 ?? person.phone ?? '';
-            normalized.mobile = person.mobile1 ?? person.mobile ?? '';
-            normalized.email = person.email ?? '';
-            return normalized;
-          });
-
-          this.totalRecords = result?.totalCount ?? 0;
-        },
-      });
+    this.totalRecords = result?.totalCount ?? 0;
+    this.setMenuItems();
   }
-
   getParams() {
+    let isFirstEmission = true;
+
     this._route.params
       .pipe(this._unsubscribeService.takeUntilDestroy())
       .subscribe({
         next: (params: Params) => {
-          if (params['id']) this.id = params['id'];
+          const newId = params['id'];
+          const idChanged = newId && newId !== String(this.id);
+
+          if (newId) this.id = newId;
+
+          if (
+            isFirstEmission &&
+            !idChanged &&
+            this._route.snapshot.data['data']
+          ) {
+            isFirstEmission = false;
+            return;
+          }
+
+          isFirstEmission = false;
           this.refreshData();
         },
       });

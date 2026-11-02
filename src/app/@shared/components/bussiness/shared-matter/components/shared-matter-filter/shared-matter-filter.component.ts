@@ -1,4 +1,3 @@
-import { filter } from 'rxjs';
 import { Component, EventEmitter, inject, OnInit, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
@@ -10,6 +9,7 @@ import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from 'src/app/@core/services';
 import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-skeleton-grid/shared-skeleton-grid.component';
+
 @Component({
   selector: 'app-shared-matter-filter',
   standalone: true,
@@ -26,16 +26,18 @@ import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-s
 export class SharedMatterFilterComponent implements OnInit {
   @Output() onFilter = new EventEmitter();
   _languageService = inject(LanguageService);
-
   _dialogService = inject(DialogService);
 
   formly: FormGroup = new FormGroup({});
-  formlyModel: any;
+  formlyModel: any = {};
   formlyFields: FormlyFieldConfig[] = [];
-  additionalFilterValues: any;
+
+  additionalFilterValues: any[] = [];
+
   ngOnInit(): void {
     this.initForm();
   }
+
   initForm() {
     this.formlyFields = [
       {
@@ -68,16 +70,33 @@ export class SharedMatterFilterComponent implements OnInit {
                       this._languageService.getTransValue('common.filter'),
                     width: '45vw',
                     data: { formlyModel: this.formlyModel },
-                  }
+                  },
                 );
                 ref.onClose.subscribe({
                   next: (res) => {
                     if (res) {
                       this.formlyModel = { ...this.formly.value, ...res };
-                      const keysWithValues = Object.values(res).filter(
-                        (value) => value !== undefined && value !== null
-                      );
-                      this.additionalFilterValues = keysWithValues;
+
+                      this.additionalFilterValues = Object.entries(res)
+                        .filter(
+                          ([_, value]) => value !== undefined && value !== null,
+                        )
+                        .map(([key, value]: [string, any]) => {
+                          let label = '';
+                          if (typeof value === 'object' && value !== null) {
+                            label =
+                              value.name ||
+                              value.nameEn ||
+                              value.nameAr ||
+                              value.clientName ||
+                              value.label ||
+                              '';
+                          } else {
+                            label = String(value);
+                          }
+                          return { key, value, label };
+                        });
+
                       this.onFilter.emit(this.formlyModel);
                     }
                   },
@@ -89,22 +108,23 @@ export class SharedMatterFilterComponent implements OnInit {
       },
     ];
   }
-reset() {
-  this.formly.reset();             
-  this.formlyModel = {};          
-  this.additionalFilterValues = []; 
-  this.onFilter.emit(this.formlyModel); 
-}
 
-  updateFilter(value: any) {
-    this.additionalFilterValues = this.additionalFilterValues.filter(
-      (val: any) => val != value
-    );
-    const key: string = this.findKeyByValue(this.formlyModel, value) || '';
-    delete this.formlyModel[key];
+  reset() {
+    this.formly.reset();
+    this.formlyModel = {};
+    this.additionalFilterValues = [];
     this.onFilter.emit(this.formlyModel);
   }
-  findKeyByValue(obj: Record<string, any>, value: any): string | undefined {
-    return Object.keys(obj).find((key) => obj[key] === value);
+
+  updateFilter(item: any) {
+    this.additionalFilterValues = this.additionalFilterValues.filter(
+      (val: any) => val.key !== item.key,
+    );
+
+    if (this.formlyModel) {
+      delete this.formlyModel[item.key];
+    }
+
+    this.onFilter.emit(this.formlyModel);
   }
 }

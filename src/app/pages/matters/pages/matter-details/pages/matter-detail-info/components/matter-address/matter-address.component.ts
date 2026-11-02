@@ -1,5 +1,13 @@
-import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
-import { DialogService } from 'primeng/dynamicdialog';
+import {
+  Component,
+  inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { ApiService } from 'src/app/@core/api/api.service';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
@@ -20,82 +28,123 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-matter-address',
   standalone: true,
-  imports: [SharedButtonComponent, TableModule, TranslateModule,CommonModule],
+  imports: [SharedButtonComponent, TableModule, TranslateModule, CommonModule],
   templateUrl: './matter-address.component.html',
   styleUrl: './matter-address.component.scss',
 })
-export class MatterAddressComponent implements OnInit, OnDestroy {
+export class MatterAddressComponent implements OnInit, OnChanges, OnDestroy {
   _dialogService = inject(DialogService);
-   _permissionService = inject(PermissionService);
+  _permissionService = inject(PermissionService);
   _unsubscribe = inject(UnsubscribeService);
   _apiService = inject(ApiService);
   _router = inject(Router);
   _languageService = inject(LanguageService);
   matterAddress: MatterAddressDto[] = [];
-  @Input({ required: true }) matterIdentifier!: string;
-  ngOnInit(): void {
-    this.getMatterAddress();
-  }
-  getMatterAddress() {
-    const params = {
-      pageNum: 1,
-      pagSize: PAGESIZE,
-      orderByDirection: 'ASC',
-      matterId: this.matterIdentifier,
-    };
-    this._apiService
-      .get(API_Config.matterAddress.get, params)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) this.matterAddress = res.result.dataList;
-        },
-      });
-  }
-  hasPermission(permission: string): boolean {
-  return this._permissionService.hasPermission(permission);
-}
 
-  openAddressEditor(rowData?: any) {
-    const ref = this._dialogService.open(MatterAddressEditorComponent, {
-      header: rowData
-        ? this._languageService.getTransValue('matters.updateaAddress')
-        : this._languageService.getTransValue('matters.addAddress'),
-      data: { rowData, matterIdentifier: this.matterIdentifier },
-    });
-    ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
-      next: (res: any) => {
-        if (this.matterIdentifier) this.getMatterAddress();
+  @Input({ required: true }) matterIdentifier!: string;
+
+  ngOnInit(): void {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['matterIdentifier'] && this.matterIdentifier) {
+      this.getMatterAddress();
+    }
+  }
+
+  hasPermission(permission: string): boolean {
+    return this._permissionService.hasPermission(permission);
+  }
+
+getMatterAddress() {
+  if (!this.matterIdentifier) {
+    this.matterAddress = [];
+    return;
+  }
+
+  const params: Record<string, any> = {
+    'filters[matterId]': this.matterIdentifier,
+    pageNum: 1,
+    pagSize: PAGESIZE,
+    orderByDirection: 'ASC',
+  };
+
+  this._apiService
+    .get(API_Config.matterAddress.get, params)
+    .pipe(this._unsubscribe.takeUntilDestroy())
+    .subscribe({
+      next: (res: ApiRes) => {
+        this.matterAddress = this.extractArray(res);
+      },
+      error: () => {
+        this.matterAddress = [];
       },
     });
+}
+
+private extractArray(res: any): MatterAddressDto[] {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res.dataList)) return res.dataList;
+  if (Array.isArray(res.items)) return res.items;
+  if (Array.isArray(res.result)) return res.result;
+  if (Array.isArray(res.result?.dataList)) return res.result.dataList;
+  if (Array.isArray(res.result?.items)) return res.result.items;
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.data?.dataList)) return res.data.dataList;
+  if (Array.isArray(res.data?.items)) return res.data.items;
+  return [];   
+}
+
+openAddressEditor(rowData?: any) {
+  const ref = this._dialogService.open(MatterAddressEditorComponent, {
+    header: rowData
+      ? this._languageService.getTransValue('matters.updateaAddress')
+      : this._languageService.getTransValue('matters.addAddress'),
+    data: { rowData, matterIdentifier: this.matterIdentifier },
+  });
+
+  if (!ref) {
+    console.error(
+      'DialogService returned null — <p-dynamicDialog /> is not in the DOM.',
+    );
+    return;
   }
-  onDelete(rowData: MatterAddressDto) {
-    const ref = this._dialogService.open(SharedConfirmDialogComponent, {
+
+  ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
+    next: () => {
+      if (this.matterIdentifier) this.getMatterAddress();
+    },
+  });
+}
+
+onDelete(rowData: MatterAddressDto) {
+  const ref: DynamicDialogRef = this._dialogService.open(
+    SharedConfirmDialogComponent,
+    {
       modal: true,
       styleClass: 'w-[400px]',
       data: {
         type: ConfirmDialogType.Danger,
-        title: this._languageService.getTransValue(
-          'matters.deleteAddressTitle'
-        ),
-        message: this._languageService.getTransValue(
-          'matters.deleteAddressMessage',
-          { value: rowData?.line1 }
-        ),
+        title: this._languageService.getTransValue('matters.deleteAddressTitle'),
+        message: this._languageService.getTransValue('matters.deleteAddressMessage', {
+          value: rowData?.line1,
+        }),
         btns: [
           {
             label: this._languageService.getTransValue('lookups.discard'),
             styleClass: 'border border-grey500 text-grey500',
-            command: () => {
-              ref.close();
-            },
+            command: () => ref.close(),
           },
           {
             label: this._languageService.getTransValue('lookups.delete'),
             styleClass: 'bg-textErrorBase text-white',
             command: () => {
+              let path = API_Config.matterAddress.delete;
+              path = path.includes('{id}')
+                ? path.replace('{id}', String(rowData.id))
+                : `${path}/${rowData.id}`;
               this._apiService
-                .post(API_Config.matterAddress.delete, {}, { id: rowData.id })
+                .delete(path, {})
                 .pipe(this._unsubscribe.takeUntilDestroy())
                 .subscribe({
                   next: (res: ApiRes) => {
@@ -104,13 +153,18 @@ export class MatterAddressComponent implements OnInit, OnDestroy {
                       this.getMatterAddress();
                     }
                   },
+                  error: (err) => {
+                    console.error('Delete failed:', err);
+                  },
                 });
             },
           },
         ],
       },
-    });
-  }
+    }
+  );
+}
+
   ngOnDestroy(): void {
     this._unsubscribe.destroy();
   }

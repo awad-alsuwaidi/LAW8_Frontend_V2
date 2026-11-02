@@ -1,9 +1,19 @@
+// export const Matters_Activity_API = {
+//   matterActivity: {
+//     get: 'Law_MatterActivity/GetList',
+//     getById: 'Law_MatterActivity/GetById',
+//     update: 'Law_MatterActivity/Update',
+//     create: 'Law_MatterActivity/Create',
+//     delete: 'Law_MatterActivity/Delete',
+//   },
+// };
+
 export const Matters_Activity_API = {
   matterActivity: {
-    get: 'Law_MatterActivity/GetList',
-    getById: 'Law_MatterActivity/GetById',
-    update: 'Law_MatterActivity/Update',
-    create: 'Law_MatterActivity/Create',
-    delete: 'Law_MatterActivity/Delete',
+    get: 'MatterActivities',
+    getById: 'MatterActivities',
+    create: 'MatterActivities',
+    update: 'MatterActivities',
+    delete: 'MatterActivities',
   },
 };

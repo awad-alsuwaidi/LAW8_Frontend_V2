@@ -1,6 +1,4 @@
-import { MatterActivityType } from "src/app/pages/matters/enums/matter-activityType";
-
-
+import { MatterActivityType } from 'src/app/pages/matters/enums/matter-activityType';
 
 export const matterActivity_statusConfig = {
     [MatterActivityType.Created]: {

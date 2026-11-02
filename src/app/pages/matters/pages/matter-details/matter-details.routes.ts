@@ -5,23 +5,23 @@ import { permissionGuard } from 'src/app/@core/guards/permission.guard';
 import { DataResolverService } from 'src/app/@shared/resolvers/data-resolver.service';
 
 export const Matter_Details_Routes: Routes = [
-    {
+  {
     path: '',
     redirectTo: 'details',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'details',
     loadComponent: () =>
       import('./pages/matter-detail-info/matter-detail-info.component').then(
-        (comp) => comp.MatterDetailInfoComponent
+        (comp) => comp.MatterDetailInfoComponent,
       ),
   },
   {
     path: 'parties',
     loadComponent: () =>
       import('../matter-party/matter-party.component').then(
-        (comp) => comp.MatterPartyComponent
+        (comp) => comp.MatterPartyComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Parties' },
@@ -30,7 +30,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'attachments',
     loadComponent: () =>
       import('./pages/matter-attachment/matter-attachment.component').then(
-        (comp) => comp.MatterAttachmentComponent
+        (comp) => comp.MatterAttachmentComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'Add_Matter_Documents' },
@@ -38,9 +38,9 @@ export const Matter_Details_Routes: Routes = [
   {
     path: 'contacts',
     loadComponent: () =>
-      import(
-        '../../../../@shared/components/bussiness/shared-contact/shared-contact.component'
-      ).then((m) => m.SharedContactComponent),
+      import('../../../../@shared/components/bussiness/shared-contact/shared-contact.component').then(
+        (m) => m.SharedContactComponent,
+      ),
     resolve: { data: DataResolverService },
     canActivate: [AuthGuard, permissionGuard],
     data: {
@@ -55,14 +55,14 @@ export const Matter_Details_Routes: Routes = [
   {
     path: 'related-matters',
     loadComponent: () =>
-      import(
-        '../../../../@shared/components/bussiness/shared-matter/shared-matter.component'
-      ).then((comp) => comp.SharedMatterComponent),
+      import('../../../../@shared/components/bussiness/shared-matter/shared-matter.component').then(
+        (comp) => comp.SharedMatterComponent,
+      ),
     resolve: { data: DataResolverService },
     canActivate: [AuthGuard, permissionGuard],
     data: {
       endpoint: API_Config.matterRelatedMatter,
-      idKey: 'matterId',
+      idKey: 'relatedToMatterId',
       permission: 'View_Matter',
     },
   },
@@ -70,7 +70,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'activities',
     loadComponent: () =>
       import('./pages/matter-activity/matter-activity.component').then(
-        (comp) => comp.MatterActivityComponent
+        (comp) => comp.MatterActivityComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_TaskManagement' },
@@ -79,7 +79,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'tasks',
     loadComponent: () =>
       import('./pages/matter-tasks/matter-tasks.component').then(
-        (comp) => comp.MatterTasksComponent
+        (comp) => comp.MatterTasksComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_TaskManagement' },
@@ -89,7 +89,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'class',
     loadComponent: () =>
       import('../matter-class/matter-class.component').then(
-        (comp) => comp.MatterClassComponent
+        (comp) => comp.MatterClassComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Classes' },
@@ -98,7 +98,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'applicant',
     loadComponent: () =>
       import('../matter-applicant/matter-applicant.component').then(
-        (comp) => comp.MatterApplicantComponent
+        (comp) => comp.MatterApplicantComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Applicants' },
@@ -107,7 +107,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'timesheet',
     loadComponent: () =>
       import('./pages/matter-timesheet/matter-timesheet.component').then(
-        (comp) => comp.MatterTimesheetComponent
+        (comp) => comp.MatterTimesheetComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Timesheet' },
@@ -116,7 +116,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'invoice',
     loadComponent: () =>
       import('./pages/matter-invoice/matter-invoice.component').then(
-        (comp) => comp.MatterInvoiceComponent
+        (comp) => comp.MatterInvoiceComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Invoices' },
@@ -125,7 +125,7 @@ export const Matter_Details_Routes: Routes = [
     path: 'billing',
     loadComponent: () =>
       import('../matter-billing-editor/matter-billing-editor.component').then(
-        (comp) => comp.MatterBillingEditorComponent
+        (comp) => comp.MatterBillingEditorComponent,
       ),
     canActivate: [AuthGuard, permissionGuard],
     data: { permission: 'View_Matter_Invoices' },

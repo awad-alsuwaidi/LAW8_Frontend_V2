@@ -18,6 +18,20 @@ import { Params } from '@angular/router';
 import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-skeleton-grid/shared-skeleton-grid.component';
 import { environment } from 'src/environments/environment';
 
+type LookupItem = {
+  id: number;
+  name: string;
+  nameEn?: string;
+  nameAr?: string;
+  parentId?: number | null;
+  isLitigation?: boolean;
+  hasApplicants?: boolean;
+  hasClasses?: boolean;
+  userId?: string;
+  isLawyer?: boolean;
+  [key: string]: any;
+};
+
 @Component({
   selector: 'app-matter-details-editor',
   standalone: true,
@@ -35,14 +49,162 @@ export class MatterDetailsEditorComponent
   implements OnInit, OnDestroy
 {
   practiceArea = PracticeArea;
+
   matterIdentifier!: number;
   _matterService = inject(MatterService);
   isInhouse = environment.brand === 'inhouse';
 
+  lookups: {
+    practiceAreas: LookupItem[];
+    matterCategories: LookupItem[];
+    matterTypes: LookupItem[];
+    jurisdictions: LookupItem[];
+    judicatures: LookupItem[];
+    matterStatuses: LookupItem[];
+    matterStages: LookupItem[];
+    branches: LookupItem[];
+    referralTypes: LookupItem[];
+    users: LookupItem[];
+    partyTypes: LookupItem[];
+    partyDescriptions: LookupItem[];
+    matterClassCategories: LookupItem[];
+    taskCodeGroups: LookupItem[];
+    taskCodes: LookupItem[];
+  } = {
+    practiceAreas: [],
+    matterCategories: [],
+    matterTypes: [],
+    jurisdictions: [],
+    judicatures: [],
+    matterStatuses: [],
+    matterStages: [],
+    branches: [],
+    referralTypes: [],
+    users: [],
+    partyTypes: [],
+    partyDescriptions: [],
+    matterClassCategories: [],
+    taskCodeGroups: [],
+    taskCodes: [],
+  };
+
+  override getLookupsData() {
+    this.isLoading = true;
+
+    const types = [
+      'practiceAreas',
+      'matterCategories',
+      'matterTypes',
+      'jurisdictions',
+      'judicatures',
+      'matterStatuses',
+      'matterStages',
+      'branches',
+      'referralTypes',
+      'users',
+      'partyTypes',
+      'partyDescriptions',
+      'matterClassCategories',
+      'taskCodeGroups',
+      'taskCodes',
+    ];
+
+    combineLatest({
+      lookups: this._apiService.get(API_Config.general.getLookups, { types }),
+      clients: this._apiService.get(API_Config.general.getClients),
+    })
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => {
+          try {
+            const data =
+              res.lookups?.data ?? res.lookups?.result ?? res.lookups ?? {};
+            const mapName = (list: any) => {
+              if (!Array.isArray(list)) return [];
+              return list.map((x: any) => ({
+                ...x,
+                name: x.name || x.nameEn || x.nameAr || '',
+              }));
+            };
+
+            this.lookups = {
+              practiceAreas: mapName(data.practiceAreas),
+              matterCategories: mapName(data.matterCategories),
+              matterTypes: mapName(data.matterTypes),
+              jurisdictions: mapName(data.jurisdictions),
+              judicatures: mapName(data.judicatures),
+              matterStatuses: mapName(data.matterStatuses),
+              matterStages: mapName(data.matterStages),
+              branches: mapName(data.branches),
+              referralTypes: mapName(data.referralTypes),
+              users: mapName(data.users),
+              partyTypes: mapName(data.partyTypes),
+              partyDescriptions: mapName(data.partyDescriptions),
+              matterClassCategories: mapName(data.matterClassCategories),
+              taskCodeGroups: mapName(data.taskCodeGroups),
+              taskCodes: mapName(data.taskCodes),
+            };
+
+            // ============ Clients ============
+            // ⭐ extractList بتتعامل مع {data:{items:[]}} و {items:[]} و array مباشرة
+            // const clientsList = this.extractList(res.clients).map((c: any) => ({
+            //   ...c,
+            //   name:
+            //     c.nameEn ||
+            //     c.nameAr ||
+            //     c.name ||
+            //     c.clientCode ||
+            //     `Client #${c.id}`,
+            // }));
+            const clientsList = this.extractList(res.clients).map((c: any) => ({
+              ...c,
+              name: c.clientCode
+                ? `${c.clientCode} - ${c.nameEn || c.nameAr || ''}`.trim()
+                : c.nameEn || c.nameAr || `Client #${c.id}`,
+            }));
+            this.lookupsData = {
+              practiceArea: { result: this.lookups.practiceAreas },
+              jurisdictions: { result: this.lookups.jurisdictions },
+              status: { result: this.lookups.matterStatuses },
+              stages: { result: this.lookups.matterStages },
+              branches: { result: this.lookups.branches },
+              referralType: { result: this.lookups.referralTypes },
+              lawyer: {
+                result: this.lookups.users.filter((u) => u.isLawyer === true),
+              },
+              responableLawyer: { result: this.lookups.users },
+              clients: { result: clientsList },
+            };
+
+            this.initForm();
+          } catch (e) {
+            console.error('[MatterDetailsEditor] lookups processing failed', e);
+            this.isLoading = false;
+          }
+        },
+        error: (err) => {
+          console.error('[MatterDetailsEditor] lookups request failed', err);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  private extractList(res: any): any[] {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    const d = res.data ?? res.result ?? res;
+    if (Array.isArray(d)) return d;
+    if (Array.isArray(d?.items)) return d.items;
+    if (Array.isArray(d?.dataList)) return d.dataList;
+    return [];
+  }
+
   refreshData = effect(() => {
     if (this._matterService.getMatter()) {
       this.formlyModel = { ...this._matterService.getMatter() };
-      console.log('this.formlyModel', this.formlyModel);
     }
   });
 
@@ -50,46 +212,13 @@ export class MatterDetailsEditorComponent
     this.getLookupsData();
   }
 
-  override getLookupsData() {
-    this.isLoading = true;
-    combineLatest({
-      jurisdictions: this._apiService.get(
-        API_Config.general.getJurisdictionLookup,
-      ),
-      status: this._apiService.get(API_Config.general.getMatterStatus),
-      stages: this._apiService.get(API_Config.general.getStages),
-      practiceArea: this._apiService.get(
-        API_Config.general.getPractsAreaLookup,
-      ),
-      clients: this._apiService.get(API_Config.general.getClients),
-      branches: this._apiService.get(API_Config.general.getAllBranches),
-      responableLawyer: this._apiService.get(
-        API_Config.responsibleLawyerSecurity.get,
-      ),
-
-      lawyer: this._apiService.get(API_Config.responsibleLawyerSecurity.getAll),
-      referralType: this._apiService.get(API_Config.general.getReferralType),
-    })
-      .pipe(
-        finalize(() => (this.isLoading = false)),
-        this._unsubscribe.takeUntilDestroy(),
-      )
-      .subscribe({
-        next: (res) => {
-          this.lookupsData = res;
-          this.initForm();
-        },
-      });
-  }
   override initForm(): void {
     this.formlyFields = matterDetailsEditorFields(this);
     this.getParams();
   }
 
   getParams() {
-  this._route.params
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe({
+    this._route.params.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
       next: (param: Params) => {
         if (param['id']) {
           this.matterIdentifier = param['id'];
@@ -98,40 +227,11 @@ export class MatterDetailsEditorComponent
           if (!this._matterService.getMatter()?.openDate) {
             this._matterService.updateMatter({});
           }
-
           this.setFormData();
         }
       },
     });
-}
-  // setFormData() {
-  //   // Set Default value By (setTimeOut & hook init) to detect the default value
-  //   setTimeout(() => {
-  //     this.formlyModel = {
-  //       practsAreaId: 1,
-  //       requestTypeId: 1,
-  //       ...this._matterService.getMatter()
-  //     }
-  //     this.formlyModel = { ...this.formlyModel }
-  //     this.getMatterCategoriesByPracticeArea(this.formlyModel.practsAreaId)
-
-  //   }, 500)
-
-  // }
-  // setFormData() {
-  //   setTimeout(() => {
-  //     this.formlyModel = {
-  //       practsAreaId: 1,
-  //       requestTypeId: 1,
-  //       ...this._matterService.getMatter(),
-  //     };
-
-  //   }, 500);
-  //   this.getMatterCategoriesByPracticeArea(this.formlyModel.practsAreaId);
-  //   this.getParentMatterByClientId(this.formlyModel.clientId);
-  //   this.getMatterTypeByMatterCategory(this.formlyModel.law_MtrCatId);
-  //   this.getJudicatureByJurisdiction(this.formlyModel.jurisdictionId);
-  // }
+  }
 
   setFormData() {
     setTimeout(() => {
@@ -143,7 +243,6 @@ export class MatterDetailsEditorComponent
       if (this.formlyModel.practsAreaId) {
         this.checkIsLitigation(this.formlyModel.practsAreaId);
       }
-
       this.getMatterCategoriesByPracticeArea(this.formlyModel.practsAreaId);
       this.getParentMatterByClientId(this.formlyModel.clientId);
       this.getMatterTypeByMatterCategory(this.formlyModel.law_MtrCatId);
@@ -151,228 +250,356 @@ export class MatterDetailsEditorComponent
     }, 0);
   }
 
-  getMatterById(matterIdentifier: number) {
-    const param = {
-      id: matterIdentifier,
-    };
-    this._apiService
-      .get(API_Config.matters.getById, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          setTimeout(() => {
-            this.formlyModel = {
-              ...res['result'],
-              openDate: res['result']?.openDate
-                ? new Date(res['result']?.openDate)
-                : null,
-              closeDate: res['result']?.closeDate
-                ? new Date(res['result']?.closeDate)
-                : null,
-              law_AssignedLaywerList:
-                Array.isArray(res['result']?.law_AssignedLaywerList) &&
-                res['result']?.law_AssignedLaywerList.length > 0
-                  ? res['result']?.law_AssignedLaywerList?.map(
-                      (obj: any) => obj.id,
-                    )
-                  : [],
-              law_OtherStaffList:
-                Array.isArray(res['result']?.law_OtherStaffList) &&
-                res['result']?.law_OtherStaffList.length > 0
-                  ? res['result']?.law_OtherStaffList?.map((obj: any) => obj.id)
-                  : [],
-            };
-            if (this.formlyModel.practsAreaId) {
-              this.checkIsLitigation(this.formlyModel.practsAreaId);
-            }
-            this.getMatterCategoriesByPracticeArea(
-              this.formlyModel.practsAreaId,
-            );
+ getMatterById(matterIdentifier: number) {
+  const baseUrl = API_Config.matters.getById;
+  const url = baseUrl.includes('{id}')
+    ? baseUrl.replace('{id}', String(matterIdentifier))
+    : `${baseUrl.replace(/\/+$/, '')}/${matterIdentifier}`;
 
-            this.getParentMatterByClientId(this.formlyModel.clientId);
-            this.getMatterTypeByMatterCategory(this.formlyModel.law_MtrCatId);
-            this.getJudicatureByJurisdiction(this.formlyModel.jurisdictionId);
-          });
-        },
-      });
-  }
+  console.log('[MatterDetailsEditor] GET', url);
 
-  // getMatterCategoriesByPracticeArea(practiceAreaId: number) {
-  //   const param = {
-  //     PractsAreaId: practiceAreaId
+  this._apiService
+    .get(url, { LoadFile: false })
+    .pipe(this._unsubscribe.takeUntilDestroy())
+    .subscribe({
+      next: (res: any) => {
+        console.log('[MatterDetailsEditor] RESPONSE =', res);
+
+        // ✅ نستخرج الداتا من أي شكل
+        const body = res?.data ?? res?.result ?? res;
+        const r: any = Array.isArray(body?.items) ? body.items[0] : body;
+
+        if (!r || !r.id) {
+          console.warn('[MatterDetailsEditor] no matter data', res);
+          return;
+        }
+
+        const mappedModel = {
+          ...r,
+          mtrNo: r.matterCode,
+          law_BranchId: r.branchId,
+          practsAreaId: r.practiceAreaId,
+          law_MtrCatId: r.matterCategoryId,
+          mtrTypeId: r.matterTypeId,
+          law_InstructorId: r.instructorClientId,
+          law_ReferralTypeId: r.referralTypeId,
+          tradmarkTypeId: r.trademarkTypeId,
+          law_ResponsibleLaywerId: r.responsibleLawyerId,
+          law_ClientIntroducingId: r.clientIntroducingUserId,
+          law_MatterIntroducingLawyerId: r.matterIntroducingLawyerUserId,
+          openDate: r.openDate ? new Date(r.openDate) : null,
+          closeDate: r.closeDate ? new Date(r.closeDate) : null,
+          law_AssignedLaywerList: Array.isArray(r.assignedLawyerIds)
+            ? r.assignedLawyerIds
+            : Array.isArray(r.assignedLawyers)
+              ? r.assignedLawyers.map((x: any) => x.userId ?? x.id)
+              : [],
+          law_OtherStaffList: Array.isArray(r.otherStaffIds)
+            ? r.otherStaffIds
+            : Array.isArray(r.otherStaff)
+              ? r.otherStaff.map((x: any) => x.userId ?? x.id)
+              : [],
+        };
+
+        setTimeout(() => {
+          this.formlyModel = mappedModel;
+          this._matterService.updateMatter(mappedModel);
+
+          if (this.formlyModel.practsAreaId) {
+            this.checkIsLitigation(this.formlyModel.practsAreaId);
+          }
+          this.getMatterCategoriesByPracticeArea(this.formlyModel.practsAreaId);
+          this.getParentMatterByClientId(this.formlyModel.clientId);
+          this.getMatterTypeByMatterCategory(this.formlyModel.law_MtrCatId);
+          this.getJudicatureByJurisdiction(this.formlyModel.jurisdictionId);
+        }, 0);
+      },
+      error: (err) => {
+        console.error('[MatterDetailsEditor] fetch failed', err);
+      },
+    });
+}
+
+  //  هنااا هيطبق شغل ال hasclasses & hasapplicant
+  /**  client-side filter بدل الـ endpoint القديم */
+  // async getMatterCategoriesByPracticeArea(practiceAreaId: number): Promise<void> {
+  //   if (!practiceAreaId) return;
+
+  //   const cats = this.lookups.matterCategories.filter((c) => c.parentId === practiceAreaId);
+  //   const matterCategoryField = findField(this.formlyFields, 'law_MtrCatId');
+  //   if (matterCategoryField) {
+  //     matterCategoryField.props['optionsArr'] = getOptionsArray(cats, 'id', 'name');
   //   }
-  //   this._apiService
-  //     .get(API_Config.general.getMatterCategoriesLookup, param)
-  //     .pipe(this._unsubscribe.takeUntilDestroy())
-  //     .subscribe({
-  //       next: (res: ApiRes) => {
-  //         const matterCategoryField: FieldTypeConfig = findField(this.formlyFields, 'law_MtrCatId')
-  //         // const matterTypeField: FieldTypeConfig = findField(this.formlyFields, 'mtrTypeId')
-  //         if (matterCategoryField) {
-  //           matterCategoryField.props['optionsArr'] = []
-  //           // matterTypeField.props['optionsArr'] = []
 
-  //           matterCategoryField.props['optionsArr'] = getOptionsArray(res.result, 'id', 'name');
-
-  //           this.formlyModel = { ...this.formlyModel }
-  //         }
-  //       },
-  //     });
+  //   // ⭐ NEW: reset hasClasses لحد ما المستخدم يختار category
+  //   this.formlyModel = {
+  //     ...this.formlyModel,
+  //     hasClasses: false,
+  //   };
+  //   this._matterService.updateMatter(this.formlyModel);
   // }
-  async getMatterCategoriesByPracticeArea(
-    practiceAreaId: number,
-  ): Promise<void> {
-    const param = { PractsAreaId: practiceAreaId };
-    const res = await firstValueFrom(
-      this._apiService.get(API_Config.general.getMatterCategoriesLookup, param),
-    );
 
-    const matterCategoryField = findField(this.formlyFields, 'law_MtrCatId');
-    if (matterCategoryField) {
-      matterCategoryField.props['optionsArr'] = getOptionsArray(
-        res.result,
-        'id',
-        'name',
-      );
-      this.formlyModel = { ...this.formlyModel };
-    }
-  }
+  //   /** ⭐ مفيش call — بنقرأ isLitigation/hasApplicants من practiceArea */
+  //   checkIsLitigation(practsAreaId: number): void {
+  //     if (!practsAreaId) return;
+  //     const pa = this.lookups.practiceAreas.find((p) => p.id === practsAreaId);
+  //     const isLitigation = pa?.isLitigation === true;
+  //     const hasApplicants = pa?.hasApplicants === true;
+
+  //     this.formlyModel = {
+  //       ...this.formlyModel,
+  //       isLitigation,
+  //       hasApplicants,
+  //     };
+
+  //     this._matterService.updateMatter({
+  //       ...this._matterService.getMatter(),
+  //       ...this.formlyModel,
+  //       isLitigation,
+  //       hasApplicants,
+  //     });
+  //   }
+
+  //   /** ⭐ client-side filter */
+  // async getMatterTypeByMatterCategory(matterCategoryId: number) {
+  //   if (!matterCategoryId) return;
+
+  //   const cat = this.lookups.matterCategories.find((c) => c.id === matterCategoryId);
+  //   const types = this.lookups.matterTypes.filter((t) => t.parentId === matterCategoryId);
+
+  //   const matterTypeField: FieldTypeConfig = findField(
+  //     this.formlyFields,
+  //     'mtrTypeId',
+  //   ) as FieldTypeConfig;
+  //   if (matterTypeField) {
+  //     matterTypeField.props['optionsArr'] = getOptionsArray(types, 'id', 'name');
+  //   }
+
+  //   // ⭐ NEW: حفظ hasClasses عشان الـ formly يقرأها
+  //   this.formlyModel = {
+  //     ...this.formlyModel,
+  //     hasClasses: cat?.hasClasses === true,
+  //   };
+  //   this._matterService.updateMatter(this.formlyModel);
+  // }
 
   checkIsLitigation(practsAreaId: number): void {
     if (!practsAreaId) return;
-    const param = { Id: practsAreaId };
-    this._apiService
-      .get(API_Config.general.checkIsLitigation, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res?.isSuccess) {
-            const isLitigation =
-              typeof res.result === 'boolean'
-                ? res.result
-                : String(res.result).toLowerCase() === 'true';
-            this.formlyModel = {
-              ...this.formlyModel,
-              isLitigation,
-            };
+    const pa = this.lookups.practiceAreas.find((p) => p.id === practsAreaId);
+    const isLitigation = pa?.isLitigation === true;
 
-            this._matterService.updateMatter({
-              ...this._matterService.getMatter(),
-              ...this.formlyModel,
-              isLitigation,
-            });
-          }
-        },
-      });
+    this.formlyModel = {
+      ...this.formlyModel,
+      isLitigation,
+    };
+
+    this._matterService.updateMatter({
+      ...this._matterService.getMatter(),
+      ...this.formlyModel,
+      isLitigation,
+    });
   }
 
-  getMatterTypeByMatterCategory(matterCategoryId: number) {
-    const param = {
-      matClntId: matterCategoryId,
-    };
-    this._apiService
-      .get(API_Config.general.getMatterTypesByCategoryId, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          const matterTypeField: FieldTypeConfig = findField(
-            this.formlyFields,
-            'mtrTypeId',
-          );
-          if (matterTypeField) {
-            matterTypeField.props['optionsArr'] = getOptionsArray(
-              res.result,
-              'id',
-              'name',
-            );
-            console.log(matterTypeField);
-            this.formlyModel = { ...this.formlyModel };
-          }
-        },
-      });
+  async getMatterCategoriesByPracticeArea(
+    practiceAreaId: number,
+  ): Promise<void> {
+    if (!practiceAreaId) return;
+
+    const cats = this.lookups.matterCategories.filter(
+      (c) => c.parentId === practiceAreaId,
+    );
+    const matterCategoryField = findField(this.formlyFields, 'law_MtrCatId');
+    if (matterCategoryField) {
+      matterCategoryField.props['optionsArr'] = getOptionsArray(
+        cats,
+        'id',
+        'name',
+      );
+    }
+
+    this._matterService.updateMatter(this.formlyModel);
+  }
+
+  async getMatterTypeByMatterCategory(matterCategoryId: number) {
+    if (!matterCategoryId) return;
+
+    const types = this.lookups.matterTypes.filter(
+      (t) => t.parentId === matterCategoryId,
+    );
+
+    const matterTypeField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'mtrTypeId',
+    ) as FieldTypeConfig;
+    if (matterTypeField) {
+      matterTypeField.props['optionsArr'] = getOptionsArray(
+        types,
+        'id',
+        'name',
+      );
+    }
+
+    this._matterService.updateMatter(this.formlyModel);
   }
 
   getJudicatureByJurisdiction(jurisdictionId: number) {
-    const param = {
-      Law_JurisdictionId: jurisdictionId,
-    };
-    this._apiService
-      .get(API_Config.general.getJudicatureByJurisdictionId, param)
-      .subscribe({
-        next: (res: ApiRes) => {
-          const judicatureField: FieldTypeConfig = findField(
-            this.formlyFields,
-            'judicatureId',
-          );
-          if (judicatureField) {
-            judicatureField.props['optionsArr'] = getOptionsArray(
-              res.result,
-              'id',
-              'name',
-            );
-          }
-        },
-      });
+    if (!jurisdictionId) return;
+    const juds = this.lookups.judicatures.filter(
+      (j) => j.parentId === jurisdictionId,
+    );
+    const judicatureField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'judicatureId',
+    ) as FieldTypeConfig;
+    if (judicatureField) {
+      judicatureField.props['optionsArr'] = getOptionsArray(juds, 'id', 'name');
+    }
   }
 
-  getClientNameAndMattCodeByClient(clientId: number) {
-    const param = { clientId };
-    this._apiService
-      .get(API_Config.matters.getClientNameAndMatterCodeByClientId, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            // this.formlyModel.clientName=res.result['name']
-            this.formlyModel.mtrNo = res.result['mattCode'];
-            this.formlyModel = { ...this.formlyModel };
-          }
-        },
-      });
+  async getClientNameAndMattCodeByClient(clientId: number) {
+    if (!clientId) return;
+    try {
+      const res: any = await firstValueFrom(
+        this._apiService.get(API_Config.matters.nextCode, { clientId }),
+      );
+      this.formlyModel.mtrNo = res?.data ?? res?.result;
+      this.formlyModel = { ...this.formlyModel };
+    } catch {
+    }
   }
-  getParentMatterByClientId(clientId: number) {
-    const param = { clientId };
-    this._apiService
-      .get(API_Config.general.getLawMattertCodeByClient, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res?.isSuccess) {
-            const matterCategoryField: FieldTypeConfig = findField(
-              this.formlyFields,
-              'parentMatterId',
-            );
-            if (matterCategoryField) {
-              matterCategoryField.formControl.reset();
-              matterCategoryField.props['optionsArr'] = getOptionsArray(
-                res.result,
-                'id',
-                'name',
-              );
-            }
-          }
-        },
-      });
+
+// async getParentMatterByClientId(clientId: number) {
+//   if (!clientId) return;
+//   try {
+//     const res: any = await firstValueFrom(
+//       this._apiService.get(API_Config.general.getMainMatters, {
+//         clientId,
+//         mainOnly: true,
+//       }),
+//     );
+
+//     // response shape: { data: { items: [...] }, success: true }
+//     const body = res?.data ?? res?.result ?? {};
+//     const list: any[] = Array.isArray(body?.items)
+//       ? body.items
+//       : Array.isArray(body)
+//         ? body
+//         : [];
+
+//     const parentField: FieldTypeConfig = findField(
+//       this.formlyFields,
+//       'parentMatterId',
+//     ) as FieldTypeConfig;
+
+//     if (parentField) {
+//       parentField.formControl.reset();
+//       parentField.props['optionsArr'] = getOptionsArray(list, 'id', 'code');
+//     }
+//   } catch {
+//   }
+// }
+
+async getParentMatterByClientId(clientId: number) {
+  if (!clientId) return;
+  try {
+    const res: any = await firstValueFrom(
+      this._apiService.get(API_Config.general.getMainMatters, {
+        clientId,
+        mainOnly: true,
+      }),
+    );
+    const body = res?.data ?? res?.result ?? {};
+    const list: any[] = Array.isArray(body?.items)
+      ? body.items
+      : Array.isArray(body)
+        ? body
+        : [];
+
+    const options = list.map((m: any) => ({
+      ...m,
+      name: [m.code, m.descr].filter(Boolean).join(' | '),
+    }));
+
+    const parentField: FieldTypeConfig = findField(
+      this.formlyFields,
+      'parentMatterId',
+    ) as FieldTypeConfig;
+
+    if (parentField) {
+      parentField.formControl.reset();
+      parentField.props['optionsArr'] = getOptionsArray(options, 'id', 'name');
+    }
+  } catch {
   }
-  getCLientNameAndMattCodeByClientAndParent(
+}
+
+async getParentMatterParties(parentMatterId: number) {
+  if (!parentMatterId) return;
+  try {
+    const res: any = await firstValueFrom(
+      this._apiService.get(API_Config.matters.getMatterParties, {
+        'filters[matterId]': parentMatterId,
+      }),
+    );
+
+    console.log('[getParentMatterParties] response =', res);
+
+    // ⭐ استخدم extractList اللي بتتعامل مع {data:{items}} و {data:{dataList}} و array مباشرة
+    const parties = this.extractList(res);
+
+    console.log('[getParentMatterParties] parties count =', parties.length);
+
+    if (!parties.length) {
+      console.log('[getParentMatterParties] no parties — dialog skipped');
+      return;
+    }
+
+    const ref: any = this._dialogService.open(SharedConfirmDialogComponent, {
+      data: {
+        type: ConfirmDialogType.Question,
+        message: "Would you like to add parent's matter parties?",
+        btns: [
+          {
+            label: 'No',
+            styleClass: 'border border-grey500 text-grey500',
+            command: () => {
+              this.clearInheritedParties();
+              ref.close();
+            },
+          },
+          {
+            label: 'Yes',
+            styleClass: 'bg-primary text-white',
+            command: () => {
+              this._matterService.updateMatter({
+                ...this.formlyModel,
+                law_MatterParties: parties,
+              });
+              ref.close(true);
+            },
+          },
+        ],
+      },
+    });
+  } catch (err) {
+    console.error('[getParentMatterParties] error', err);
+  }
+}
+
+  async getCLientNameAndMattCodeByClientAndParent(
     clientId: number,
     parentId: number,
   ) {
-    const param = { clientId, parentId };
-    this._apiService
-      .get(API_Config.matters.getCLientNameAndMattCodeByClientAndParent, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            console.log('getCLientNameAndMattCodeByClientAndParent', res);
-            this.formly.patchValue({
-              clientName: res.result['name'],
-              mtrNo: res.result['mattCode'],
-            });
-          }
-        },
-      });
+    if (!parentId) return;
+    try {
+      const res: any = await firstValueFrom(
+        this._apiService.get(API_Config.matters.nextCode, {
+          parentMatterId: parentId,
+        }),
+      );
+      this.formly.patchValue({ mtrNo: res?.data ?? res?.result });
+    } catch {
+    }
   }
 
   clearInheritedParties(): void {
@@ -380,7 +607,6 @@ export class MatterDetailsEditorComponent
       ...this.formlyModel,
       law_MatterParties: [],
     };
-
     this._matterService.updateMatter({
       ...this._matterService.getMatter(),
       ...this.formlyModel,
@@ -388,71 +614,6 @@ export class MatterDetailsEditorComponent
     });
   }
 
-  getParentMatterParties(parentMatterId: number) {
-    const payload = {
-      matterId: parentMatterId,
-    };
-    this._apiService
-      .get(API_Config.matters.getPartiesByMatterId, payload)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess && res['result'].dataList.length > 0) {
-            const confirmDeleteRef = this._dialogService.open(
-              SharedConfirmDialogComponent,
-              {
-                data: {
-                  type: ConfirmDialogType.Question,
-                  message: "Would you like to add parent's matter parties?",
-                  btns: [
-                    {
-                      label: 'No',
-                      styleClass: 'border border-grey500 text-grey500',
-                      command: () => {
-                        this.clearInheritedParties();
-                        confirmDeleteRef.close();
-                      },
-                    },
-                    {
-                      label: 'Yes',
-                      styleClass: 'bg-primary text-white',
-                      command: () => {
-                        this._matterService.updateMatter({
-                          ...this.formlyModel,
-                          law_MatterParties: res['result'].dataList,
-                        });
-                        confirmDeleteRef.close(true);
-                      },
-                    },
-                  ],
-                },
-              },
-            );
-          }
-        },
-      });
-  }
-  // nextPage() {
-  //   this._matterService.updateMatter(this.formlyModel);
-  //   this._matterService.updateRefreshCurrentTab(true);
-  //   switch (this.formlyModel?.practsAreaId) {
-  //     case this.practiceArea.Litigation:
-  //       this._router.navigate(['parties'], { relativeTo: this._route });
-  //       break;
-  //     case this.practiceArea.Corporate:
-  //       this._router.navigate(['billing'], { relativeTo: this._route });
-  //       break;
-
-  //             case this.practiceArea.IntelecturualProperty:
-  //       this._router.navigate(['applicant'], { relativeTo: this._route });
-  //       break;
-
-  //     // default:
-  //     //   this._router.navigate(['applicant'], { relativeTo: this._route });
-  //     //   break;
-
-  //   }
-  // }
   nextPage() {
     this._matterService.updateMatter(this.formlyModel);
     this._matterService.updateRefreshCurrentTab(true);
@@ -472,53 +633,7 @@ export class MatterDetailsEditorComponent
     this._router.navigate(['/matters']);
   }
 
-  //
-  // override onSubmit(): void {
-  //   console.log('onSubmit');
-
-  //   if (this.formly.invalid) {
-  //     const text = this._languageService.getTransValue('messages.pleaseFillRequiredData');
-  //     this._toastrNotifiService.displayError(text);
-  //     return;
-  //   }
-  //   this.isLoading = true;
-  //   const requestPayload = this.removeNullOrUndefinedValues({
-  //     ...this.formlyModel,
-  //     law_MatterApplicants: this.formlyModel?.law_MatterApplicants?.length > 0 ? this.formlyModel?.law_MatterApplicants?.map((obj: any) => {
-  //       const { id, ...rest } = obj
-  //       return rest
-  //     }) : [],
-  //   });
-
-  //   const pathApi = this.matterIdentifier ? API_Config.matters.update : API_Config.matters.create;
-
-  //   this._apiService
-  //     .post(pathApi, requestPayload)
-  //     .pipe(
-  //       finalize(() => (this.isLoading = false)),
-  //       this._unsubscribe.takeUntilDestroy()
-  //     )
-  //     .subscribe({
-  //       next: (res: ApiRes) => {
-  //         if (res?.isSuccess) {
-  //           this._toastrNotifiService.displaySuccess(res?.message);
-  //           this._matterService.updateMatter({});
-  //           setTimeout(() => {
-  //             this._router.navigate(['/matters', this.matterIdentifier]);
-  //           }, 500)
-  //         } else {
-  //           this._toastrNotifiService.displayError(res?.message);
-  //         }
-  //       },
-  //       error: (err: any) => {
-  //         this._toastrNotifiService.displayError(err?.error?.message);
-  //       },
-  //     });
-  // }
-
   override onSubmit(): void {
-    console.log('onSubmit');
-
     if (this.formly.invalid) {
       const text = this._languageService.getTransValue(
         'common.pleaseFillRequiredData',
@@ -529,39 +644,67 @@ export class MatterDetailsEditorComponent
 
     this.isSubmitted = true;
     this.isLoading = true;
-    const requestPayload = this.removeNullOrUndefinedValues({
-      law_AssignedLaywerList: [],
-      law_OtherStaffList: null,
-      law_MatterParties: [],
-      law_MatterContactss: [],
-      billingTemplatId: null,
-      emailTemplatId: null,
-      defaultTaskTypeId: 1,
-      billingTypeId: 1,
-      defaultRateId: 1,
-      defaultRate: 'A',
 
-      billingClaimAmount: null,
-      law_MatterClass: null,
-      ...this.formlyModel,
-      law_MatterApplicants:
-        this.formlyModel?.law_MatterApplicants?.length > 0
-          ? this.formlyModel?.law_MatterApplicants?.map((obj: any) => {
-              const { id, ...rest } = obj;
-              return rest;
-            })
-          : [],
+    const m: any = this.formlyModel;
+
+    const payload: any = {
+      requestTypeId: m.requestTypeId,
+      parentMatterId: m.parentMatterId ?? null,
+      clientId: m.clientId,
+      instructorClientId: m.law_InstructorId,
+      branchId: m.law_BranchId,
+      practiceAreaId: m.practsAreaId,
+      matterCategoryId: m.law_MtrCatId,
+      matterTypeId: m.mtrTypeId,
+      jurisdictionId: m.jurisdictionId,
+      judicatureId: m.judicatureId,
+      statusId: m.statusId,
+      stageId: m.stageId,
+      referralTypeId: m.law_ReferralTypeId,
+      descr: m.descr,
+      courtNumber: m.courtNumber,
+      notes: m.notes,
+      matterCode: m.mtrNo,
+      matterBalance: m.matterBalance,
+      trademarkTypeId: m.tradmarkTypeId,
+      wordMark: m.wordMark,
+      isCaseSensitive: m.isCaseSensitive,
+      trademarkLogo: m.logoFileBase64,
+      openDate: m.openDate,
+      closeDate: m.closeDate,
+      responsibleLawyerId: m.law_ResponsibleLaywerId,
+      clientIntroducingUserId: m.law_ClientIntroducingId,
+      matterIntroducingLawyerUserId: m.law_MatterIntroducingLawyerId,
+      isActive: true,
+      assignedLawyerIds: m.law_AssignedLaywerList ?? [],
+      otherStaffIds: m.law_OtherStaffList ?? [],
+      parties: (m.law_MatterParties ?? []).map(
+        ({ id, matterId, ...rest }: any) => rest,
+      ),
+      applicants: (m.law_MatterApplicants ?? []).map(
+        ({ id, ...rest }: any) => rest,
+      ),
+      classes: (m.law_MatterClass ?? []).map(({ id, ...rest }: any) => rest),
+      billing: m.billing,
+    };
+
+    Object.keys(payload).forEach((k) => {
+      if (payload[k] === null || payload[k] === undefined) delete payload[k];
     });
 
     const pathApi = this.matterIdentifier
-      ? API_Config.matters.update
+      ? `${API_Config.matters.update}/${this.matterIdentifier}`
       : API_Config.matters.create;
 
-    this._apiService
-      .post(pathApi, requestPayload)
+    const req$ = this.matterIdentifier
+      ? this._apiService.put(pathApi, payload)
+      : this._apiService.post(pathApi, payload);
+
+    req$
       .pipe(
         finalize(() => {
-          ((this.isSubmitted = false), (this.isLoading = false));
+          this.isSubmitted = false;
+          this.isLoading = false;
         }),
         this._unsubscribe.takeUntilDestroy(),
       )
@@ -572,11 +715,11 @@ export class MatterDetailsEditorComponent
             this._matterService.updateMatter({});
             this.resetFormData();
             setTimeout(() => {
-              if (this.matterIdentifier) {
-                this._router.navigate(['/matters', this.matterIdentifier]);
-              } else {
-                this._router.navigate(['/matters']);
-              }
+              this._router.navigate(
+                this.matterIdentifier
+                  ? ['/matters', this.matterIdentifier]
+                  : ['/matters'],
+              );
             }, 500);
           } else {
             this._toastrNotifiService.displayError(res?.message);
@@ -585,43 +728,16 @@ export class MatterDetailsEditorComponent
         error: (err: any) => {
           const backendMessage =
             err?.error?.message || err?.error?.title || err?.message;
-
-          if (
-            backendMessage?.includes('entity changes') ||
-            backendMessage?.includes('FOREIGN KEY') ||
-            backendMessage?.includes('constraint')
-          ) {
-            this._toastrNotifiService.displayError(
-              backendMessage ||
-                'Please make sure all required fields are filled correctly.',
-            );
-          } else {
-            this._toastrNotifiService.displayError(
-              backendMessage || 'Something went wrong. Please try again.',
-            );
-          }
+          this._toastrNotifiService.displayError(
+            backendMessage || 'Something went wrong. Please try again.',
+          );
         },
       });
   }
 
   private resetFormData(): void {
     this.formlyModel = {};
-
-    if (this.formly) {
-      this.formly.reset();
-    }
-  }
-
-  private removeNullOrUndefinedValues(obj: { [key: string]: any }): {
-    [key: string]: any;
-  } {
-    const cleanedObj: { [key: string]: any } = {};
-    Object.keys(obj).forEach((key) => {
-      if (obj[key] !== null && obj[key] !== undefined) {
-        cleanedObj[key] = obj[key];
-      }
-    });
-    return cleanedObj;
+    if (this.formly) this.formly.reset();
   }
 
   ngOnDestroy(): void {

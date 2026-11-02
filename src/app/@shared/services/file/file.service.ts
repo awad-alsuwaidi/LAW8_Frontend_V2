@@ -13,7 +13,6 @@ export class FileService {
   private _toastrNotifiService = inject(ToastrNotifiService);
   private _languageService = inject(LanguageService);
 
-
   downloadFileFromPath(path: string, name: string) {
     if (!path) {
       console.warn('FileService: No path provided');
@@ -47,12 +46,27 @@ export class FileService {
         catchError((error: HttpErrorResponse) => {
           if (error.status === 404) {
             this._toastrNotifiService.displayError(
-              this._languageService.getTransValue('common.fileDownloadError')
+              this._languageService.getTransValue('common.fileDownloadError'),
             );
           }
           return throwError(() => error);
         }),
       );
+  }
+
+  downloadMatterDocument(id: number, inline: boolean = false) {
+    const path = API_Config.matterDocuments.download.replace(
+      '{id}',
+      String(id),
+    );
+    const url = `${environment.baseUrl}/api/v1/${path}`;
+
+    return this._http.get(url, {
+      params: { inline: inline.toString() },
+      observe: 'response',
+      responseType: 'blob',
+      withCredentials: true,
+    });
   }
 
   downloadDocumentTAsk(id: number | string) {
@@ -67,15 +81,15 @@ export class FileService {
     });
   }
 
-downloadDocumentPredefiendTask(id: number | string) {
-  const url = `${environment.baseUrl}/api/v1/${API_Config.predefinedTasks.download}/${id}/download`;
+  downloadDocumentPredefiendTask(id: number | string) {
+    const url = `${environment.baseUrl}/api/v1/${API_Config.predefinedTasks.download}/${id}/download`;
 
-  return this._http.get(url, {
-    responseType: 'blob',
-    observe: 'response',
-    withCredentials: true,
-  });
-}
+    return this._http.get(url, {
+      responseType: 'blob',
+      observe: 'response',
+      withCredentials: true,
+    });
+  }
 
   previewFileFromPath(path: string) {
     if (!path) {
@@ -141,8 +155,6 @@ downloadDocumentPredefiendTask(id: number | string) {
       return file.type === type;
     });
   }
-
-
 
   isValidFileSize(file: File, maxSizeInMB: number): boolean {
     if (!file) return false;

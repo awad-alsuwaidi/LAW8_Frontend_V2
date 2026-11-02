@@ -1,4 +1,5 @@
 import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
@@ -21,81 +22,133 @@ import { finalize } from 'rxjs';
 })
 export class MatterTimesheetComponent implements OnInit, OnDestroy {
   _permissionService = inject(PermissionService);
-
   _languageService = inject(LanguageService);
   _unsubscribeService = inject(UnsubscribeService);
   _apiService = inject(ApiService);
+  _route = inject(ActivatedRoute);
+
   data: MatterTimesheetDto[] = [];
-  totalRecords: number = 0;
+  totalRecords = 0;
   matterTimesheetColumns = Matter_Timesheet_Columns;
-  filterOptions: any = {
-    pageNum: 1,
-    pagSize: 10,
-    orderByDirection: 'ASC',
+  isLoading = false;
+
+  filterOptions = {
+    pageNumber: 1,
+    pageSize: 10,
+    sortBy: 'date',
+    isDescending: true,
   };
-  sortField = '';
-  sortOrder = 1; 
-  
+
+  sortField = 'date';
+  sortOrder = -1;
+
+  private _matterIdentifier?: number;
+  private _initialized = false;
+
   @Input() set id(value: number) {
-    this.matterIdentifier = value;
+    this._setMatterId(value);
   }
-  matterIdentifier?: number;
+  @Input() set matterIdentifier(value: number) {
+    this._setMatterId(value);
+  }
+  get matterIdentifier(): number | undefined {
+    return this._matterIdentifier;
+  }
+
+  private _setMatterId(value: number | null | undefined): void {
+    if (value == null) return;
+    this._matterIdentifier = Number(value);
+    if (this._initialized) {
+      this.getData();
+    }
+  }
+
+  get visibleColumns() {
+    return this.matterTimesheetColumns.filter(
+      (col) =>
+        !col.requiredPermission ||
+        this._permissionService.hasPermission(col.requiredPermission),
+    );
+  }
+
+  hasPermission(permission: string): boolean {
+    return this._permissionService.hasPermission(permission);
+  }
+
   ngOnInit(): void {
+    if (this._matterIdentifier == null) {
+      const routeId =
+        this._route.snapshot.paramMap.get('id') ??
+        this._route.snapshot.paramMap.get('matterId');
+      if (routeId) this._matterIdentifier = Number(routeId);
+    }
+
+    this._initialized = true;
     this.getData();
   }
 
-  isLoading!: boolean;
+  getData(): void {
+    if (this._matterIdentifier == null) {
+      this.data = [];
+      this.totalRecords = 0;
+      return;
+    }
 
-get visibleColumns() {
-  return this.matterTimesheetColumns.filter(col =>
-    !col.requiredPermission ||
-    this._permissionService.hasPermission(col.requiredPermission)
-  );
-}
+    this.isLoading = true;
 
-
-  getData() {
-    this.filterOptions.matterId = this.matterIdentifier;
-    this.isLoading = true; 
+    // ← الريكوست بيتبعت بالأسماء الجديدة مباشرة
+    const params = {
+      ...this.filterOptions,
+      matterId: this._matterIdentifier,
+    };
 
     this._apiService
-      .get(API_Config.matterTimeSheet.get, this.filterOptions)
+      .get(API_Config.matterTimeSheet.get, params)
       .pipe(
         this._unsubscribeService.takeUntilDestroy(),
-        finalize(() => (this.isLoading = false))
+        finalize(() => (this.isLoading = false)),
       )
       .subscribe({
         next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this.data = res.result.dataList;
-            this.totalRecords = res.result.totalCount;
+          if (!res?.isSuccess) {
+            this.data = [];
+            this.totalRecords = 0;
+            return;
           }
+
+          const r: any = res.result;
+
+          const list: MatterTimesheetDto[] =
+            (Array.isArray(r?.items) && r.items) ||
+            (Array.isArray(r?.dataList) && r.dataList) ||
+            (Array.isArray(r) && r) ||
+            [];
+
+          this.data = list;
+          this.totalRecords = r?.totalCount ?? list.length;
         },
-        error: (err) => {
-          //console.error('Error fetching timesheet data:', err);
+        error: () => {
+          this.data = [];
+          this.totalRecords = 0;
         },
       });
   }
 
   onSort(event: any): void {
-  this.sortField = event.field;
-  this.sortOrder = event.order;
-
-  this.filterOptions.orderBy = event.field;
-  this.filterOptions.orderByDirection =
-    event.order === 1 ? 'ASC' : 'DESC';
-
-  this.filterOptions.pageNum = 1;
-
-  this.getData();
-}
-
-  onPageChange(event: PaginatorState): void {
-    this.filterOptions.pagSize = Number(event.rows);
-    this.filterOptions.pageNum = (event.first ?? 0) / (event.rows ?? 0) + 1;
-    this.filterOptions = { ...this.filterOptions };
+    this.sortField = event.field;
+    this.sortOrder = event.order;
+    this.filterOptions.sortBy = event.field;
+    this.filterOptions.isDescending = event.order === -1;
+    this.filterOptions.pageNumber = 1;
     this.getData();
   }
+
+  onPageChange(event: PaginatorState): void {
+    this.filterOptions.pageSize = Number(event.rows);
+    this.filterOptions.pageNumber = (event.first ?? 0) / (event.rows ?? 0) + 1;
+    this.getData();
+  }
+
   ngOnDestroy(): void {
     this._unsubscribeService.destroy();
   }

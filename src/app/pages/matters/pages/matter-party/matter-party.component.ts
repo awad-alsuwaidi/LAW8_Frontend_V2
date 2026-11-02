@@ -5,7 +5,6 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  ViewChild,
 } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
@@ -62,22 +61,12 @@ export class MatterPartyComponent implements OnInit, OnDestroy {
   partiesStatusConfig = matter_Parties_statusConfig;
   matterPartyColumns = matterPartyColumns;
   filterOptions: any = {
-    pageNum: 1,
-    pagSize: 5,
-    orderByDirection: 'ASC',
+    PageNumber: 1,      
+    PageSize: 5,        
+    SortBy: null,       
+    IsDescending: false  
   };
-  // emptyConfig: EmptyConfig = {
-  //   messageTitle: 'No Parties',
-  //   description: 'You have no Parties yet، Start adding Parties on the top corner button',
-  //   addPermission:'',
-  //   addButton: {
-  //     label: 'Add New Party',
 
-  //     command: () => {
-  //       this.openPartyEditor()
-  //     }
-  //   }
-  // }
   emptyConfig: EmptyConfig = {
     messageTitle: this._languageService.getTransValue(
       'matters.emptyTitleParty',
@@ -98,7 +87,6 @@ export class MatterPartyComponent implements OnInit, OnDestroy {
     this.matterIdentifier = value;
   }
   matterIdentifier: any;
-  // collect form data from pervious steps
   formlyModel: any;
   getFormsData = effect(() => {
     if (this._matterService.getMatter()) {
@@ -116,51 +104,55 @@ export class MatterPartyComponent implements OnInit, OnDestroy {
   }
 
   getParties() {
-    this.filterOptions = {
+    const params = {
       ...this.filterOptions,
-      matterId: this.matterIdentifier,
+      'filters[matterId]': this.matterIdentifier, 
     };
+    
     this._apiService
-      .get(API_Config.matterParties.get, this.filterOptions)
+      .get(API_Config.matterParties.get, params)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
           if (res && res.isSuccess) {
-            this.data = res.result.dataList;
-            this.totalRecords = res.result.totalCount;
+            const result: any = res.result;
+            this.data = result?.items || result?.dataList || result?.data || [];
+            this.totalRecords = result?.totalCount || result?.totalItems || this.data.length;
           }
         },
       });
   }
   
-onSort(event: any): void {
-  if (this._router.url.includes('add')) {
-    const field = event.field as keyof MatterPartyDto;
-    const order = event.order; 
+  onSort(event: any): void {
+    if (this._router.url.includes('add')) {
+      const field = event.field as keyof MatterPartyDto;
+      const order = event.order; 
 
-    if (!field) return;
+      if (!field) return;
 
-    this.data = [...this.data].sort((a, b) => {
-      let aVal = a[field];
-      let bVal = b[field];
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        aVal = aVal.toLowerCase();
-        bVal = bVal.toLowerCase();
-      }
+      this.data = [...this.data].sort((a, b) => {
+        let aVal = a[field];
+        let bVal = b[field];
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          aVal = aVal.toLowerCase();
+          bVal = bVal.toLowerCase();
+        }
 
-      if (aVal < bVal) return order === 1 ? -1 : 1;
-      if (aVal > bVal) return order === 1 ? 1 : -1;
-      return 0;
-    });
+        if (aVal < bVal) return order === 1 ? -1 : 1;
+        if (aVal > bVal) return order === 1 ? 1 : -1;
+        return 0;
+      });
 
-    this.filterOptions.pageNum = 1;
-    return;
+      this.filterOptions.PageNumber = 1;
+      return;
+    }
+
+    this.filterOptions.SortBy = event.field;
+    this.filterOptions.IsDescending = event.order === -1; 
+        this.filterOptions.PageNumber = 1; 
+    
+    this.getParties();
   }
-  this.filterOptions.orderBy = event.field;
-  this.filterOptions.orderByDirection = event.order === 1 ? 'ASC' : 'DESC';
-  this.filterOptions.pageNum = 1;
-  this.getParties();
-}
 
   openPartyEditor(rowData?: MatterPartyDto) {
     const ref = this._dialogService.open(MatterPartyEditorComponent, {
@@ -227,7 +219,8 @@ onSort(event: any): void {
       },
     );
   }
-  deleteParty(party: MatterPartyDto) {
+
+    deleteParty(party: MatterPartyDto) {
     if (this._router.url.includes('add')) {
       this.data = this.data.filter((obj) => obj != party);
       this.totalRecords = this.data.length;
@@ -238,13 +231,14 @@ onSort(event: any): void {
       });
 
       this._toastrNotifiService.displaySuccess('Party deleted successfully');
-
       this.deleteDialogRef.close();
       return;
     }
 
+    const url = `${API_Config.matterParties.delete}/${party.id}`;
+
     this._apiService
-      .post(API_Config.matterParties.delete, {}, { id: party.id })
+      .delete(url) 
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
@@ -253,8 +247,11 @@ onSort(event: any): void {
               res.message || 'Party deleted successfully',
             );
 
-            this.data.length == 1 ? this.filterOptions.pageNum-- : null;
-            this.getParties();
+            if (this.data.length === 1) {
+              this.filterOptions.pageNum--;
+            }
+            
+            this.getParties(); 
             this.deleteDialogRef.close();
           } else {
             this._toastrNotifiService.displayError(
@@ -262,19 +259,18 @@ onSort(event: any): void {
             );
           }
         },
-
-        error: () => {
+        error: (err: any) => {
           this._toastrNotifiService.displayError(
-            'Something went wrong while deleting party',
+            err?.error?.message || 'Something went wrong while deleting party',
           );
         },
       });
   }
 
   onPageChange(event: any): void {
-    this.filterOptions.pagSize = Number(event.rows);
-    this.filterOptions.pageNum = event.first / event.rows + 1;
-    this.filterOptions = { ...this.filterOptions };
+    this.filterOptions.PageSize = Number(event.rows);
+    this.filterOptions.PageNumber = event.first / event.rows + 1;
+    
     this.getParties();
   }
 

@@ -1,7 +1,18 @@
-import { FormlyFieldConfig } from "@ngx-formly/core";
-import { MatterPartyEditorComponent } from "./matter-party-editor.component";
+import { FormlyFieldConfig } from '@ngx-formly/core';
+import { MatterPartyEditorComponent } from './matter-party-editor.component';
 
-export function matterPartyEditorFieldsConfig(THIS: MatterPartyEditorComponent): FormlyFieldConfig[] {
+export function matterPartyEditorFieldsConfig(
+  THIS: MatterPartyEditorComponent,
+): FormlyFieldConfig[] {
+  const partyTypes = (): any[] => {
+    const r = THIS.lookupsData?.partyType?.result;
+    return Array.isArray(r) ? r : [];
+  };
+  const partyDescriptions = (): any[] => {
+    const r = THIS.lookupsData?.partyDescription?.result;
+    return Array.isArray(r) ? r : [];
+  };
+
   return [
     {
       fieldGroupClassName: 'grid gap-4 md:grid-cols-2',
@@ -12,59 +23,67 @@ export function matterPartyEditorFieldsConfig(THIS: MatterPartyEditorComponent):
           props: {
             label: THIS._languageService.getTransValue('matters.partyType'),
             required: true,
-            optionsArr:THIS.lookupsData.partyType.result.map((obj:any)=>({label: obj.name,value: +obj.id,})),
+            optionsArr: partyTypes().map((obj: any) => ({
+              label: obj.name,
+              value: +obj.id,
+            })),
             onChange: (e: any) => {
-              THIS.formly?.get('partyType')?.setValue(e?.originalEvent.target.innerText)
-            }
+              const item = partyTypes().find((p: any) => +p.id === +e.value);
+              THIS.formly?.get('partyType')?.setValue(item?.name ?? '');
+            },
           },
         },
         {
           key: 'partyType',
         },
+
         {
           key: 'name',
           type: 'input',
           props: {
-            label:THIS._languageService.getTransValue('matters.partyName'),
+            label: THIS._languageService.getTransValue('matters.partyName'),
             required: true,
           },
         },
+
         {
-          key: 'law_PartiesDescriptionId',
+          key: 'partyDescriptionId',
           type: 'select',
           props: {
-            required: true,
-            label:THIS._languageService.getTransValue('matters.party'),
-            optionsArr:THIS.lookupsData.partyDescription.result.map((obj:any)=>({label: obj.name,value: obj.id,})),
+            label: THIS._languageService.getTransValue('matters.party'),
+            optionsArr: partyDescriptions().map((obj: any) => ({
+              label: obj.name,
+              value: obj.id,
+            })),
             onChange: (e: any) => {
-              THIS.getPositionByDescriptionId(e.value)
-              THIS.formly
-                ?.get('law_PartiesDescription')?.setValue(e?.originalEvent.target.innerText);
+              THIS.getPositionByDescriptionId(e.value);
+              const item = partyDescriptions().find(
+                (p: any) => p.id === e.value,
+              );
+              THIS.formly?.get('partyDescription')?.setValue(item?.name ?? '');
             },
           },
           expressions: {
-            hide: (field: FormlyFieldConfig) => {
-              return field.model?.partyTypeId == 6 || field.model?.partyTypeId == 7;
-            },
+            hide: (field: FormlyFieldConfig) =>
+              field.model?.partyTypeId == 6 || field.model?.partyTypeId == 7,
           },
         },
         {
-          key: 'law_PartiesDescription',
+          key: 'partyDescription',
         },
+
         {
           key: 'position',
           type: 'select',
           props: {
             label: THIS._languageService.getTransValue('matters.position'),
-            // required: true,
           },
           expressions: {
-            hide: (field: FormlyFieldConfig) => {
-              return field.model?.partyTypeId == 6 || field.model?.partyTypeId == 7;
-            },
+            hide: (field: FormlyFieldConfig) =>
+              field.model?.partyTypeId == 6 || field.model?.partyTypeId == 7,
           },
         },
       ],
     },
-  ]
+  ];
 }
