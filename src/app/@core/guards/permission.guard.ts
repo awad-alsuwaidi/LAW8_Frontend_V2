@@ -107,7 +107,7 @@ export const permissionGuard: CanActivateFn = (
     console.warn('🚫 Access denied:', requiredPermission, '| URL:', state.url);
 
     _toastrNotifiService.displayError(
-      _languageService.getTransValue('matters.yyouDontHavePermission')
+      _languageService.getTransValue('matters.dontHavePermission')
     );
 
     return _router.parseUrl('/dashboard');

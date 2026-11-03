@@ -81,9 +81,6 @@ export class MatterBillingRateExceptionEditorComponent extends FormBaseClass imp
             this._toastrNotifiService.displaySuccess(res?.message);
             this.reset();
             this._dynamicDialogRef.close(true)
-            // if(!this.isSaveAndNew)this._dynamicDialogRef.close(true);
-
-            // this.isSaveAndNew=false
             
           } else {
             this._toastrNotifiService.displayError(res?.message);

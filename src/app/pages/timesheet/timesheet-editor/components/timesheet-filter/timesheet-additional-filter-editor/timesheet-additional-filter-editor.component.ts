@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FieldTypeConfig } from '@ngx-formly/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { combineLatest } from 'rxjs';
+import { catchError, combineLatest, forkJoin, of } from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { FormBaseClass } from 'src/app/@core/classes/form-base.class';
 import { ApiRes } from 'src/app/@core/models/apiRes-model';
@@ -28,21 +28,106 @@ export class TimesheetAdditionalFilterEditorComponent
   }
 
   override getLookupsData(): void {
-    combineLatest({
-      lawyers: this._apiService.get(
-        API_Config.general.getUsersInitialViewForTimeShet,
+    this.isLoading = true;
+
+    forkJoin({
+      lawyers: this._apiService
+        .get('MatterTimesheet/users', { mode: 'view' })
+        .pipe(
+          catchError((e) => {
+            console.error('[Lookups] users failed:', e);
+            return of(null);
+          }),
+        ),
+
+      tasks: this._apiService.get('lookups', { types: 'taskCodes' }).pipe(
+        catchError((e) => {
+          console.error('[Lookups] tasks failed:', e);
+          return of(null);
+        }),
       ),
-      tasks: this._apiService.get(API_Config.general.getTaskCode),
-      matterCode: this._apiService.get(API_Config.general.getMatterCodes),
+
+      matters: this._apiService
+        .get('lookups/Matters', {
+          pageNumber: 1,
+          pageSize: 500,
+          searchTerm: '',
+        })
+        .pipe(
+          catchError((e) => {
+            console.error('[Lookups] matters failed:', e);
+            return of(null);
+          }),
+        ),
     })
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res) => {
-          this.lookupsData = res;
+        next: (res: any) => {
+          const isArabic = (document.documentElement.lang || 'en')
+            .toLowerCase()
+            .startsWith('ar');
+
+  
+          const unwrap = (response: any) =>
+            response?.result ?? response?.data ?? response ?? null;
+
+          // Lawyers
+          const usersData = unwrap(res.lawyers);
+          const users = Array.isArray(usersData)
+            ? usersData
+            : (usersData?.items ?? []);
+
+          // Tasks
+          const tasksData = unwrap(res.tasks);
+          const tasks = Array.isArray(tasksData)
+            ? tasksData
+            : (tasksData?.taskCodes ?? []);
+
+          // Matters
+          const mattersData = unwrap(res.matters);
+          const matters = Array.isArray(mattersData)
+            ? mattersData
+            : (mattersData?.items ?? []);
+
+          this.lookupsData = {
+            lawyers: {
+              result: users.map((u: any) => ({
+                ...u,
+                id: u.userId ?? u.id,
+                userId: u.userId ?? u.id,
+                name: u.name ?? '',
+              })),
+            },
+
+            tasks: {
+              result: tasks.map((t: any) => ({
+                ...t,
+                name: isArabic
+                  ? t.nameAr || t.nameEn || ''
+                  : t.nameEn || t.nameAr || '',
+              })),
+            },
+
+            matterCode: {
+              result: matters.map((m: any) => ({
+                ...m,
+                name: m.code ? `${m.code} | ${m.descr || ''}` : m.descr || '',
+              })),
+            },
+          };
+
+          console.log('========== MAPPED FILTER LOOKUPS ==========');
+          console.log('Lawyers:', this.lookupsData.lawyers.result);
+          console.log('Tasks:', this.lookupsData.tasks.result);
+          console.log('Matters:', this.lookupsData.matterCode.result);
+
           this.isLoading = false;
+
           this.initForm();
         },
-        error: () => {
+
+        error: (e) => {
+          console.error('[FilterLookups] failed:', e);
           this.isLoading = false;
         },
       });
@@ -115,6 +200,7 @@ export class TimesheetAdditionalFilterEditorComponent
         },
       });
   }
+
   getMatterTypeByMatterCategoryOptions(matterCategory: number) {
     const param = { matClntId: matterCategory };
     this._apiService
@@ -141,13 +227,20 @@ export class TimesheetAdditionalFilterEditorComponent
     this.formlyModel = {};
     this.formly.reset();
   }
-  onSubmit() {
-    this.formly.markAllAsTouched();
 
-    if (this.formly.valid) {
-      this._dynamicDialogRef.close(this.formly.value);
-    } else {
-      console.log('Form has validation errors, cannot submit');
-    }
-  }
+onSubmit() {
+  this.formly.markAllAsTouched();
+  if (!this.formly.valid) return;
+
+  const cleaned = Object.fromEntries(
+    Object.entries(this.formly.value).filter(
+      ([, v]) => v !== null && v !== undefined && v !== '',
+    ),
+  );
+
+  this._dynamicDialogRef.close({
+    filters: cleaned,
+    lookupsData: this.lookupsData,
+  });
+}
 }

@@ -15,7 +15,7 @@ import { filter } from 'rxjs';
 import { SharedModule } from '@shared/shared.module';
 import { environment } from 'src/environments/environment';
 import { AppConfigService } from 'src/app/@core/services/app-config.service';
-import { AuthService } from 'src/app/@core/services';
+import { AuthService, ToastrNotifiService } from 'src/app/@core/services';
 
 @Component({
   selector: 'app-sidebar',
@@ -27,10 +27,13 @@ import { AuthService } from 'src/app/@core/services';
 export class SidebarComponent implements OnInit, AfterViewInit {
   _menuService = inject(MenuService);
   _languageService = inject(LanguageService);
+  _toastrNotifiService = inject(ToastrNotifiService);
   _router = inject(Router);
   _appConfigService = inject(AppConfigService);
-    _authService=inject(AuthService);
-  
+  _authService = inject(AuthService);
+  showCrmDialog = false;
+
+  readonly doc8Url = 'https://white-desert-093726a00.3.azurestaticapps.net/';
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
   selectedItem: any = null;
@@ -119,17 +122,54 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     this.contextMenuVisible = false;
   }
 
+  openDoc8(): void {
+    window.open(this.doc8Url, '_blank', 'noopener,noreferrer');
+  }
+
+  openCrm(): void {
+    this.showCrmDialog = true;
+  }
+
+  openUnavailableModule(): void {
+    this._toastrNotifiService.displayError(
+      this._languageService.getTransValue('menu.moduleUnavailable'),
+    );
+
+    this.showCrmDialog = false;
+  }
+
+  // public onMenuItemClick(item: SubMenuItem, event: MouseEvent) {
+  //   event.stopPropagation();
+  //   if (item.children?.length) {
+  //     item.expanded = !item.expanded;
+  //   } else if (item.route) {
+  //     this.activeRoute = item.route;
+  //     this._router.navigate([item.route]);
+  //   }
+  //   setTimeout(() => this.updateScrollbar(), 0);
+  // }
   public onMenuItemClick(item: SubMenuItem, event: MouseEvent) {
     event.stopPropagation();
+
+    if (item.action === 'open-doc8') {
+      this.openDoc8();
+      return;
+    }
+
+    if (item.action === 'open-crm') {
+      this.openCrm();
+      return;
+    }
+
     if (item.children?.length) {
       item.expanded = !item.expanded;
     } else if (item.route) {
       this.activeRoute = item.route;
       this._router.navigate([item.route]);
     }
+
     setTimeout(() => this.updateScrollbar(), 0);
   }
-
   private normalizeUrl(url: string): string {
     return (url || '').split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
   }

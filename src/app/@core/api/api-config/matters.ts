@@ -28,6 +28,7 @@ export const Matters_API = {
     getMatterParties: 'MatterParties',
     toggleImportant: 'Matters',
     deactiveMatter: 'Matters/{id}/activation',
+    getMatterCodeByMatterId: 'lookups/matters',
     // ============ ⚠️ DEPRECATED — مؤقتاً ============
     /** @deprecated استخدم nextCode */
     getClientNameAndMatterCodeByClientId:
@@ -41,7 +42,7 @@ export const Matters_API = {
     // ============ V1 (شغالة) ============
     delete: 'Law_Matter/Delete',
     uploadLogo: 'Law_Matter/UploadLogo',
-    getMatterCodeByMatterId: 'AppLookup/GetMatterCodeById',
+    // getMatterCodeByMatterId: 'AppLookup/GetMatterCodeById',
     updateGeneral: 'Law_Matter/UpdateGeneral',
     // deactiveMatter: 'Law_Matter/Law_MatterActiveAndDeactive',
     importentMatter: 'Law_Matter/SetUserImportent',

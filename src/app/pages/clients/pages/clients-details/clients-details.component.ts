@@ -88,14 +88,14 @@ export class ClientsDetailsComponent implements OnInit, OnDestroy {
       },
 
       // after add matter طه طه طاااهااا
-      // {
-      //   label: this._languageService.getTransValue('clients.relatedMatters'),
-      //   command: () => {
-      //     this._router.navigate(['./related-matters'], {
-      //       relativeTo: this._route,
-      //     });
-      //   },
-      // },
+      {
+        label: this._languageService.getTransValue('clients.relatedMatters'),
+        command: () => {
+          this._router.navigate(['./related-matters'], {
+            relativeTo: this._route,
+          });
+        },
+      },
     ];
     this.setActiveTab(this._router.url);
   }

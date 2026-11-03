@@ -28,6 +28,7 @@ export class MatterAttachmentEditorComponent
   existingAttachmentPath?: string;
   existingAttachmentName?: string;
 
+  existingAttachmentExtension?: string;
   attachmentType: 'file' | 'url' = 'file';
   _fileService = inject(FileService);
 
@@ -80,19 +81,17 @@ export class MatterAttachmentEditorComponent
           this.existingAttachmentPath = isLink ? linkPath : filePath;
 
           this.existingAttachmentName =
-            r.attachmentName ||
-            r.originalFileName ||
             r.name ||
+            r.originalFileName ||
             this.getFileNameFromUrl(this.existingAttachmentPath);
+          this.existingAttachmentExtension = r.extension || '';
 
           const matterId = r.matterId ?? r.law_MatterId ?? r.Law_MatterId;
 
           this.formlyModel = {
             ...r,
-
             attachmentType: this.attachmentType,
             linkURL: isLink ? linkPath : '',
-
             documentDate: r.documentDate
               ? formatDate(
                   r.documentDate,
@@ -111,13 +110,11 @@ export class MatterAttachmentEditorComponent
                   GLOBAL_DATE_TIME_Without_Seconds_FORMATE,
                 )
               : '',
-
             isActive: r.isActive ?? true,
             sharedWithClient: r.sharedWithClient ?? false,
             matterId,
             law_MatterId: matterId,
             Law_MatterId: matterId,
-
             attachment: null,
           };
         },
@@ -126,13 +123,83 @@ export class MatterAttachmentEditorComponent
   }
 
   viewExistingAttachment() {
-    if (!this.existingAttachmentPath) {
+    if (this.attachmentType === 'url' || this.formlyModel?.isLink) {
+      const url =
+        this.formlyModel?.linkURL ||
+        this.formlyModel?.url ||
+        this.existingAttachmentPath;
+      if (!url) {
+        this._toastrNotifiService.displayError('Link is not available.');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (!this.documentId) {
       this._toastrNotifiService.displayError(
         'Attachment file is not available yet.',
       );
       return;
     }
-    this._fileService.previewFileFromPath(this.existingAttachmentPath);
+    const ext =
+      this.existingAttachmentExtension?.replace('.', '').toLowerCase() || '';
+    const previewExtensions = [
+      'pdf',
+      'png',
+      'jpg',
+      'jpeg',
+      'svg',
+      'gif',
+      'bmp',
+      'webp',
+    ];
+    const canPreview = previewExtensions.includes(ext);
+
+    if (canPreview) {
+      this._fileService
+        .downloadMatterDocument(this.documentId, true)
+        .subscribe({
+          next: (response: any) => {
+            const blob = new Blob([response.body], {
+              type:
+                response.headers.get('content-type') ??
+                'application/octet-stream',
+            });
+            const blobUrl = window.URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank', 'noopener,noreferrer');
+          },
+          error: (err) => console.error('Preview failed:', err),
+        });
+    } else {
+      this._fileService
+        .downloadMatterDocument(this.documentId, false)
+        .subscribe({
+          next: (response: any) => {
+            const blob = new Blob([response.body], {
+              type:
+                response.headers.get('content-type') ??
+                'application/octet-stream',
+            });
+            const fileName = this.formlyModel?.description
+              ? `${this.formlyModel.description}${this.existingAttachmentExtension || ''}`
+              : (this.formlyModel?.originalFileName ??
+                `document_${this.documentId}`);
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          },
+          error: (err) => {
+            console.error('Download failed:', err);
+          },
+        });
+    }
   }
 
   enableChangeAttachment() {
@@ -189,7 +256,7 @@ export class MatterAttachmentEditorComponent
 
     const requestPayload: any = {
       id: this.isEdit ? this.documentId : undefined,
-      matterId,      
+      matterId,
       description: this.formlyModel.description,
       documentDate: formatDate(this.formlyModel.documentDate, 'yyyy-MM-dd'),
       expirationDate: this.formlyModel.expirationDate

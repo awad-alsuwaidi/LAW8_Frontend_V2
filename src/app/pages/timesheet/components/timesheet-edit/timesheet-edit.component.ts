@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { combineLatest, finalize } from 'rxjs';
+import { combineLatest, finalize, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { FormBaseClass } from 'src/app/@core/classes/form-base.class';
 import { ApiRes } from 'src/app/@core/models/apiRes-model';
@@ -14,13 +15,14 @@ import { DatePipe } from '@angular/common';
 // export enum TaskEnum {
 //   Billable = 1,
 //   NonBillable = 2,
-//   Internal = 3,
+//   NoCharge = 3,
 // }
 export enum TaskEnum {
-  Billable = 1,
-  NonBillable = 2,
-  NoCharge = 3,
+  Billable = 12,
+  NonBillable = 1,
+  NoCharge = 4,
 }
+
 @Component({
   selector: 'app-timesheet-edit',
   standalone: true,
@@ -34,147 +36,131 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
   _authService = inject(AuthService);
   zeroAmountTaskIds = [TaskEnum.NonBillable, TaskEnum.NoCharge];
 
-
-ngOnInit(): void {
-  this.getLookupsData();
-}
+  ngOnInit(): void {
+    this.getLookupsData();
+  }
 
   transformDate(date: any): string | null {
     return date
       ? this._datePipe.transform(
           date,
-          GLOBAL_DATE_TIME_Without_Seconds2_FORMATE
+          GLOBAL_DATE_TIME_Without_Seconds2_FORMATE,
         )
       : null;
   }
 
   override getLookupsData(): void {
     this.isLoading = true;
+
+    const lookupTypes = ['taskCodes', 'billingHolds'];
+
+    const lookupsQuery = lookupTypes
+      .map((t, i) => `types[${i}]=${t}`)
+      .join('&');
+
+    const lookupsUrl = `${API_Config.timesheet.lookups}?${lookupsQuery}`;
+    const mattersUrl = `lookups/Matters?pageNumber=1&pageSize=100`;
+    const usersUrl = `MatterTimesheet/users?mode=add`;
+
+    const timesheetId = this._dynamicDialogConfig.data?.id;
+
+    const timesheetReq$ = timesheetId
+      ? this._apiService
+          .get(`${API_Config.timesheet.list}/${timesheetId}`)
+          .pipe(catchError(() => of(null)))
+      : of(null);
+
     combineLatest({
-      matterId: this._apiService.get(API_Config.general.getMatterCodes),
-      lawyers: this._apiService.get(
-        API_Config.general.getUsersInitialSaparateForTimeShet
+      matters: this._apiService.get(mattersUrl).pipe(
+        catchError((err) => {
+          console.error('MATTERS API ERROR:', err);
+          return of(null);
+        }),
       ),
-      tasks: this._apiService.get(API_Config.general.getTaskCode),
-      holds: this._apiService.get(API_Config.general.getAllBillingHold),
+
+      users: this._apiService.get(usersUrl).pipe(
+        catchError((err) => {
+          console.error('USERS API ERROR:', err);
+          return of(null);
+        }),
+      ),
+
+      lookups: this._apiService.get(lookupsUrl).pipe(
+        catchError((err) => {
+          console.error('LOOKUPS API ERROR:', err);
+          return of(null);
+        }),
+      ),
+
+      timesheet: timesheetReq$,
     })
       .pipe(
         finalize(() => (this.isLoading = false)),
-        this._unsubscribe.takeUntilDestroy()
+        this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe({
-        next: (res) => {
-          this.lookupsData = res;
-          this.initForm();
+        next: (res: any) => {
+          // Extract data from API response
+          const matters = res.matters?.result?.items ?? [];
+          const lawyers = res.users?.result ?? [];
+          const tasks = res.lookups?.result?.taskCodes ?? [];
+          const holds = res.lookups?.result?.billingHolds ?? [];
+
+          this.lookupsData = {
+            matterId: { result: matters },
+            lawyers: { result: lawyers },
+            tasks: { result: tasks },
+            holds: { result: holds },
+          };
+
+          console.log('Loaded Matters:', matters);
+          console.log('Loaded Lawyers:', lawyers);
+          console.log('Loaded Tasks:', tasks);
+          console.log('Loaded Holds:', holds);
+
+          // Initialize form after loading lookups
+          const apiData = res.timesheet?.result;
+          this.initForm(apiData);
+        },
+
+        error: (err) => {
+          console.error('Error loading timesheet data:', err);
+          this.isLoading = false;
         },
       });
   }
 
-  override getData(): void {
-    if (this._dynamicDialogConfig.data?.id) {
-      const params = { id: this._dynamicDialogConfig.data.id };
-      this._apiService
-        .get(API_Config.timesheet.getById, params)
-        .pipe(this._unsubscribe.takeUntilDestroy())
-        .subscribe({
-          next: (res: ApiRes) => {
-            if (res && res.isSuccess) {
-            //   this.formlyModel = {
-            //     ...res.result,
-            //   };
-           const dateValue = res.result.tmDateDate || res.result.tmDate;
-
-this.formlyModel = {
-  ...res.result,
-  tmDateDate: dateValue
-    ? new Date(
-        new Date(dateValue).getFullYear(),
-        new Date(dateValue).getMonth(),
-        new Date(dateValue).getDate()
-      )
-    : null,
-};
-              this.convertMatterIdToObject();
-              this.setFormData();
-setTimeout(() => {
-  this.calculateAmount();
-});
-            }
-          },
-        });
-    }
-  }
-
-isZeroAmountTask(taskId: any): boolean {
-  const id = typeof taskId === 'object' ? taskId?.value : taskId;
-  return this.zeroAmountTaskIds.includes(Number(id));
-}
-
-calculateAmount(): void {
-  const taskId = this.formly.get('law_TaskCodeId')?.value;
-  const amountControl = this.formly.get('amount');
-  if (this.isZeroAmountTask(taskId)) {
-    amountControl?.setValue(0, { emitEvent: false });
-    this.formlyModel = {
-      ...this.formlyModel,
-      amount: 0,
-    };
-    return;
-  }
-  const rate = Number(this.formly.get('rate')?.value) || 0;
-  const hours = Number(this.formly.get('hours')?.value) || 0;
-  const amount = +(rate * hours).toFixed(2);
-  amountControl?.setValue(amount, { emitEvent: false });
-
-  this.formlyModel = {
-    ...this.formlyModel,
-    amount,
-  };
-}
-
-handleAmountByTask(): void {
-  const taskValue = this.formly.get('law_TaskCode')?.value 
-                 || this.formly.get('taskId')?.value;
-
-  const taskId = typeof taskValue === 'object' ? taskValue.value : taskValue;
-
-  const amountControl = this.formly.get('amount');
-
-  if (this.zeroAmountTaskIds.includes(taskId)) {
-    amountControl?.setValue(0, { emitEvent: false });
-    amountControl?.disable({ emitEvent: false });
-    this.formlyModel.amount = 0;
-  } else {
-    amountControl?.enable({ emitEvent: false });
-  }
-}
-
-  initForm(): void {
+  initForm(apiData?: any): void {
+    // 1. بناء الـ Fields بعد ما الـ Lookups اتحدثت
     this.formlyFields = timesheetEditorFormlyConfig(this);
-    if (this._dynamicDialogConfig.data?.id) {
-      this.getData();
-    } else {
-      this.setFormData();
-    }
-  }
 
-  convertMatterIdToObject(): void {
-    if (
-      this.formlyModel.matterId &&
-      typeof this.formlyModel.matterId === 'number'
-    ) {
-      const matterOptions = this.lookupsData?.matterId?.result;
-      if (matterOptions) {
-        const selectedMatter = matterOptions.find(
-          (matter: any) => matter.id === this.formlyModel.matterId
-        );
-        if (selectedMatter) {
-          this.formlyModel.matterId = {
-            label: selectedMatter.name,
-            value: selectedMatter.id,
-          };
-        }
-      }
+    // 2. تحديد مصدر الداتا
+    const rowData = apiData || this._dynamicDialogConfig.data;
+
+    if (rowData && Object.keys(rowData).length > 0) {
+      const dateValue = rowData.date;
+
+      // 👇 تعيين القيم كأرقام صريحة لتطابق الـ value في الـ Dropdowns
+      this.formlyModel = {
+        ...rowData,
+        tmDateDate: dateValue ? new Date(dateValue) : new Date(),
+        law_TaskCodeId: rowData.taskCodeId,
+        law_LawerId: rowData.userId,
+        explanationExplanation: rowData.description,
+        holdId: rowData.hold,
+        rate: rowData.rateAmount ?? rowData.rate,
+        amount: rowData.amount,
+        matterId: rowData.matterId, // رقم 7
+      };
+
+      this.setFormData();
+
+      setTimeout(() => {
+        this.calculateAmount();
+      }, 100);
+    } else {
+      this.formlyModel = {};
+      this.setFormData();
     }
   }
 
@@ -182,107 +168,91 @@ handleAmountByTask(): void {
     if (!this.formlyModel || Object.keys(this.formlyModel).length === 0) {
       this.formlyModel = { ...this._dynamicDialogConfig.data };
     }
-      // holds: this._apiService.get(API_Config.general.getAllBillingHold),
-
-    if (
-      this.formlyModel?.matterId &&
-      typeof this.formlyModel.matterId === 'number'
-    ) {
-      this.convertMatterIdToObject();
-    }
   }
 
   private formatDateOnly(date: any): string | null {
-  if (!date) return null;
-
-  if (typeof date === 'string') {
-    return date.includes('T') ? date.split('T')[0] : date;
+    if (!date) return null;
+    if (typeof date === 'string') {
+      return date.includes('T') ? date.split('T')[0] : date;
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  isZeroAmountTask(taskId: any): boolean {
+    const id = typeof taskId === 'object' ? taskId?.value : taskId;
+    return this.zeroAmountTaskIds.includes(Number(id));
+  }
 
-  return `${year}-${month}-${day}`;
-}
+  calculateAmount(): void {
+    const taskId = this.formly.get('law_TaskCodeId')?.value;
+    const amountControl = this.formly.get('amount');
 
+    if (this.isZeroAmountTask(taskId)) {
+      amountControl?.setValue(0, { emitEvent: false });
+      this.formlyModel = { ...this.formlyModel, amount: 0 };
+      return;
+    }
+    const rate = Number(this.formly.get('rate')?.value) || 0;
+    const hours = Number(this.formly.get('hours')?.value) || 0;
+    const amount = +(rate * hours).toFixed(2);
+    amountControl?.setValue(amount, { emitEvent: false });
+    this.formlyModel = { ...this.formlyModel, amount };
+  }
 
-onSubmit(): void {
-  this.formly.markAllAsTouched();
+  onSubmit(): void {
+    this.formly.markAllAsTouched();
+    if (this.formly.invalid) return;
 
-  if (this.formly.invalid) return;
+    const formValue = this.formly.getRawValue();
+    const matterId =
+      typeof formValue.matterId === 'object'
+        ? formValue.matterId?.value
+        : formValue.matterId;
 
-  const formValue = this.formly.getRawValue();
+    const payload = {
+      matterId: matterId,
+      date: this.formatDateOnly(formValue.tmDateDate),
+      taskCodeId: formValue.law_TaskCodeId,
+      userId: formValue.law_LawerId,
+      hours: Number(formValue.hours) || 0,
+      rateId: this.formlyModel?.rateId || null,
+      description: formValue.explanationExplanation,
+      notes: formValue.notes || '',
+      hold: formValue.holdId || 1,
+    };
 
-const matterId =
-  typeof formValue.matterId === 'object'
-    ? formValue.matterId?.value
-    : formValue.matterId;
+    this.isSubmitted = true;
 
-const payload = {
-  id: this.formlyModel?.id,
-  matterId: matterId,
-  law_LawerId: formValue.law_LawerId,
-  mtrNo: this.formlyModel?.mtrNo,
-  law_TaskCodeId: formValue.law_TaskCodeId,
-
-  tmDateDate: this.formatDateOnly(formValue.tmDateDate),
-
-  hours: Number(formValue.hours) || 0,
-  explanationExplanation: formValue.explanationExplanation,
-  notes: formValue.notes || '',
-  // rate: Number(formValue.rate) || 0,
-  // amount: this.isZeroAmountTask(formValue.law_TaskCodeId)
-  //   ? 0
-  //   : Number(formValue.amount) || 0,
-  rate:
-  formValue.rate != null
-    ? Number(formValue.rate)
-    : this.formlyModel?.rate,
-
-amount: this.isZeroAmountTask(formValue.law_TaskCodeId)
-  ? 0
-  : (
-      (
-        formValue.rate != null
-          ? Number(formValue.rate)
-          : Number(this.formlyModel?.rate || 0)
-      ) * (Number(formValue.hours) || 0)
-    ),
-
-  hold: this.formlyModel?.hold ?? null,
-  holdId: formValue.holdId,
-  holdName: this.formlyModel?.holdName ?? null,
-  item: formValue.explanationExplanation || 'Timesheet Entry',
-};
-
-  this.isSubmitted = true;
-
-  this._apiService
-    .post(API_Config.timesheet.updateList, payload)
-    .pipe(
-      finalize(() => (this.isSubmitted = false)),
-      this._unsubscribe.takeUntilDestroy()
-    )
-    .subscribe({
-      next: (res: ApiRes) => {
-        if (res.isSuccess) {
-          this._toastrNotifiService.displaySuccess(
-            res.message || 'تم الحفظ بنجاح ✅'
-          );
-          this._dynamicDialogRef.close(true);
-        } else {
+    this._apiService
+      .put(`${API_Config.timesheet.list}/${this.formlyModel.id}`, payload)
+      .pipe(
+        finalize(() => (this.isSubmitted = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res.isSuccess) {
+            this._toastrNotifiService.displaySuccess(
+              res.message || 'تم الحفظ بنجاح ✅',
+            );
+            this._dynamicDialogRef.close({
+              success: true,
+              id: this.formlyModel.id,
+            });
+          } else {
+            this._toastrNotifiService.displayError(
+              res.message || 'فشل في العملية ❌',
+            );
+          }
+        },
+        error: (err: any) => {
           this._toastrNotifiService.displayError(
-            res.message || 'فشل في العملية ❌'
+            err?.error?.message || 'حدث خطأ غير متوقع ❌',
           );
-        }
-      },
-      error: (err) => {
-        console.error('Error while saving timesheet:', err);
-        this._toastrNotifiService.displayError(
-          err?.error?.message || 'حدث خطأ غير متوقع ❌'
-        );
-      },
-    });
-}
+        },
+      });
+  }
 }

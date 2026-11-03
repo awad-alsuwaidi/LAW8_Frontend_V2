@@ -27,4 +27,5 @@ export interface SubMenuItem {
   children?: SubMenuItem[];
   activeMatchers?: RegExp[];
   active?: boolean;
+  action?: 'open-doc8' | 'open-crm';
 }

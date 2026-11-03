@@ -941,18 +941,14 @@ export class MatterActivityEditorComponent
       }
     });
 
-    // ============ HEARING files → 'files' ============
     hearingFilesForPayload.forEach((item: any) => {
       const file = this.extractFile(item);
       if (file) formData.append('files', file, file.name);
     });
 
-    // ============ NEW SESSION nested payload ============
-    // (نفس شكل الريكوست القديم الشغال)
     if (this.formlyModel?.isNewHearingSession && newSessionModel) {
       const ns = newSessionModel;
 
-      // 1) Date
       const rawDate = ns.newSessionStartDate;
       const nsDate =
         rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
@@ -964,7 +960,6 @@ export class MatterActivityEditorComponent
         );
       }
 
-      // 2) Scalar fields
       if (ns.law_ActivityStatusId != null) {
         formData.append(
           'NewSession.law_ActivityStatusId',
@@ -992,19 +987,16 @@ export class MatterActivityEditorComponent
         formData.append('NewSession.litigatorId', String(ns.litigatorId));
       }
 
-      // 3) Date fields (defaults = today, زي القديم)
       const today = new Date().toISOString().split('T')[0];
       formData.append('NewSession.DocumentDate', today);
       formData.append('NewSession.ReceivedDate', today);
       formData.append('NewSession.DocumentDescription', '');
 
-      // 4) New session files → 'NewSession.Attachments'
       newSessionFilesForPayload.forEach((item: any) => {
         const file = this.extractFile(item);
         if (file) formData.append('NewSession.Attachments', file, file.name);
       });
 
-      // 5) New session doc refs (for Edit only)
       if (newSessionExistingIds.length) {
         newSessionExistingIds.forEach((id) =>
           formData.append('NewSession.matterDocumentIds', String(id)),
@@ -1017,7 +1009,6 @@ export class MatterActivityEditorComponent
       }
     }
 
-    // ============ Call API ============
     const baseUpdate = API_Config.matterActivity.update;
     const url = isEdit
       ? baseUpdate.includes('{id}')
@@ -1192,17 +1183,32 @@ export class MatterActivityEditorComponent
   }
 
   getMatterCodeByMatterId() {
-    const param = {
-      id: this._dynamicDialogConfig?.data?.matterIdentifier,
-    };
+    const matterId = this._dynamicDialogConfig?.data?.matterIdentifier;
+    if (!matterId) {
+      console.warn('No matterIdentifier found');
+      return;
+    }
+
+    let path = API_Config.matters.getMatterCodeByMatterId;
+    if (path.includes('{id}')) {
+      path = path.replace('{id}', String(matterId));
+    } else if (path.includes('{matterId}')) {
+      path = path.replace('{matterId}', String(matterId));
+    } else {
+      path = `${path.replace(/\/$/, '')}/${matterId}`;
+    }
+
     this._apiService
-      .get(API_Config.matters.getMatterCodeByMatterId, param)
+      .get(path)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: any) => {
-          this.formlyModel.mtrNo =
-            res?.['result']?.name || res?.['data']?.name || '';
+          const payload = res?.data || res?.result;
+          this.formlyModel.mtrNo = payload?.matterCode || payload?.name || '';
           this.formlyModel = { ...this.formlyModel };
+        },
+        error: (err) => {
+          console.error('Error fetching matter code:', err);
         },
       });
   }

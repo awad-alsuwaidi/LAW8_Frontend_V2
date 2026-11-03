@@ -284,6 +284,11 @@ export const PAGES_ROUTES: Routes = [
     data: { permission: 'Add_Client', breadcrumb: 'menu.clients.title' },
   },
   {
+    path: 'timesheet',
+    loadChildren: () =>
+      import('./timesheet/timesheet.route').then((mod) => mod.TIMESHEET_ROUTES),
+  },
+  {
     path: 'matters',
     loadComponent: () =>
       import('./matters/matters.component').then((m) => m.MattersComponent),

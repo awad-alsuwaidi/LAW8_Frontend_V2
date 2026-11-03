@@ -90,15 +90,14 @@ export class MatterTaskGroupComponent implements OnInit, OnDestroy {
   }
 
     onSubmit(): void {
-    if (!this.taskGroupIdentifier) return; // لو مفيش جروب متختار
+    if (!this.taskGroupIdentifier) return; 
     
     this.isLoading = true;
     
     const payload = {
       matterId: this.matterIdentifier,
       taskGroupId: this.taskGroupIdentifier,
-      matterTaskStatusId: 1, // الافتراضي "Created"
-      // 👇 بناخد الـ taskId مش الـ id
+      matterTaskStatusId: 1, 
       predefinedTaskIds: this.selectedTasks.map(obj => obj.taskId)
     };
 
@@ -132,16 +131,13 @@ export class MatterTaskGroupComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res: any) => {
-          // الـ ApiService بيرجع الداتا في res.result (أو res.data)
           const groupData = res.result || res.data;
           
-          // المهام موجودة جوه items
           const items = groupData?.items || [];
           
           this.data = items.map((item: any) => {
             return {
               ...item,
-              // بنحط الاسم في description عشان يظهر في عمود الوصف
               taskDescription: item.taskNameEn || item.taskNameAr || '---',
             };
           });

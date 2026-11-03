@@ -1,21 +1,119 @@
-export interface TimesheetDto {
+// ===================== Lookup =====================
+export interface LookupItem {
+  id: number;
+  name: string;
+  code?: string;
+  isBillable?: boolean;
+  amount?: number;
+  [key: string]: any;
+}
+
+// ===================== Timesheet list row (list page) =====================
+export interface TimesheetListItemDto {
   id: number;
   matterId: number;
-  law_LawerId: string;
-  mtrNo: string;
-  law_TaskCodeId: number;
-  tmDate: string;
+  matterCode: string;
+  clientName: string;
+
+  userId: string | number;
+  userName: string;
+  userInitial: string;
+
+  taskCodeId: number;
+  taskCodeName: string;
+
+  date: string;                          // YYYY-MM-DD
   hours: number;
-  rate: number;
-  explanationExplanation: string;
-  notes: null;
-  taskCodeName: null;
-  initial: null;
-  amount: null;
-  hold: null;
-  law_Lawer: string;
-  law_TaskCode: string;
-  totalAmount: number;
-  tmTime: string;
-  invoiceNo:number
+  description: string;
+  notes?: string;
+
+  hold: number;                          // 1 = No Hold, 2 = Hold, 3 = Never Bill
+  holdName: string;
+
+  statusCode: string;                    // Draft | Submitted | Approved | ...
+  statusName: string;
+
+  rateId?: number | null;
+  rateAmount?: number | null;            // null = مفيش صلاحية أسعار
+  amount?: number;
+  effectiveBillable?: number | null;
+  isBillable: boolean;
+
+  canEdit: boolean;
+  invoiceNo?: string | null;             // deprecated
+
+  serial?: number;                       // عمود serial في القايمة
 }
+
+// ===================== Timesheet editor row =====================
+export interface TimesheetRowDto {
+  id?: number | null;
+  matterId: number | null;
+  matterCode?: string;
+  clientName?: string;
+  userId: string | number | null;
+  userName?: string;
+  userInitial?: string;
+  taskCodeId: number | null;
+  taskCodeName?: string;
+  date: string;
+  hours: number;
+  description: string;
+  notes?: string;
+  hold: number;
+  holdName?: string;
+  rateId?: number | null;
+  rateAmount?: number | null;
+  amount?: number;
+  effectiveBillable?: number | null;
+  isBillable?: boolean;
+  statusCode?: string;
+  statusName?: string;
+  canEdit?: boolean;
+}
+
+// ===================== Summary =====================
+export interface TimesheetSummary {
+  billableHours: number;
+  nonBillableHours: number;
+  noChargeHours: number;
+  totalHours: number;
+}
+
+// ===================== Rate suggestion =====================
+export interface RateSuggestionResponse {
+  rate?: number | null;
+  rateAmount?: number | null;
+  rateId?: number | null;
+  taskCodeId?: number | null;
+  taskCodeName?: string;
+  clientName?: string;
+  matterCode?: string;
+  amount?: number | null;
+  isBillable?: boolean;
+  availableRates?: LookupItem[];
+}
+
+// ===================== Batch payload =====================
+export interface BatchRowPayload {
+  id?: number | null;
+  matterId: number;
+  userId: string | number;
+  taskCodeId: number;
+  clientName: string;
+  date: string;
+  hours: number;
+  description: string;
+  notes?: string;
+  hold: number;
+  rateId?: number | null;
+}
+
+export interface BatchPayload {
+  items: BatchRowPayload[];
+  submit: boolean;
+}
+
+// ===================== Legacy alias (مؤقتًا) =====================
+/** @deprecated استخدم TimesheetListItemDto */
+export type TimesheetDto = TimesheetListItemDto;

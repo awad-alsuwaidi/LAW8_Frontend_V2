@@ -24,16 +24,7 @@
               {{ titleKey | translate }}
             </h1>
 
-            <!-- <h1 class="font-bold lg:text-2xl text-lg text-colorsTextTextPrimary leading-9">
-        {{ _router.url.includes('inactive') ? ('clients.inactiveClients' | translate) : ('clients.clients' | translate)
-        }}
-      </h1> -->
-
             @if (!_router.url.includes("inactive")) {
-              <!-- <app-shared-button [icon]="'icon-add-circle text-primary !text-2xl '" [requiredPermission]="'Add_Client'"
-        [label]="'menu.clientAdd' | translate" [styleClass]="
-                  'flex text-blue600 !text-sm !py-1 !px-0 !font-medium !leading-8'
-                " [routerLink]="['/clients/add']" /> -->
               <app-shared-button
                 [icon]="'icon-add-circle text-primary !text-2xl '"
                 [requiredPermission]="'Add_Client'"
@@ -77,30 +68,24 @@
                     <h1
                       class="font-bold text-sm text-textSecondary mb-2 truncate max-w-[250px]"
                       [innerHTML]="client.nameEn | highlight: searchValue"
-                    >
-                      <!-- {{ client.name }} -->
-                    </h1>
+                    ></h1>
                     <p
                       class="font-medium text-grey500 text-xs truncate max-w-[120px]"
-                      [innerHTML]="client.contact.email | highlight: searchValue"
-                    >
-                      <!-- {{ client.email }} -->
-                    </p>
+                      [innerHTML]="
+                        client.contact.email | highlight: searchValue
+                      "
+                    ></p>
                   </div>
                 </div>
                 <div>
                   <h1
                     class="font-bold text-xs text-colorsTextTextPrimary mb-2"
                     [innerHTML]="client.clientCode | highlight: searchValue"
-                  >
-                    <!-- {{ client.clntNo }} -->
-                  </h1>
+                  ></h1>
                   <p
                     class="font-medium text-xs text-grey500"
                     [innerHTML]="client.balance | highlight: searchValue"
-                  >
-                    <!-- {{ client.balance }} -->
-                  </p>
+                  ></p>
                 </div>
               </a>
             }

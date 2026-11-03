@@ -105,29 +105,6 @@ export function matterTaskEditorFields(THIS: MatterTaskEditorComponent) {
             'props.readonly': 'formState.readonly',
           },
         },
-        // {
-        //   key: 'percentComplete',
-        //   type: 'input',
-        //   props: {
-        //     type: 'number',
-        //     label: THIS._languageService.getTransValue('matters.percentComplete') || 'Percent Complete (%)',
-        //     min: 0,
-        //     max: 100,
-        //   },
-        //   expressions: {
-        //     'props.readonly': 'formState.readonly',
-        //   },
-        // },
-        // {
-        //   key: 'isPrivate',
-        //   type: 'switch',
-        //   props: {
-        //     label: THIS._languageService.getTransValue('matters.isPrivate'),
-        //   },
-        //   expressions: {
-        //     'props.readonly': 'formState.readonly',
-        //   },
-        // },
         {
           key: 'note',
           type: 'textarea',

@@ -17,10 +17,8 @@
     }
 }
 
-// View Mode Styling
 :host.view-mode {
   ::ng-deep {
-    // إخفاء الـ input borders والـ styling
     .ng-pristine,
     .ng-untouched,
     .ng-valid {
@@ -39,7 +37,6 @@
       }
     }
 
-    // إخفاء الـ disabled state styling
     input:disabled,
     textarea:disabled,
     select:disabled {
@@ -49,7 +46,6 @@
       background-color: transparent !important;
     }
 
-    // إخفاء الـ icons والـ arrows
     .p-dropdown-trigger,
     .p-calendar-trigger {
       display: none !important;

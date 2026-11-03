@@ -112,38 +112,6 @@ export class MatterAttachmentComponent implements OnInit, OnDestroy {
     this.getAttachments();
   }
 
-  // downloadAttachment(file: any) {
-  //   this._fileService.downloadDocument(file.id).subscribe({
-  //     next: (response: any) => {
-  //       const blob = new Blob([response.body], {
-  //         type: response.headers.get('content-type') ?? 'application/octet-stream',
-  //       });
-  //       const extension = file.fileName?.split('.').pop();
-  //       const fileName = file.description ? `${file.description}.${extension}` : (file.fileName ?? 'download');
-  //       const url = window.URL.createObjectURL(blob);
-  //       const a = document.createElement('a');
-  //       a.href = url;
-  //       a.download = fileName;
-  //       document.body.appendChild(a);
-  //       a.click();
-  //       document.body.removeChild(a);
-  //       window.URL.revokeObjectURL(url);
-  //     },
-  //   });
-  // }
-
-  // openAttachment(attachment: any) {
-  //   const cleanUrl = attachment.filePathe?.split('?')[0] || attachment.filePath?.split('?')[0];
-  //   const ext = cleanUrl?.split('.').pop()?.toLowerCase();
-  //   const previewExtensions = ['pdf', 'png', 'jpg', 'svg', 'jpeg', 'gif', 'bmp', 'webp'];
-
-  //   if (previewExtensions.includes(ext!)) {
-  //     this._fileService.previewFileFromPath(attachment.filePathe || attachment.filePath);
-  //   } else {
-  //     this.downloadAttachment(attachment);
-  //   }
-  // }
-
   openAttachmentEditor(rowData?: MatterAttachmentDto) {
     const ref = this._dialogService.open(MatterAttachmentEditorComponent, {
       header: rowData

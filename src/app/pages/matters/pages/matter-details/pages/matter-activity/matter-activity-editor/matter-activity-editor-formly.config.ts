@@ -162,7 +162,6 @@ export function matterActivityEditorFields(
               'matters.adjournmentReason',
             ),
             virtualScroll: true,
-            //required: true,
             optionsArr: THIS.lookupsData.adjournmentReasons.result.map(
               (obj: any) => ({
                 label: obj.name,
@@ -346,16 +345,6 @@ export function matterActivityEditorFields(
               return activityStatus === MatterActivityType.Completed;
             },
           },
-          // hooks: {
-          //   onInit: (field: any) => {
-          //     if (
-          //       field.formControl.value === null ||
-          //       field.formControl.value === undefined
-          //     ) {
-          //       field.formControl.setValue(true);
-          //     }
-          //   },
-          // },
           hooks: {
             onInit: (field: any) => {
               if (field.formControl.value == null) {
@@ -364,52 +353,12 @@ export function matterActivityEditorFields(
             },
           },
         },
-        // {
-        //   type: 'switch',
-        //   key: 'isNewHearingSession',
-        //   defaultValue: true,
-        //   className: 'col-span-2',
-        //   props: {
-        //     label: THIS._languageService.getTransValue(
-        //       'matters.newHearingSession'
-        //     ),
-        //   },
-        //   expressions: {
-        //     hide: (field: FormlyFieldConfig) => {
-        //       const activityStatus =
-        //         field.model?.law_ActivityStatusId ||
-        //         THIS._dynamicDialogConfig?.data?.rowData?.law_ActivityStatusId;
-        //       return activityStatus === MatterActivityType.Completed;
-        //     },
-        //   },
-        //   hooks: {
-        //     onInit: (field: any) => {
-        //       if (
-        //         field.formControl.value === null ||
-        //         field.formControl.value === undefined
-        //       ) {
-        //         field.formControl.setValue(true);
-        //       }
-        //     },
-        //   },
-        // },
+        
         {
           fieldGroupClassName: 'grid gap-4 md:grid-cols-2',
           key: 'newSession',
           className: 'col-span-2',
           expressions: {
-            // hide: (field: FormlyFieldConfig) => {
-            //   const isNewHearingSession = field.form?.get(
-            //     'isNewHearingSession',
-            //   )?.value;
-            //   const activityStatus =
-            //     field.model?.law_ActivityStatusId ||
-            //     THIS._dynamicDialogConfig?.data?.rowData?.law_ActivityStatusId;
-            //   return (
-            //     !isNewHearingSession ||
-            //     activityStatus === MatterActivityType.Completed
-            //   );
-            // },
             hide: (field: FormlyFieldConfig) => {
               const isNewHearingSession = field.form?.get(
                 'isNewHearingSession',
@@ -422,8 +371,6 @@ export function matterActivityEditorFields(
                     ?.law_ActivityStatusId;
                 return originalStatus === MatterActivityType.Completed;
               }
-
-              // ✅ 3. في وضع الإضافة: نعرض عادي
               return false;
             },
             onInit: (field: FormlyFieldConfig) => {
@@ -493,18 +440,6 @@ export function matterActivityEditorFields(
                 })),
               },
             },
-            // {
-            //   key: 'newSessionStartDate',
-            //   type: 'date',
-            //   props: {
-            //     label: THIS._languageService.getTransValue('matters.date'),
-            //     required: true,
-            //     showTime: true,
-            //   },
-            //   defaultValue: THIS._dynamicDialogConfig?.data?.rowData
-            //     ? undefined
-            //     : new Date(),
-            // },
             {
               key: 'newSessionStartDate',
               type: 'date',
@@ -525,21 +460,6 @@ export function matterActivityEditorFields(
                 },
               },
             },
-            // {
-            //   key: 'law_ActivityStatusId',
-            //   type: 'select',
-            //   defaultValue: 1,
-            //   props: {
-            //     label: THIS._languageService.getTransValue('matters.status000000'),
-            //     optionsArr: THIS.lookupsData.activityStatus.result.map(
-            //       (obj: any) => ({
-            //         label: obj.name,
-            //         value: obj.id,
-            //       })
-            //     ),
-            //   },
-            // },
-
             {
               key: 'law_ActivityStatusId',
               type: 'select',

@@ -544,7 +544,6 @@ async getParentMatterParties(parentMatterId: number) {
 
     console.log('[getParentMatterParties] response =', res);
 
-    // ⭐ استخدم extractList اللي بتتعامل مع {data:{items}} و {data:{dataList}} و array مباشرة
     const parties = this.extractList(res);
 
     console.log('[getParentMatterParties] parties count =', parties.length);

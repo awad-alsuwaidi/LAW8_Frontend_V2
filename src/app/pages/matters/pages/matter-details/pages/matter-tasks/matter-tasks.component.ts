@@ -225,7 +225,6 @@ export class MatterTasksComponent implements OnInit, OnDestroy {
           const result = res?.data ?? res?.result;
 
           if (isSuccess && result) {
-            // 👇 بناخد الداتا مباشرة من غير أي تعديل
             this.data = result.items || [];
             
             this.pagination.totalElements = result.totalCount;
@@ -239,7 +238,6 @@ updateStatus(newStatusId: string, rowData: any) {
   const originalStatus = rowData.matterTaskStatusId;
   const originalStatusName = rowData.matterTaskStatusName;
 
-  // تحديث الواجهة فوراً (Optimistic UI)
   rowData.matterTaskStatusId = newStatusId;
   const statusItem = this.statusItems.find(
     (item) => (item as any).value === newStatusId,
@@ -248,19 +246,15 @@ updateStatus(newStatusId: string, rowData: any) {
     ? statusItem.label
     : originalStatusName;
 
-  // 1️⃣ تجهيز الـ URL
   const url = API_Config.matterTask.changeStatus.includes('{id}')
     ? API_Config.matterTask.changeStatus.replace('{id}', String(rowData.id))
     : `${API_Config.matterTask.changeStatus}/${rowData.id}/status`;
 
-  // 2️⃣ تجهيز الـ Body
   const payload = {
     matterTaskStatusId: Number(newStatusId),
     percentComplete: rowData.percentComplete || 0,
   };
 
-  // 3️⃣ إرسال الريكوست باستخدام PATCH
-  // (لو الـ ApiService عندك مش فيه دالة patch، استخدم request أو السطر اللي بيبعتها)
   this._apiService
     .patch(url, payload) 
     .pipe(this._unsubscribe.takeUntilDestroy())
@@ -272,13 +266,11 @@ updateStatus(newStatusId: string, rowData: any) {
             'Status updated successfully',
           );
         } else {
-          // رجّع القيمة القديمة في حالة الفشل
           rowData.matterTaskStatusId = originalStatus;
           rowData.matterTaskStatusName = originalStatusName;
         }
       },
       error: () => {
-        // رجّع القيمة القديمة في حالة حدوث خطأ
         rowData.matterTaskStatusId = originalStatus;
         rowData.matterTaskStatusName = originalStatusName;
       },

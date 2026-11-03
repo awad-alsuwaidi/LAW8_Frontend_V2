@@ -160,7 +160,7 @@
         "deleteAttachmentMessage": "Are you sure you want to delete this Attachment ?",
         "deleteTaskTitle": "Delete Task ",
         "taskTitle": "Task Title",
-        "yyouDontHavePermission": "You don't have permission to access this page",
+        "dontHavePermission": "You don't have permission to access this page",
         "deleteTaskMessage": "Are you sure you want to delete this Task ?",
         "client": "Client",
         "entity": "Entity",

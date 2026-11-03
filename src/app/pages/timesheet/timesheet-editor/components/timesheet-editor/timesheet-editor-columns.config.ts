@@ -11,7 +11,7 @@ export const timesheetEditorColumnsConfig = [
   },
   {
     header: 'timesheet.matter',
-    field: 'mtrNo',
+    field: 'matterCode',
     style: {
       width: '150px',
       minWidth: '150px',
@@ -23,17 +23,15 @@ export const timesheetEditorColumnsConfig = [
     },
     sortable: true,
   },
-
   {
     header: 'timesheet.explanation',
-    field: 'explanationExplanation',
-
+    field: 'description',
     style: { flex: '1 1 auto', minWidth: '200px', textAlign: 'left' },
     sortable: true,
   },
   {
-    header: 'timesheet.endDate',
-    field: 'tmDate',
+    header: 'timesheet.date',
+    field: 'date',
     style: {
       width: '150px',
       minWidth: '150px',
@@ -44,7 +42,7 @@ export const timesheetEditorColumnsConfig = [
   },
   {
     header: 'timesheet.lawyer',
-    field: 'law_LawerId',
+    field: 'userId',
     style: {
       width: '150px',
       minWidth: '150px',
@@ -55,7 +53,7 @@ export const timesheetEditorColumnsConfig = [
   },
   {
     header: 'timesheet.task',
-    field: 'law_TaskCodeId',
+    field: 'taskCodeId',
     style: {
       width: '150px',
       minWidth: '150px',
@@ -77,63 +75,14 @@ export const timesheetEditorColumnsConfig = [
   },
 ];
 
-// export const timesheettabelColumnsConfig = [
-//   {
-//     header: 'timesheet.matter',
-//     field: 'mtrNo',
-//     sortable: true,
-//   },
-
-//   {
-//     header: 'timesheet.explanation',
-//     field: 'explanationExplanation',
-//     isLargeText: true,
-//     class: 'w-60',
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.endDate',
-//     field: 'tmDate',
-
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.lawyer',
-//     field: 'law_Lawer',
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.task',
-//     field: 'law_TaskCode',
-
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.hours',
-//     field: 'hours',
-
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.clientName',
-//     field: 'clientName',
-
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.notes',
-//     field: 'notes',
-
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.rate',
-//     field: 'rate',
-//     sortable: true,
-//   },
-//   {
-//     header: 'timesheet.amount',
-//     field: 'amount',
-//     sortable: true,
-//   },
-// ];
+// ===== للـ Timesheet List page =====
+export const Timesheet_Columns = [
+  { header: 'timesheet.matter', field: 'matterCode', sortable: true },
+  { header: 'timesheet.date', field: 'date', sortable: true },
+  { header: 'timesheet.task', field: 'taskCodeName', sortable: true },
+  { header: 'timesheet.description', field: 'description', sortable: false },
+  { header: 'timesheet.lawyer', field: 'userName', sortable: true },
+  { header: 'timesheet.status', field: 'statusName', sortable: false },
+  { header: 'timesheet.hold', field: 'holdName', sortable: false },
+  { header: 'timesheet.hours', field: 'hours', sortable: true },
+];

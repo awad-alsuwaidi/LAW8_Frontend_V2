@@ -19,7 +19,6 @@
       [options]="formlyOptions"
     />
 
-    <!-- Attendance Section - Shows only in Edit Mode when Activity Type = 4 -->
     @if (!isViewMode && formlyModel.law_ActivityTypeId === 4) {
       <div class="grid gap-4 md:grid-cols-3 bg-white rounded-2xl p-6">
         <div class="col-span-2">
@@ -43,7 +42,6 @@
       </div>
     }
 
-    <!-- Action Buttons -->
             <div class="flex gap-4 justify-end mt-4 px-4 pb-4">
             <app-shared-button
                 styleClass="bg-white border border-grey500 text-grey500 px-8 py-3 text-lg font-medium h-12 leading-5"

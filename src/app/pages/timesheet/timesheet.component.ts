@@ -1,5 +1,6 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { combineLatest, finalize } from 'rxjs';
+import { finalize, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
@@ -9,7 +10,6 @@ import { SharedSearchComponent } from 'src/app/@shared/components/shared-search/
 import { SharedTableComponent } from 'src/app/@shared/components/shared-table/shared-table.component';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
 import { SharedModule } from 'src/app/@shared/shared.module';
-import { TimesheetDto } from './interfaces/timesheet.interface';
 import { Timesheet_Columns } from './timesheet-columns.config';
 import { TimesheetFilterComponent } from './timesheet-editor/components/timesheet-filter/timesheet-filter.component';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -19,6 +19,7 @@ import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
 import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
 import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/shared-button.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { TimesheetListItemDto } from './interfaces/timesheet.interface';
 
 @Component({
   selector: 'app-timesheet',
@@ -42,212 +43,175 @@ export class TimesheetComponent implements OnInit, OnDestroy {
   private _dialogService = inject(DialogService);
   private _languageService = inject(LanguageService);
   private _toastrNotifiService = inject(ToastrNotifiService);
-  protected first!: number;
 
-  protected pagination: any = {
-    pagSize: PAGESIZE,
-    pageNum: 1,
-    orderByDirection: 'ASC',
-    orderBy: 'tmDate',
-  };
-
-  data: TimesheetDto[] = [];
+  data: TimesheetListItemDto[] = [];
   columns = Timesheet_Columns;
   deleteDialogRef: any;
-  isDeleting: boolean = false;
-  lookupsData: any = {};
-  isLoading: boolean = false;
-  searchValue = '';
+  isDeleting = false;
+  isLoading = false;
+  canViewRates = true;
+
+  protected pagination: any = {
+    PageNumber: 1,
+    PageSize: PAGESIZE,
+    SortBy: 'date',
+    IsDescending: false, // 👈 التعديل هنا (حرف I كبير)
+    searchTerm: '',
+    filters: {} as any,
+  };
+
+  private search$ = new Subject<string>();
 
   ngOnInit(): void {
-    this.getLookups();
-    this.getData();
-  }
-
-  getLookups(): void {
-    combineLatest({
-      lawyers: this._apiService.get(
-        API_Config.general.getUsersInitialViewForTimeShet,
-      ),
-      tasks: this._apiService.get(API_Config.general.getTaskCode),
-      matterCode: this._apiService.get(API_Config.general.getMatterCodes),
-    })
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res) => {
-        this.lookupsData = res;
+    this.search$
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged(),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe((term) => {
+        this.pagination.searchTerm = term || '';
+        this.pagination.PageNumber = 1;
+        this.getData();
       });
-  }
 
-
-  searchValueChange(value: string): void {
-    this.pagination = {
-      ...this.pagination,
-      search: value,
-      pageNum: 1,
-    };
     this.getData();
   }
 
-  onPageChange(e: any) {
-    this.pagination = {
-      ...this.pagination,
-      pagSize: Number(e.rows),
-      pageNum: e.first / e.rows + 1,
+  ngOnDestroy(): void {
+    this._unsubscribe.destroy();
+  }
+
+  private buildQueryString(): string {
+    const flat: Record<string, any> = {
+      PageNumber: this.pagination.PageNumber,
+      PageSize: this.pagination.PageSize,
+      SortBy: this.pagination.SortBy,
+      IsDescending: this.pagination.IsDescending, // 👈 التعديل هنا
     };
-    this.getData();
-  }
+    if (this.pagination.searchTerm)
+      flat['searchTerm'] = this.pagination.searchTerm;
 
-  getTaskClass(task: string): string {
-    switch (task) {
-      case 'Billable':
-        return 'bg-green-100 text-green-700';
-
-      case 'Non-Billable':
-        return 'bg-gray-200 text-gray-700';
-
-      case 'No-Charge':
-        return 'bg-yellow-100 text-yellow-600';
-
-      case 'Research':
-        return 'bg-blue-100 text-blue-700';
-
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  }
-
-  private getRepeatedParams(args: any): string {
-    if (!args) return '';
-
-    const params: string[] = [];
-
-    Object.keys(args).forEach((key) => {
-      const value = args[key];
-
-      if (value == null) return;
-
-      if (Array.isArray(value)) {
-        value.forEach((item) => {
-          params.push(`${key}=${item}`);
-        });
-      } else {
-        params.push(`${key}=${value}`);
-      }
+    Object.entries(this.pagination.filters ?? {}).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === '') return;
+      if (Array.isArray(v) && !v.length) return;
+      flat[`filters[${k}]`] = Array.isArray(v) ? v.join(',') : v;
     });
 
-    return params.length ? `?${params.join('&')}` : '';
+    return Object.entries(flat)
+      .map(
+        ([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
+      )
+      .join('&');
   }
 
-  onFilter(e: any) {
-    console.log('Filter event:', e);
-
-    this.pagination = {
-      ...this.pagination,
-      matterId: e?.matterId?.value ?? 0,
-      taskId: e?.taskId?.value ?? 0,
-      lawyerId: Array.isArray(e?.lawyerId)
-        ? e.lawyerId.map((item: any) =>
-            typeof item === 'object' ? item.id : item,
-          )
-        : [],
-      fromDate: e?.fromDate
-        ? new Date(e.fromDate).toISOString().split('T')[0]
-        : '',
-      toDate: e?.toDate ? new Date(e.toDate).toISOString().split('T')[0] : '',
-      search: e?.search ?? '',
-      pageNum: 1,
-    };
-
-    console.log('Pagination after filter:', this.pagination);
-
-    this.getData();
-  }
-
-
-  getData(): void {
-    console.log('getData called with pagination:', this.pagination);
-    console.log('API endpoint:', API_Config.timesheet.getList);
-
-    this.isLoading = true;
-    const queryParams = Object.fromEntries(
-      Object.entries(this.pagination).filter(
-        ([_, v]) => v !== null && v !== undefined && v !== '',
-      ),
-    );
-
-    console.log('Query Params being sent:', queryParams);
-
-    this._apiService;
-    const queryString = this.getRepeatedParams(queryParams);
-
-    this._apiService
-      .get(API_Config.timesheet.getList + queryString)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            // this.data = res.result?.dataList || [];
-            this.data = (res.result?.dataList || []).map(
-              (item: any, index: number) => ({
-                ...item,
-                serial:
-                  index +
-                  1 +
-                  (this.pagination.pageNum - 1) * this.pagination.pagSize,
-              }),
-            );
-            console.log('Timesheet data loaded:', this.data);
-            this.pagination.totalElements = res.result?.totalCount;
-            this.pagination = { ...this.pagination };
-          }
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('API error:', error);
-          this.isLoading = false;
-        },
-      });
-  }
-
-  // onFilter(e: any) {
-  //   this.searchValue = e?.search || '';
-
-  //   this.pagination = {
-  //     ...this.pagination,
-  //     FromDate: e?.FromDate,
-  //     ToDate: e?.ToDate,
-  //     lawyerId: e?.lawyerId?.value,
-  //     taskId: e?.taskId?.value,
-  //     matterId: e?.matterId?.value,
-  //     search: this.searchValue,
-  //     pageNum: 1,
-  //   };
-
-  //   console.log('Search Value Changed:', this.searchValue);
-  //   this.getData();
-  // }
-  openTimesheetEdit(rowData: TimesheetDto) {
-    console.log('Opening timesheet edit with rowData:', rowData);
+  openTimesheetEdit(rowData: TimesheetListItemDto): void {
     const ref = this._dialogService.open(TimesheetEditComponent, {
       header: 'Edit Timesheet',
-      width: '45vw',
-      data: rowData,
+      width: '50vw',
+      modal: true,
+      dismissableMask: true,
+      data: { ...rowData },
     });
 
-    ref.onClose.subscribe({
-      next: (result) => {
-        if (result) {
-          console.log('Timesheet updated, refreshing data');
-          this.getData();
-        }
-      },
+    ref.onClose.subscribe((result: any) => {
+      if (result?.success) {
+        this.getData();
+      }
     });
   }
-  canEditOrDelete(row: TimesheetDto): boolean {
-    return !row?.invoiceNo;
+
+  getData(): void {
+    this.isLoading = true;
+    const qs = this.buildQueryString();
+
+    this._apiService
+      .get(`${API_Config.timesheet.list}?${qs}`)
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const isSuccess = res?.success || res?.isSuccess;
+          if (!isSuccess) return;
+
+          const responseData = res.data || res.result;
+          const items = responseData?.items || responseData?.dataList || [];
+          const totalCount = responseData?.totalCount || 0;
+
+          this.data = items.map((it: any, i: number) => ({
+            ...it,
+            serial:
+              i +
+              1 +
+              (this.pagination.PageNumber - 1) * this.pagination.PageSize,
+          }));
+
+          this.canViewRates = this.data.some(
+            (r) => r.rateAmount !== null && r.rateAmount !== undefined,
+          );
+          this.pagination.totalElements = totalCount;
+        },
+      });
   }
 
-  onDelete(rowData: TimesheetDto) {
+  searchValueChange(value: string): void {
+    this.search$.next(value);
+  }
+
+  onPageChange(e: any): void {
+    this.pagination.PageNumber = e.first / e.rows + 1;
+    this.pagination.PageSize = Number(e.rows);
+    this.getData();
+  }
+
+  onSort(e: any): void {
+    if (!e?.field) return;
+
+    if (this.pagination.SortBy !== e.field) {
+      this.pagination.SortBy = e.field;
+      this.pagination.IsDescending = true;
+    } else {
+      this.pagination.IsDescending = !this.pagination.IsDescending;
+    }
+
+    this.pagination.PageNumber = 1;
+    this.getData();
+  }
+
+  onFilter(e: any): void {
+    const f: any = {};
+    if (e?.matterId?.value) f.matterId = e.matterId.value;
+    if (e?.taskId?.value) f.taskCodeId = e.taskId.value;
+    if (e?.rateId?.value) f.rateId = e.rateId.value;
+    if (e?.statusCode) f.statusCode = e.statusCode;
+    if (e?.isBillable !== undefined && e?.isBillable !== null)
+      f.isBillable = e.isBillable;
+    if (e?.hold) f.hold = e.hold;
+    if (e?.fromDate)
+      f.dateFrom = new Date(e.fromDate).toISOString().split('T')[0];
+    if (e?.toDate) f.dateTo = new Date(e.toDate).toISOString().split('T')[0];
+
+    if (Array.isArray(e?.lawyerId) && e.lawyerId.length) {
+      f.userId = e.lawyerId
+        .map((x: any) => (typeof x === 'object' ? x.id : x))
+        .join(',');
+    } else if (e?.lawyerId === 'all') {
+      f.userId = 'all';
+    }
+
+    this.pagination.filters = f;
+    this.pagination.PageNumber = 1;
+    if (e?.search !== undefined) this.pagination.searchTerm = e.search || '';
+    this.getData();
+  }
+
+  canEditOrDelete(row: TimesheetListItemDto): boolean {
+    return !!(row as any)?.canEdit;
+  }
+
+  onDelete(rowData: TimesheetListItemDto): void {
     this.deleteDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
       {
@@ -265,9 +229,7 @@ export class TimesheetComponent implements OnInit, OnDestroy {
             {
               label: this._languageService.getTransValue('lookups.discard'),
               styleClass: 'border border-grey500 text-grey500',
-              command: () => {
-                this.deleteDialogRef.close();
-              },
+              command: () => this.deleteDialogRef.close(),
             },
             {
               label: this.isDeleting
@@ -275,9 +237,7 @@ export class TimesheetComponent implements OnInit, OnDestroy {
                 : this._languageService.getTransValue('lookups.delete'),
               styleClass: 'bg-textErrorBase text-white',
               disabled: this.isDeleting,
-              command: () => {
-                this.deleteRow(rowData?.id);
-              },
+              command: () => this.deleteRow(rowData?.id),
             },
           ],
         },
@@ -285,15 +245,11 @@ export class TimesheetComponent implements OnInit, OnDestroy {
     );
   }
 
-  deleteRow(id: number) {
-    if (!id) {
-      this._toastrNotifiService.displayError('Invalid ID for deletion');
-      return;
-    }
-
+  deleteRow(id: number): void {
+    if (!id) return;
     this.isDeleting = true;
     this._apiService
-      .post(`${API_Config.timesheet.deleteList}?id=${id}`, {})
+      .delete(`${API_Config.timesheet.list}/${id}`)
       .pipe(
         finalize(() => (this.isDeleting = false)),
         this._unsubscribe.takeUntilDestroy(),
@@ -301,71 +257,15 @@ export class TimesheetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: ApiRes) => {
           if (res.isSuccess) {
-            this._toastrNotifiService.displaySuccess(
-              res.message || 'Timesheet deleted successfully',
-            );
+            this._toastrNotifiService.displaySuccess(res.message || 'Deleted');
             this.deleteDialogRef.close();
             this.getData();
           } else {
             this._toastrNotifiService.displayError(
-              res.message || 'Error deleting timesheet',
+              res.message || 'Error deleting',
             );
           }
         },
-        error: (error) => {
-          console.error('Delete error:', error);
-          this._toastrNotifiService.displayError('Error deleting timesheet');
-        },
       });
-  }
-
-  //   onSort(e: any) {
-  //     if (!e || !e.field) {
-  //       return;
-  //     }
-
-  //     const newOrderBy = e.field;
-  // const newOrderByDirection = e.order === 1 ? 'ASC' : 'DESC';
-
-  //     if (
-  //       this.pagination.orderBy === newOrderBy &&
-  //       this.pagination.orderByDirection === newOrderByDirection
-  //     ) {
-  //       return;
-  //     }
-
-  //     this.pagination = {
-  //       ...this.pagination,
-  //       orderBy: newOrderBy,
-  //       orderByDirection: newOrderByDirection,
-  //       pageNum: 1,
-  //     };
-  //     this.first = 0;
-
-  //     this.getData();
-  //   }
-
-  onSort(e: any) {
-    const field = e.field;
-    if (!field) return;
-    if (this.pagination.orderBy !== field) {
-      this.pagination.orderBy = field;
-      this.pagination.orderByDirection = 'DESC';
-    } else {
-      this.pagination.orderByDirection =
-        this.pagination.orderByDirection === 'DESC' ? 'ASC' : 'DESC';
-    }
-    console.log(
-      'Sorting:',
-      this.pagination.orderBy,
-      this.pagination.orderByDirection,
-    );
-    this.pagination.pageNum = 1;
-    this.first = 0;
-    this.getData();
-  }
-
-  ngOnDestroy(): void {
-    this._unsubscribe.destroy();
   }
 }

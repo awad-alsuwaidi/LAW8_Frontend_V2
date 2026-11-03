@@ -88,20 +88,6 @@ export function matterDetailsEditorFields(
           },
         },
         {
-          type: 'input',
-          key: 'mtrNo',
-          props: {
-            label: THIS._languageService.getTransValue('common.matterCode'),
-            disabled: true,
-            class: 'bg-inherit',
-          },
-          expressions: {
-            // طه تاسك طه طه طااااااااهاااا
-            // className: (field: FormlyFieldConfig) =>
-            //   field.model?.requestTypeId === 2 ? 'order-3' : 'order-2',
-          },
-        },
-        {
           type: 'select',
           key: 'parentMatterId',
           props: {
@@ -128,6 +114,20 @@ export function matterDetailsEditorFields(
               field.model?.requestTypeId === 2,
             'props.disabled': () =>
               THIS.formlyModel?.requestTypeId === 2 && !!THIS.matterIdentifier,
+          },
+        },
+        {
+          type: 'input',
+          key: 'mtrNo',
+          props: {
+            label: THIS._languageService.getTransValue('common.matterCode'),
+            disabled: true,
+            class: 'bg-inherit',
+          },
+          expressions: {
+            // طه تاسك طه طه طااااااااهاااا
+            // className: (field: FormlyFieldConfig) =>
+            //   field.model?.requestTypeId === 2 ? 'order-3' : 'order-2',
           },
         },
 

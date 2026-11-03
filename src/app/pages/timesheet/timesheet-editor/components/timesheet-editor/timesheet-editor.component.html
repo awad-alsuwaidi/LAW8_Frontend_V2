@@ -1,5 +1,5 @@
 <div class="w-full space-y-4">
-  <!-- Header -->
+  <!-- ===================== Header + Summary ===================== -->
   <div
     class="flex flex-col sm:flex-row justify-between p-2 rounded-t-lg bg-white mb-4"
   >
@@ -11,7 +11,7 @@
     <div class="flex flex-wrap gap-4 items-center text-center">
       <div class="flex gap-2 items-center">
         <span class="text-textTertairy font-bold text-lg">{{
-          billableHoursCount | number: "1.1-1"
+          summary.billableHours | number: "1.1-1"
         }}</span>
         <span class="text-grey400 font-medium text-xs">{{
           "timesheet.billable" | translate
@@ -19,7 +19,7 @@
       </div>
       <div class="flex gap-2 items-center">
         <span class="text-textTertairy font-bold text-lg">{{
-          nonBillableHoursCount | number: "1.1-1"
+          summary.nonBillableHours | number: "1.1-1"
         }}</span>
         <span class="text-grey400 font-medium text-xs">{{
           "timesheet.nonBillable" | translate
@@ -27,7 +27,7 @@
       </div>
       <div class="flex gap-2 items-center">
         <span class="text-textTertairy font-bold text-lg">{{
-          noChargeHoursCount | number: "1.1-1"
+          summary.noChargeHours | number: "1.1-1"
         }}</span>
         <span class="text-grey400 font-medium text-xs">{{
           "timesheet.noCharge" | translate
@@ -35,8 +35,7 @@
       </div>
       <div class="flex gap-2 items-center">
         <span class="text-textTertairy font-bold text-lg">{{
-          +billableHoursCount + +nonBillableHoursCount + +noChargeHoursCount
-            | number: "1.1-1"
+          summary.totalHours | number: "1.1-1"
         }}</span>
         <span class="text-grey400 font-medium text-xs">{{
           "timesheet.total" | translate
@@ -45,7 +44,7 @@
     </div>
   </div>
 
-  <!-- Form and buttons -->
+  <!-- ===================== Buttons + View toggle ===================== -->
   <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" class="space-y-4">
     <div
       class="flex flex-col sm:flex-row justify-between items-center p-2 rounded-t-lg bg-white mb-4 gap-2"
@@ -54,72 +53,62 @@
       <div class="flex gap-2 flex-wrap">
         <app-shared-button
           [label]="'timesheet.save' | translate"
+          [btnType]="'button'"
           [styleClass]="
             'border border-primary text-primary !text-sm !py-2 !px-4 !font-medium !leading-5'
           "
           [isLoading]="isSavingDraft"
           (onClick)="saveDraft()"
         />
+
         <app-shared-button
           [label]="'timesheet.submitSheets' | translate"
+          [btnType]="'button'"
           [styleClass]="
             'bg-primary text-white !text-sm !py-2 !px-4 !font-medium !leading-5'
           "
           [isLoading]="isSubmitting"
-          [btnType]="'submit'"
+          (onClick)="onSubmit()"
         />
-        <!-- <app-shared-button *ngIf="isListView" [label]="'menu.addTimesheet' | translate" [styleClass]="'btn-add-time'"
-          (onClick)="openEditor()"></app-shared-button> -->
+
         <app-shared-button
           [icon]="'icon-cards !text-base'"
           (onClick)="toggleView('card')"
           [styleClass]="
             isListView
-              ? 'bg-grey100 text-textTertairy !p-1 ...'
-              : 'bg-blue50 text-primary !p-1 ...'
+              ? 'bg-grey100 text-textTertairy !p-1'
+              : 'bg-blue50 text-primary !p-1'
           "
-        >
-        </app-shared-button>
-
+        ></app-shared-button>
         <app-shared-button
           [icon]="'icon-list !text-base'"
           (onClick)="toggleView('list')"
           [styleClass]="
             isListView
-              ? 'bg-blue50 text-primary !p-1 ...'
-              : 'bg-grey100 text-textTertairy !p-1 ...'
+              ? 'bg-blue50 text-primary !p-1'
+              : 'bg-grey100 text-textTertairy !p-1'
           "
-        >
-        </app-shared-button>
+        ></app-shared-button>
       </div>
     </div>
 
+    <!-- ===================== CARD VIEW ===================== -->
     <ng-container formArrayName="data" *ngIf="!isListView">
       <p-table
         #dt
         [value]="getFormArray.value"
         [(selection)]="selectedRows"
+        dataKey="_uid"
         (onHeaderCheckboxToggle)="onHeaderCheckboxToggle($event)"
-        [customSort]="true"
-        [dataKey]="'rowIndex'"
-        [(selection)]="selectedRows"
-        [rowTrackBy]="trackByIndex"
-        (onSort)="onSort($event)"
+        [rowTrackBy]="trackByUid"
         class="w-full table-auto overflow-x-auto block"
       >
         <ng-template pTemplate="header">
           <tr class="bg-grey100 text-grey700 text-sm font-semibold">
             <th class="p-3 text-center w-10"><p-tableHeaderCheckbox /></th>
             @for (col of columns; track $index) {
-              <th
-                [pSortableColumn]="col.field"
-                [ngStyle]="col?.style"
-                class="p-3 border-b border-grey200"
-              >
+              <th [ngStyle]="col?.style" class="p-3 border-b border-grey200">
                 {{ col.header | translate }}
-                @if (col.sortable) {
-                  <p-sortIcon [field]="col.field" />
-                }
               </th>
             }
             <th class="p-3 w-20 border-b border-grey200 text-center">
@@ -139,10 +128,14 @@
             [formGroupName]="rowIndex"
             class="border-b text-sm text-grey800 transition-colors"
             [ngClass]="{
-              'bg-white': rowIndex % 2 === 0,
-              'bg-grey50': rowIndex % 2 !== 0,
+              'bg-white':
+                rowIndex % 2 === 0 && rowIndex !== getFormArray.length - 1,
+              'bg-grey50':
+                rowIndex % 2 !== 0 && rowIndex !== getFormArray.length - 1,
               'hover:bg-grey100': true,
-              'is-new-row': getFormArray.at(rowIndex).get('isNewRow')?.value,
+              'is-new-row':
+                rowIndex === getFormArray.length - 1 ||
+                getFormArray.at(rowIndex).get('isNewRow')?.value,
             }"
           >
             <!-- Checkbox -->
@@ -167,14 +160,14 @@
               <p-dropdown
                 #dropdown
                 optionLabel="label"
-                formControlName="mtrNo"
+                formControlName="matterCode"
                 optionValue="value"
                 [editable]="true"
                 [autoZIndex]="true"
                 [baseZIndex]="1000"
                 appendTo="body"
                 [options]="matters"
-                (onChange)="onDropdownChange(rowIndex, $event.value)"
+                (onChange)="onMatterChange(rowIndex, $event)"
                 [panelStyle]="{ width: '100%' }"
               >
                 <ng-template pTemplate="footer">
@@ -187,27 +180,16 @@
                   </button>
                 </ng-template>
               </p-dropdown>
-              <!-- <p-dropdown   [showClear]="true" [editable]="false" [options]="matters"
-             [showClear]="false" (onChange)="selectMatter($event, rowIndex)">
-              <ng-template pTemplate="empty"> </ng-template>
-              <ng-template pTemplate="footer">
-                <button
-                  class="w-full m-0 px-5 py-3 border-0 text-[#495057] bg-transparent text-left transition-shadow duration-200 rounded-none hover:bg-[#e9ecef] hover:text-[#495057]"
-                  (click)="openAllMattersDialog(rowIndex)">All Matters</button>
-              </ng-template>
-            </p-dropdown> -->
             </td>
 
+            <!-- Description -->
             <td class="px-2 py-3">
               <div
                 class="flex-1 min-w-[200px] relative rounded-md focus-within:border-primary"
               >
                 <div
                   class="absolute left-3 top-2 flex items-center gap-2 text-gray-400 pointer-events-none"
-                  *ngIf="
-                    !getFormArray.at(rowIndex).get('explanationExplanation')
-                      ?.value
-                  "
+                  *ngIf="!getFormArray.at(rowIndex).get('description')?.value"
                 >
                   <span>{{
                     "timesheet.explanationPlaceholder" | translate
@@ -228,22 +210,18 @@
                     />
                   </svg>
                 </div>
-
                 <textarea
+                  #description
                   rows="4"
                   (focus)="onExplanationFocus(rowIndex)"
                   class="w-full p-2 pl-2 rounded-md border border-gray-300 focus:border-primary focus:ring-primary resize-y"
-                  formControlName="explanationExplanation"
+                  formControlName="description"
                 ></textarea>
               </div>
             </td>
 
             <!-- Date -->
             <td class="px-2 py-3">
-              <!-- <p-calendar dateFormat="yy-mm-dd" dataType="string" appendTo="body" [minDate]="timesheetDate"
-                [showIcon]="true" [icon]="'icon-calendar'" formControlName="tmDate"
-                [style]="{ width: '100%', height: '38px' }">
-              </p-calendar> -->
               <p-calendar
                 dateFormat="yy-mm-dd"
                 dataType="string"
@@ -251,11 +229,10 @@
                 [minDate]="timesheetDate"
                 [showIcon]="true"
                 [iconDisplay]="'input'"
-                inputId="tmDate"
-                formControlName="tmDate"
+                inputId="date"
+                formControlName="date"
                 [style]="{ width: '100%', height: '38px' }"
-              >
-              </p-calendar>
+              ></p-calendar>
             </td>
 
             <!-- Lawyer -->
@@ -263,8 +240,8 @@
               <p-dropdown
                 [options]="laywers"
                 appendTo="body"
-                formControlName="law_LawerId"
-                (onChange)="getRateFromLawyerIdAndMatterId(rowIndex)"
+                formControlName="userId"
+                (onChange)="onLawyerChange(rowIndex)"
                 [style]="{ width: '100%' }"
               >
                 <ng-template let-item pTemplate="selectedItem">
@@ -285,16 +262,14 @@
               <p-dropdown
                 [options]="taskCodesByRow[getRowKey(rowIndex)] || []"
                 appendTo="body"
-                formControlName="law_TaskCodeId"
+                formControlName="taskCodeId"
                 [disabled]="
                   taskCodesLoadingByRow[getRowKey(rowIndex)] ||
                   !getFormArray.at(rowIndex).get('matterId')?.value
                 "
-                (onChange)="onTaskCodeChange(rowIndex); updateTaskHoursSummary()"
+                (onChange)="onTaskCodeChange(rowIndex)"
                 [style]="{ width: '100%' }"
-                >
-                <!-- (onChange)="setAmountValue(rowIndex); updateTaskHoursSummary()" -->
-              </p-dropdown>
+              ></p-dropdown>
             </td>
 
             <!-- Hours -->
@@ -305,16 +280,15 @@
                 min="0"
                 pInputText
                 formControlName="hours"
-                (input)="setAmountValue(rowIndex); updateTaskHoursSummary()"
+                (input)="calculateAmount(rowIndex)"
                 [style]="{ width: '70px' }"
                 class="border border-grey300 rounded-md px-2 py-1 text-center focus:border-primary"
               />
             </td>
-
             <!-- Actions -->
             <td class="px-2 py-3">
               <div class="flex gap-2 items-center justify-center">
-                @if (rowIndex != getFormArray.length - 1) {
+                @if (rowIndex !== getFormArray.length - 1) {
                   <button
                     type="button"
                     class="p-2 rounded-lg bg-error50 hover:bg-error100 transition"
@@ -357,11 +331,8 @@
                 class="flex flex-col mx-10 sm:flex-row gap-1 p-1 border border-grey100 rounded-b-2xl shadow-inner"
                 style="background-color: #eff6ff"
               >
-                <!-- <div class="flex flex-col mx-10 sm:flex-row gap-1 p-1 border border-grey100 rounded-b-2xl shadow-inner"
-                [ngClass]="{ 'is-new-row': getFormArray.at(rowIndex).get('isNewRow')?.value }"
-                style="background-color:#ffffff;"> -->
-
-                <div class="flex-1 max-w-[337px] relative">
+                <!-- Client name -->
+                <div class="flex-1 max-w-[260px] relative">
                   <div class="h-full">
                     <label>{{
                       isInhouse
@@ -385,20 +356,20 @@
                 </div>
 
                 <!-- Notes -->
-                <div class="flex-1 max-w-[458px]">
+                <div class="flex-1 max-w-[340px]">
                   <label>{{ "timesheet.notes" | translate }}</label>
                   <textarea
                     rows="1"
                     class="w-full p-2 rounded-md border-2 border-gray-400 focus:border-primary focus:ring-1 focus:ring-primary placeholder:!text-[#A8AEB9]"
                     formControlName="notes"
                     [placeholder]="'timesheet.notesPlaceholder' | translate"
-                  >
-                  </textarea>
+                  ></textarea>
                 </div>
 
                 <!-- Rate -->
                 <div
-                  class="w-[170px]"
+                  class="w-[140px]"
+                  *ngIf="canViewRates"
                   [requiredPermission]="'View_Rate&Amount'"
                 >
                   <label>{{ "timesheet.rate" | translate }}</label>
@@ -406,22 +377,23 @@
                     type="number"
                     min="0"
                     pInputText
-                    formControlName="rate"
-                    (input)="setAmountValue(rowIndex)"
-                    class="!border !border-borderPrimary w-full rounded-md px-2 py-5"
+                    formControlName="rateAmount"
+                    (input)="calculateAmount(rowIndex)"
+                    class="!border !border-borderPrimary w-full rounded-md px-2 py-[9px]"
                   />
                 </div>
 
                 <!-- Amount -->
                 <div
-                  class="w-[130px]"
+                  class="w-[140px]"
+                  *ngIf="canViewRates"
                   [requiredPermission]="'View_Rate&Amount'"
                 >
                   <label>{{ "timesheet.amount" | translate }}</label>
                   <p
                     class="font-bold bg-white border border-borderPrimary w-full h-10 rounded-md py-4 px-3"
                   >
-                    {{ rowData.amount }}
+                    {{ rowData.amount ?? 0 }}
                   </p>
                 </div>
               </div>
@@ -431,15 +403,14 @@
       </p-table>
     </ng-container>
 
+    <!-- ===================== LIST VIEW ===================== -->
     <ng-container formArrayName="data" *ngIf="isListView">
       <p-table
         #dt
         [value]="getFormArray.value"
-        [dataKey]="'rowIndex'"
+        dataKey="_uid"
         [(selection)]="selectedRows"
-        [rowTrackBy]="trackByIndex"
-        [customSort]="true"
-        (onSort)="onSort($event)"
+        [rowTrackBy]="trackByUid"
         class="w-full block overflow-x-auto"
         [style]="{
           'table-layout': 'fixed',
@@ -451,25 +422,20 @@
           <tr class="bg-grey100 text-grey700 text-sm font-semibold">
             <th class="p-3 text-center w-10"><p-tableHeaderCheckbox /></th>
             @for (col of listColumns; track $index) {
-              <th
-                [pSortableColumn]="col.field"
-                [ngStyle]="col?.style"
-                class="p-3 border-b border-grey200"
-              >
+              <th [ngStyle]="col?.style" class="p-3 border-b border-grey200">
                 {{ col.header | translate }}
-                @if (col.sortable) {
-                  <p-sortIcon [field]="col.field" />
-                }
               </th>
             }
             <th
               class="p-3 border-b border-grey200 text-center"
+              *ngIf="canViewRates"
               [requiredPermission]="'View_Rate&Amount'"
             >
               {{ "timesheet.rate" | translate }}
             </th>
             <th
               class="p-3 border-b border-grey200 text-center"
+              *ngIf="canViewRates"
               [requiredPermission]="'View_Rate&Amount'"
             >
               {{ "timesheet.amount" | translate }}
@@ -489,13 +455,16 @@
             [formGroupName]="rowIndex"
             class="border-b text-sm text-grey800 transition-colors"
             [ngClass]="{
-              'bg-white': rowIndex % 2 === 0,
-              'bg-grey50': rowIndex % 2 !== 0,
+              'bg-white':
+                rowIndex % 2 === 0 && rowIndex !== getFormArray.length - 1,
+              'bg-grey50':
+                rowIndex % 2 !== 0 && rowIndex !== getFormArray.length - 1,
               'hover:bg-grey100': true,
-              'is-new-row': getFormArray.at(rowIndex).get('isNewRow')?.value,
+              'is-new-row':
+                rowIndex === getFormArray.length - 1 ||
+                getFormArray.at(rowIndex).get('isNewRow')?.value,
             }"
           >
-            <!-- Checkbox  -->
             <td class="text-center px-2 py-3">
               @if (rowIndex !== getFormArray.length - 1) {
                 <p-tableCheckbox [value]="rowData"></p-tableCheckbox>
@@ -518,12 +487,12 @@
                 [options]="matters"
                 optionLabel="label"
                 optionValue="value"
-                formControlName="mtrNo"
+                formControlName="matterCode"
                 [editable]="true"
                 [autoZIndex]="true"
                 [baseZIndex]="1000"
                 appendTo="body"
-                (onChange)="onDropdownChange(rowIndex, $event.value)"
+                (onChange)="onMatterChange(rowIndex, $event)"
               >
                 <ng-template pTemplate="footer">
                   <button
@@ -537,6 +506,7 @@
               </p-dropdown>
             </td>
 
+            <!-- Client -->
             <td class="px-2 py-3">
               <p
                 class="font-bold mt-2 border rounded-md border-gray-300 p-2 ellipsis-cell"
@@ -554,17 +524,14 @@
               </p>
             </td>
 
-            <!-- Explanation -->
+            <!-- Description -->
             <td class="px-2 py-3">
               <div
                 class="flex-1 min-w-[200px] relative rounded-md focus-within:border-primary"
               >
                 <div
                   class="absolute left-3 top-2 flex items-center gap-2 text-gray-400 pointer-events-none"
-                  *ngIf="
-                    !getFormArray.at(rowIndex).get('explanationExplanation')
-                      ?.value
-                  "
+                  *ngIf="!getFormArray.at(rowIndex).get('description')?.value"
                 >
                   <span>{{
                     "timesheet.explanationPlaceholder" | translate
@@ -585,22 +552,18 @@
                     />
                   </svg>
                 </div>
-
                 <textarea
+                  #description
                   rows="4"
                   (focus)="onExplanationFocus(rowIndex)"
                   class="w-full p-2 pl-2 rounded-md border border-gray-300 focus:border-primary focus:ring-primary resize-y"
-                  formControlName="explanationExplanation"
+                  formControlName="description"
                 ></textarea>
               </div>
             </td>
 
             <!-- Date -->
             <td class="px-2 py-3">
-              <!-- <p-calendar dateFormat="yy-mm-dd" dataType="string" appendTo="body" [minDate]="timesheetDate"
-                [showIcon]="true" [icon]="'icon-calendar'" formControlName="tmDate"
-                [style]="{ width: '100%', height: '38px' }">
-              </p-calendar> -->
               <p-calendar
                 dateFormat="yy-mm-dd"
                 dataType="string"
@@ -608,11 +571,10 @@
                 [minDate]="timesheetDate"
                 [showIcon]="true"
                 [iconDisplay]="'input'"
-                inputId="tmDate"
-                formControlName="tmDate"
+                inputId="date"
+                formControlName="date"
                 [style]="{ width: '100%', height: '38px' }"
-              >
-              </p-calendar>
+              ></p-calendar>
             </td>
 
             <!-- Lawyer -->
@@ -620,8 +582,8 @@
               <p-dropdown
                 [options]="laywers"
                 appendTo="body"
-                formControlName="law_LawerId"
-                (onChange)="getRateFromLawyerIdAndMatterId(rowIndex)"
+                formControlName="userId"
+                (onChange)="onLawyerChange(rowIndex)"
                 [style]="{ width: '100%' }"
               >
                 <ng-template let-item pTemplate="selectedItem">
@@ -642,16 +604,14 @@
               <p-dropdown
                 [options]="taskCodesByRow[getRowKey(rowIndex)] || []"
                 appendTo="body"
-                formControlName="law_TaskCodeId"
+                formControlName="taskCodeId"
                 [disabled]="
                   taskCodesLoadingByRow[getRowKey(rowIndex)] ||
                   !getFormArray.at(rowIndex).get('matterId')?.value
                 "
-                (onChange)="onTaskCodeChange(rowIndex); updateTaskHoursSummary()"
+                (onChange)="onTaskCodeChange(rowIndex)"
                 [style]="{ width: '100%' }"
-                >
-                <!-- (onChange)="setAmountValue(rowIndex); updateTaskHoursSummary()" -->
-              </p-dropdown>
+              ></p-dropdown>
             </td>
 
             <!-- Hours -->
@@ -662,30 +622,35 @@
                 min="0"
                 pInputText
                 formControlName="hours"
-                (input)="setAmountValue(rowIndex); updateTaskHoursSummary()"
+                (input)="calculateAmount(rowIndex)"
                 [style]="{ width: '70px' }"
                 class="border border-grey300 rounded-md px-2 py-1 text-center focus:border-primary"
               />
             </td>
 
-            <!-- Rate  -->
-            <td class="px-2 py-3" [requiredPermission]="'View_Rate&Amount'">
-              <input
-                type="number"
-                min="0"
-                pInputText
-                formControlName="rate"
-                (input)="setAmountValue(rowIndex)"
-                class="border border-grey300 rounded-md px-2 py-1 text-center focus:border-primary"
-              />
-            </td>
-
-            <!-- Amount -->
-            <td class="px-2 py-3" [requiredPermission]="'View_Rate&Amount'">
+            <!-- Rate (readonly) -->
+            <td
+              class="px-2 py-3"
+              *ngIf="canViewRates"
+              [requiredPermission]="'View_Rate&Amount'"
+            >
               <p
                 class="font-bold bg-white border border-borderPrimary w-full h-10 rounded-md py-2 px-3"
               >
-                {{ rowData.amount }}
+                {{ rowData.rateAmount ?? "—" }}
+              </p>
+            </td>
+
+            <!-- Amount (readonly) -->
+            <td
+              class="px-2 py-3"
+              *ngIf="canViewRates"
+              [requiredPermission]="'View_Rate&Amount'"
+            >
+              <p
+                class="font-bold bg-white border border-borderPrimary w-full h-10 rounded-md py-2 px-3"
+              >
+                {{ rowData.amount ?? 0 }}
               </p>
             </td>
 
@@ -702,7 +667,7 @@
             <!-- Actions -->
             <td class="px-2 py-3 text-center">
               <div class="flex gap-2 items-center justify-center">
-                @if (rowIndex != getFormArray.length - 1) {
+                @if (rowIndex !== getFormArray.length - 1) {
                   <button
                     type="button"
                     class="p-2 rounded-lg bg-error50 hover:bg-error100 transition"
@@ -719,54 +684,3 @@
     </ng-container>
   </form>
 </div>
-
-<!-- <section *ngIf="isListView">
-
-  <app-shared-table class="text-center-table" [data]="pagedTableData" [columns]="timesheettabelColumns"
-    [pagination]="pagination" (onPageChange)="onPageChange($event)">
-
-    <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
-      <ng-template let-item pTemplate="selectedItem">
-        <span [pTooltip]="item?.initial" tooltipPosition="top">{{ item.label }}</span>
-      </ng-template>
-      <ng-template let-target pTemplate="item">
-        <div [pTooltip]="target.initial" tooltipPosition="top">
-          <span>{{ target.label }}</span>
-        </div>
-      </ng-template>
-
-      <div class="font-medium text-sm text-textSecondary rounded-e-lg">
-        <div class="flex gap-6">
-
-          <div class="cursor-pointer" (click)="openEditor(rowData)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              class="stroke-grey500 stroke-2">
-              <path
-                d="M11 2.00012H9C4 2.00012 2 4.00012 2 9.00012V15.0001C2 20.0001 4 22.0001 9 22.0001H15C20 22.0001 22 20.0001 22 15.0001V13.0001"
-                stroke-linecap="round" stroke-linejoin="round" />
-              <path
-                d="M16.0399 3.02013L8.15988 10.9001C7.85988 11.2001 7.55988 11.7901 7.49988 12.2201L7.06988 15.2301C6.90988 16.3201 7.67988 17.0801 8.76988 16.9301L11.7799 16.5001C12.1999 16.4401 12.7899 16.1401 13.0999 15.8401L20.9799 7.96013C22.3399 6.60013 22.9799 5.02013 20.9799 3.02013C18.9799 1.02013 17.3999 1.66013 16.0399 3.02013Z"
-                stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M14.9102 4.15015C15.5802 6.54015 17.4502 8.41015 19.8502 9.09015" stroke-miterlimit="10"
-                stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
-          <div class="cursor-pointer" (click)="onSaveClick(rowData)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-              class="bi bi-bookmark-check" viewBox="0 0 16 16">
-              <path fill-rule="evenodd"
-                d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-              <path
-                d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
-            </svg>
-          </div>
-          <div class="cursor-pointer" (click)="onDelete(rowData)">
-            <i class="icon-trash text-base text-grey500"></i>
-          </div>
-
-        </div>
-      </div>
-    </ng-template>
-  </app-shared-table>
-
-</section> - -->

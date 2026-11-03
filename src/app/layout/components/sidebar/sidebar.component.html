@@ -37,15 +37,36 @@
               >
                 <div class="flex justify-between items-center">
                   <span class="flex items-center">
-                    <i
-                      [class]="item.icon || ''"
-                      class="text-2xl cursor-pointer"
-                      (contextmenu)="onRightClick($event, item)"
-                      (click)="onMenuItemClick(item, $event)"
-                    ></i>
+                    @if (
+                      item.action === "open-doc8" || item.action === "open-crm"
+                    ) {
+                      <img
+                        [src]="
+                          item.action === 'open-doc8'
+                            ? 'assets/images/doc8.webp'
+                            : 'assets/images/crm.png'
+                        "
+                        [alt]="item.label | translate"
+                        class="w-6 h-6 object-contain cursor-pointer"
+                        (click)="onMenuItemClick(item, $event)"
+                        (contextmenu)="onRightClick($event, item)"
+                      />
+                    } @else {
+                      <i
+                        [class]="item.icon || ''"
+                        class="text-2xl cursor-pointer"
+                        (contextmenu)="onRightClick($event, item)"
+                        (click)="onMenuItemClick(item, $event)"
+                      ></i>
+                    }
+
                     @if (_menuService.showSideBar) {
                       <span
                         class="text-sm ps-4 font-medium cursor-pointer"
+                        [ngClass]="{
+                          '!text-green-600': item.action === 'open-doc8',
+                          '!text-yellow-500': item.action === 'open-crm',
+                        }"
                         (click)="onMenuItemClick(item, $event)"
                         (contextmenu)="onRightClick($event, item)"
                       >
@@ -180,3 +201,59 @@
     v{{ appVersion }}
   </div>
 </nav>
+
+@if (showCrmDialog) {
+  <div
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+    (click)="showCrmDialog = false"
+  >
+    <div
+      class="w-[400px] max-w-[90vw] rounded-xl bg-white p-5 shadow-xl"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-semibold">
+          {{ "menu.allApps" | translate }}
+        </h3>
+
+        <button
+          type="button"
+          class="text-gray-500 text-xl"
+          (click)="showCrmDialog = false"
+        >
+          &times;
+        </button>
+      </div>
+
+      <p class="text-sm text-gray-500 mb-5">
+        {{ "menu.allAppsDescription" | translate }}
+      </p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          class="border rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-gray-50 transition"
+          (click)="openUnavailableModule()"
+        >
+          <i class="icon-users text-3xl text-yellow-500"></i>
+
+          <span class="font-semibold text-sm">
+            {{ "menu.hr8" | translate }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="border rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-gray-50 transition"
+          (click)="openUnavailableModule()"
+        >
+          <i class="icon-wallet-money text-3xl text-pink-500"></i>
+
+          <span class="font-semibold text-sm">
+            {{ "menu.accounting" | translate }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

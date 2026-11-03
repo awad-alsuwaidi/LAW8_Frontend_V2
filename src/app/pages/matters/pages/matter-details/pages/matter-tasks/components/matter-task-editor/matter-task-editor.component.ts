@@ -50,7 +50,6 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
             return [];
           };
 
-          // دالة تطبيع الحقول (تحويل nameEn/nameAr إلى name)
           const normalize = (arr: any[]) => {
             return arr.map((item) => ({
               ...item,
@@ -59,13 +58,12 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
             }));
           };
 
-          // ✅ فلترة المستخدمين ليكونوا محامين فقط (isLawyer === true)
           const allUsers = extractList(batchData.users);
           const lawyersOnly = allUsers.filter((u: any) => u.isLawyer === true);
 
           this.lookupsData = {
             lawyers: {
-              result: normalize(lawyersOnly), // 👈 بنبعت المحامين بس
+              result: normalize(lawyersOnly), 
             },
             taskStatus: {
               result: normalize(extractList(batchData.activityStatuses)),
@@ -117,11 +115,8 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
           const isSuccess = res?.success ?? res?.isSuccess;
           const result = res?.data ?? res?.result;
           if (!isSuccess || !result) return;
-
-          // 1. بناخد الـ userIds اللي جاية من الـ API
           const incomingAssigned = result.assignedUserIds || [];
 
-          // 2. بنحولهم لـ ids عشان الـ Formly select يعرضهم صح
           const mappedIds = incomingAssigned.map((val: any) => {
             const user = this.lookupsData?.lawyers?.result.find(
               (l: any) => l.userId === val || l.id == val,
@@ -134,7 +129,7 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
             startDate: result.startDate ? new Date(result.startDate) : null,
             dueDate: result.dueDate ? new Date(result.dueDate) : null,
             attachments: result.attachments || result.attachmentList || [],
-            assignedUserIds: mappedIds, // 👈 الـ ids بعد التحويل
+            assignedUserIds: mappedIds, 
             priorityId: result.priorityId,
             matterTaskStatusId: result.matterTaskStatusId,
           };
@@ -239,18 +234,15 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
 
     if (Array.isArray(this.formlyModel.assignedUserIds)) {
       this.formlyModel.assignedUserIds.forEach((u: any) => {
-        // استخراج القيمة سواء كانت id مباشر أو object
         let idToSend = u.value || u;
         if (typeof idToSend === 'object' && idToSend !== null) {
           idToSend = idToSend.value || idToSend.id;
         }
 
-        // بنبحث عن المستخدم عشان ناخد الـ userId
         const user = this.lookupsData?.lawyers?.result.find(
           (l: any) => l.id == idToSend || l.userId === idToSend,
         );
 
-        // بنبعت userId، ولو مش لاقيه بنبعت القيمة زي ما هي
         const finalUserId = user ? user.userId : idToSend;
         if (finalUserId) {
           formData.append('assignedUserIds', finalUserId);

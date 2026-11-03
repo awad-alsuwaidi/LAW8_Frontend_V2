@@ -210,7 +210,7 @@
         "uploadLogo": "رفع الشعار",
         "isPrivate": "خاص",
         "location": "الموقع",
-        "yyouDontHavePermission": "ليس لديك إذن للوصول إلى هذه الصفحة",
+        "dontHavePermission": "ليس لديك إذن للوصول إلى هذه الصفحة",
         "importantMatter": "قضية هامة",
         "taxes": "الضرائب",
         "rateExceptions": "استثناءات السعر",

@@ -155,18 +155,18 @@ export class Menu {
           icon: 'icon-timesheet',
           label: 'menu.timesheet',
           route: '/timesheet',
-          permission: 'View_Timesheet',
+          // permission: 'View_Timesheet',
 
           children: [
             {
               label: 'menu.addTimesheet',
               route: '/timesheet/add',
-              permission: 'Add_Timesheet',
+              // permission: 'Add_Timesheet',
             },
             {
               label: 'menu.timesheetlist',
               route: '/timesheet',
-              permission: 'View_Timesheet',
+              // permission: 'View_Timesheet',
             },
           ],
         },
@@ -334,6 +334,18 @@ export class Menu {
           route: '/security',
           permission: 'View_Security',
           activeMatchers: [/^\/security\/.*/],
+        },
+        {
+          icon: '',
+          label: 'menu.doc8',
+          action: 'open-doc8',
+          permission: 'View_Security',
+        },
+        {
+          icon: '',
+          label: 'menu.crm',
+          action: 'open-crm',
+          permission: 'View_Security',
         },
       ],
     },

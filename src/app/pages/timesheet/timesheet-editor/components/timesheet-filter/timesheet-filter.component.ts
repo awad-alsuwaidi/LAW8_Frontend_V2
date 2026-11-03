@@ -1,4 +1,11 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  OnInit,
+} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,15 +32,14 @@ import { ObjToArrWithValuesPipe } from 'src/app/@shared/pipes/obj-to-arr-with-va
   templateUrl: './timesheet-filter.component.html',
   styleUrl: './timesheet-filter.component.scss',
 })
-export class TimesheetFilterComponent {
+export class TimesheetFilterComponent implements OnInit {
   @Output() onFilter = new EventEmitter();
   @Input() lookupsData: any;
   _languageService = inject(LanguageService);
-
   _dialogService = inject(DialogService);
 
   formly: FormGroup = new FormGroup({});
-  formlyModel: any;
+  formlyModel: any = {};
   formlyFields: FormlyFieldConfig[] = [];
 
   ngOnInit(): void {
@@ -52,7 +58,10 @@ export class TimesheetFilterComponent {
               placeholder: 'Search',
               icon: 'icon-search text-grey400',
               input: () => {
-                this.formlyModel = { ...this.formly.value };
+                this.formlyModel = {
+                  ...this.formlyModel,
+                  ...this.formly.value,
+                };
                 this.onFilter.emit(this.formlyModel);
               },
             },
@@ -76,9 +85,12 @@ export class TimesheetFilterComponent {
                 );
                 ref.onClose.subscribe({
                   next: (res) => {
-                    if (res) {
-                      this.formlyModel = { ...this.formly.value, ...res };
-
+                    if (res?.filters) {
+                      this.lookupsData = res.lookupsData;
+                      this.formlyModel = {
+                        ...this.formly.value,
+                        ...res.filters,
+                      };
                       this.onFilter.emit(this.formlyModel);
                     }
                   },
@@ -91,40 +103,53 @@ export class TimesheetFilterComponent {
     ];
   }
 
-  reset() {
-    this.formlyModel = null;
-    this.onFilter.emit(this.formlyModel);
-  }
-
   updateFilter(key: string, value?: any) {
     if (!key) return;
 
-    const fieldValue = this.formlyModel[key];
+    // 1) شيل الـ chip من الـ model
+    if (key === 'search') {
+      delete this.formlyModel.search;
+      this.formly.get('search')?.reset();
+    } else {
+      const fieldValue = this.formlyModel[key];
 
-    if (Array.isArray(fieldValue)) {
-      this.formlyModel[key] = fieldValue.filter((item: any) => {
-        if (typeof item === 'object' && value && typeof value === 'object') {
-          return item.id !== value.id;
-        }
-        return item !== value;
-      });
-
-      if (this.formlyModel[key].length === 0) {
+      if (Array.isArray(fieldValue)) {
+        this.formlyModel[key] = fieldValue.filter((item: any) =>
+          typeof item === 'object' && value && typeof value === 'object'
+            ? item.id !== value.id
+            : item !== value,
+        );
+        if (this.formlyModel[key].length === 0) delete this.formlyModel[key];
+      } else {
         delete this.formlyModel[key];
       }
-    } else {
-      delete this.formlyModel[key];
-    }
-    const currentSearch = this.formly.value?.search;
-    if (currentSearch) {
-      this.formlyModel = { ...this.formlyModel, search: currentSearch };
     }
 
-    this.onFilter.emit(this.formlyModel);
+    // 2) ثبّت الـ search لو لسه موجود
+    const currentSearch = this.formly.value?.search;
+    if (currentSearch) this.formlyModel.search = currentSearch;
+    else delete this.formlyModel.search;
+
+    // 3) 👇 القرار: فاضي؟ reset، مش فاضي؟ emit عادي
+    this.emitOrReset();
   }
 
-  findKeyByValue(obj: Record<string, any>, value: any): string | undefined {
-    return Object.keys(obj).find((key) => obj[key] === value);
+  private emitOrReset() {
+    const hasFilters =
+      Object.keys(this.formlyModel ?? {}).length > 0 ||
+      !!this.formly.value?.search;
+
+    if (!hasFilters) {
+      this.reset();
+    } else {
+      this.onFilter.emit({ ...this.formlyModel });
+    }
+  }
+
+  reset() {
+    this.formly.reset();
+    this.formlyModel = {};
+    this.onFilter.emit({});
   }
 
   isArray(value: any): boolean {
@@ -137,7 +162,8 @@ export class TimesheetFilterComponent {
 
     for (const key in this.formlyModel) {
       const val = this.formlyModel[key];
-      if (val == null || val === '') continue;
+      if (val == null || val === '' || (Array.isArray(val) && val.length === 0))
+        continue;
 
       if (Array.isArray(val)) {
         for (const item of val) {
@@ -158,28 +184,62 @@ export class TimesheetFilterComponent {
     return chips;
   }
 
+  // getChipLabel(key: string, value: any): string {
+  //   if (value && typeof value === 'object') {
+  //     return value.label || value.name || value.toString();
+  //   }
+  //   if (key === 'lawyerId' && this.lookupsData?.lawyers?.result) {
+  //     const lawyer = this.lookupsData.lawyers.result.find(
+  //       (l: any) => l.id === value,
+  //     );
+  //     return lawyer?.name || value;
+  //   }
+
+  //   if (key === 'taskId' && this.lookupsData?.tasks?.result) {
+  //     const task = this.lookupsData.tasks.result.find(
+  //       (t: any) => t.id === value,
+  //     );
+  //     return task?.name || value;
+  //   }
+  //   if (key === 'matterId' && this.lookupsData?.matterCode?.result) {
+  //     const matter = this.lookupsData.matterCode.result.find(
+  //       (m: any) => m.id === value,
+  //     );
+  //     return matter?.name || value;
+  //   }
+
+  //   return value;
+  // }
   getChipLabel(key: string, value: any): string {
-    if (value && typeof value === 'object') {
-      return value.label || value.name || value.toString();
-    }
-    if (key === 'lawyerId' && this.lookupsData?.lawyers?.result) {
-      const lawyer = this.lookupsData.lawyers.result.find(
-        (l: any) => l.id === value,
-      );
-      return lawyer?.name || value;
+    if (value === null || value === undefined) return '';
+
+    // لو القيمة Object
+    if (typeof value === 'object') {
+      return value.name || value.label || value.id || '';
     }
 
-    if (key === 'taskId' && this.lookupsData?.tasks?.result) {
-      const task = this.lookupsData.tasks.result.find(
-        (t: any) => t.id === value,
+    if (key === 'lawyerId') {
+      const lawyer = this.lookupsData?.lawyers?.result?.find(
+        (l: any) => String(l.userId ?? l.id) === String(value),
       );
-      return task?.name || value;
+
+      return lawyer?.name ?? value;
     }
-    if (key === 'matterId' && this.lookupsData?.matterCode?.result) {
-      const matter = this.lookupsData.matterCode.result.find(
-        (m: any) => m.id === value,
+
+    if (key === 'taskId') {
+      const task = this.lookupsData?.tasks?.result?.find(
+        (t: any) => String(t.id) === String(value),
       );
-      return matter?.name || value;
+
+      return task?.name ?? value;
+    }
+
+    if (key === 'matterId') {
+      const matter = this.lookupsData?.matterCode?.result?.find(
+        (m: any) => String(m.id) === String(value),
+      );
+
+      return matter?.name ?? value;
     }
 
     return value;

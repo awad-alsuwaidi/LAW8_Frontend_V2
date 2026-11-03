@@ -30,9 +30,12 @@ export const General_API = {
     getJurisdictionLookup: 'lookups/jurisdictions',
     getStages: 'lookups/matter-stages',
     getReferralType: 'lookups/referral-types',
-    getMatterParties: 'api/v1/MatterParties', 
+    getMatterParties: 'MatterParties',
     getBatchLookups: 'lookups',
-    getClientsLookup:'lookups/clients',
+    getClientsLookup: 'lookups/clients',
+    getUsersInitialViewForTimeShet: 'MatterTimesheet/users',
+    getTaskCode: 'lookups',
+    getMatterCodes: 'lookups/matters',
     // ============ ⚠️ DEPRECATED — مؤقتاً لحد ما الـ components تتحدث ============
     /** @deprecated استخدم getLookups (types=...) */
     getPartyTypes: 'lookups/party-types',
@@ -54,16 +57,20 @@ export const General_API = {
     getLawyers: '/GetSPList',
     gettaskCodesGroup: 'Law_TaskCodesGroup/GetList',
     getItemLookup: 'AppLookup/GetLaw_SEC_ItmLookup',
-    getLawyerMyPermissionCalendar: 'AppLookup/GetLaw_LawyerMyPermissionCalander',
+    getLawyerMyPermissionCalendar:
+      'AppLookup/GetLaw_LawyerMyPermissionCalander',
     getLawTaskCodesByMatterId: 'AppLookup/GetLaw_TaskCodesByMatterId',
-    getTaskCode: 'AppLookup/GetLaw_TaskCodeLookup',
+    // getTaskCode: 'AppLookup/GetLaw_TaskCodeLookup',
     getRecentMatters: 'AppLookup/GetRecentMatterCodeForUserLookup',
-    getMatterCodes: 'AppLookup/GetLawMattertCodeLookup',
-    getAssignedUsersCalender: 'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
+    // getMatterCodes: 'AppLookup/GetLawMattertCodeLookup',
+    getAssignedUsersCalender:
+      'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
     getLawyerShort: 'AppLookup/GetLaw_LawyerShortLookup',
     getPartyPosition: 'AppLookup/GetLaw_MatterPartiesPositionsLookup',
-    getUsersInitialSaparateForTimeShet: 'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
-    getUsersInitialViewForTimeShet: 'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
+    getUsersInitialSaparateForTimeShet:
+      'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
+    // getUsersInitialViewForTimeShet:
+    //   'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
     getAllMatterTypes: 'AppLookup/GetLaw_MtrTyppLookup',
     getAllMatter: 'AppLookup/GetLawMattertLookup',
     getAllCurrencies: 'AppLookup/GetCurrencyLookup',

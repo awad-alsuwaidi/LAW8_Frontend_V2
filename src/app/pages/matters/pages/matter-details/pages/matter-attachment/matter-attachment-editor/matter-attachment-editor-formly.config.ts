@@ -13,7 +13,7 @@ export function matterAttachmentEditorFieldsConfig(
           key: 'attachmentType',
           type: 'radio',
           defaultValue: 'file',
-          hideExpression: () => THIS.isEdit, 
+          hideExpression: () => THIS.isEdit,
           props: {
             label: 'Attachment Type',
             options: [
@@ -68,9 +68,10 @@ export function matterAttachmentEditorFieldsConfig(
             label: 'Hyperlink / URL',
             placeholder: 'https://example.com/document',
           },
-          hideExpression: () => THIS.attachmentType !== 'url',
+          hideExpression: () => THIS.isEdit || THIS.attachmentType !== 'url',
           expressionProperties: {
-            'props.required': () => THIS.attachmentType === 'url',
+            'props.required': () =>
+              THIS.attachmentType === 'url' && !THIS.isEdit,
           },
         },
         {

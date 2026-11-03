@@ -4,20 +4,16 @@ import {
   ElementRef,
   EventEmitter,
   inject,
-  Input,
   OnDestroy,
   OnInit,
   Output,
   QueryList,
-  signal,
   ViewChild,
   ViewChildren,
-  WritableSignal,
 } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
-  FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
@@ -37,24 +33,32 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
-import { catchError, combineLatest, finalize, of, retry } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  of,
+  take,
+  map,
+  shareReplay,
+  Observable,
+} from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { ApiService } from 'src/app/@core/api/api.service';
 import { UnsubscribeService } from 'src/app/@shared/services/unsubscribe/unsubscribe.service';
-import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SharedMatterComponent } from 'src/app/@shared/components/bussiness/shared-matter/shared-matter.component';
-import { Task } from '../../../enums/task.enum';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
 import { SharedConfirmDialogComponent } from 'src/app/@shared/components/shared-confirm-dialog/shared-confirm-dialog.component';
 import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TimesheetDto } from '../../../interfaces/timesheet.interface';
 import { SharedTableComponent } from 'src/app/@shared/components/shared-table/shared-table.component';
-import { TopbarTimesheetEditorComponent } from 'src/app/layout/components/topbar/topbar-timesheet-editor/topbar-timesheet-editor.component';
 import { environment } from 'src/environments/environment';
+import {
+  BatchRowPayload,
+  LookupItem,
+  TimesheetRowDto,
+  TimesheetSummary,
+} from '../../../interfaces/timesheet.interface';
 
 @Component({
   selector: 'app-timesheet-editor',
@@ -71,7 +75,6 @@ import { environment } from 'src/environments/environment';
     CalendarModule,
     TooltipModule,
     InputTextModule,
-    TableModule,
     SharedTableComponent,
   ],
   templateUrl: './timesheet-editor.component.html',
@@ -88,384 +91,594 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
   _datePipe = inject(DatePipe);
   cdRef = inject(ChangeDetectorRef);
   _languageService = inject(LanguageService);
-  http = inject(HttpClient);
-  billableHoursCount: number = 0;
-  nonBillableHoursCount: number = 0;
-  noChargeHoursCount: number = 0;
   router = inject(Router);
-  @ViewChild('dt') table!: Table;
-  columns: any[] = timesheetEditorColumnsConfig;
-  laywers: any[] = [];
-  tasks: any[] = [];
-  matters: any[] = [];
-  selectedRows: any[] = [];
-  @Input() data: TimesheetDto[] = [];
-  isListView: boolean = false;
-  private cdr = inject(ChangeDetectorRef);
-  taskCodesByRow: Record<number, { label: string; value: number }[]> = {};
-  taskCodesLoadingByRow: Record<number, boolean> = {};
-  taskCodesCacheByMatter: Record<number, { label: string; value: number }[]> =
-    {};
-  isInhouse = environment.brand === 'inhouse';
-  showExplanationError: { [key: number]: boolean } = {};
-  isLoading = false;
-
-  pagination: any = {
-    pageNum: 1,
-    pagSize: 10,
-    filters: {},
-    orderByDirection: 'ASC',
-  };
-
-  get pagedTableData() {
-    const visibleRows = this.getFormArray.value.filter(
-      (row: { hidden: any }) => !row.hidden,
-    );
-
-    const rowsToShow = visibleRows.slice(0, visibleRows.length - 1);
-    this.pagination.totalElements = rowsToShow.length;
-
-    const start = (this.pagination.pageNum - 1) * this.pagination.pagSize;
-    const end = start + this.pagination.pagSize;
-
-    return rowsToShow.slice(start, end).map((item: any) => ({
-      ...item,
-      law_Lawer:
-        this.laywers.find((l: any) => l.value === item.law_LawerId)?.label ||
-        item.law_Lawer ||
-        '',
-      law_TaskCode:
-        this.tasks.find((t: any) => t.value === item.law_TaskCodeId)?.label ||
-        item.law_TaskCode ||
-        '',
-    }));
-  }
-
-  @Output() refreshTimesheet = new EventEmitter<void>();
-
-  get listColumns() {
-    const cols = JSON.parse(JSON.stringify(this.columns));
-
-    const matterIdx = cols.findIndex(
-      (c: { field: string }) => c.field === 'mtrNo',
-    );
-
-    if (!cols.some((c: { field: string }) => c.field === 'clientName')) {
-      cols.splice(matterIdx + 1, 0, {
-        header: this.isInhouse
-          ? 'timesheet.entityName'
-          : 'timesheet.clientName',
-        field: 'clientName',
-        style: {
-          width: '150px',
-          minWidth: '150px',
-          maxWidth: '200px',
-          textAlign: 'left',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        },
-        sortable: true,
-      });
-    } else {
-      const currentIdx = cols.findIndex(
-        (c: { field: string }) => c.field === 'clientName',
-      );
-      const [clientCol] = cols.splice(currentIdx, 1);
-      clientCol.style = {
-        width: '200px',
-        minWidth: '200px',
-        maxWidth: '200px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      };
-      cols.splice(matterIdx + 1, 0, clientCol);
-    }
-
-    cols.forEach(
-      (col: {
-        field: string;
-        style: { width: string; minWidth: string; maxWidth: string };
-      }) => {
-        if (col.field === 'law_TaskCodeId' || col.field === 'law_LawerId') {
-          col.style = { width: '100px', minWidth: '100px', maxWidth: '100px' };
-        }
-        if (col.field === 'explanationExplanation') {
-          col.style = { width: '300px', minWidth: '250px', maxWidth: '450px' };
-        }
-        if (!col.style) {
-          col.style = { width: '130px', minWidth: '130px', maxWidth: '130px' };
-        }
-      },
-    );
-
-    return cols;
-  }
-  private parseDateOnly(value: any): Date {
-    if (!value) return new Date();
-
-    if (value instanceof Date) return value;
-
-    const datePart = String(value).split('T')[0];
-    const [y, m, d] = datePart.split('-').map(Number);
-    return new Date(y, (m || 1) - 1, d || 1);
-  }
-
-  private formatDateOnly(value: any): string {
-    const dt = this.parseDateOnly(value);
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth() + 1).padStart(2, '0');
-    const d = String(dt.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  }
-
-  limitWords(text: string, wordLimit: number): string {
-    if (!text) return '';
-    const words = text.trim().split(/\s+/);
-    if (words.length <= wordLimit) {
-      return text;
-    }
-    return words.slice(0, wordLimit).join(' ') + '...';
-  }
-
-  openEditor(rowData?: any): void {
-    const ref = this._dialogService.open(TopbarTimesheetEditorComponent, {
-      header: rowData ? 'Edit Timesheet' : 'Add Timesheet',
-      width: window.innerWidth < 768 ? '90vw' : '40vw',
-      data: { formValue: rowData, isEdit: !!rowData },
-    });
-    const reloadAddComponent = () => {
-      console.log('🔹 Navigating to /timesheet first');
-      this.router.navigate(['/timesheet']).then(() => {
-        console.log('✅ Arrived at /timesheet');
-        setTimeout(() => {
-          console.log('🔹 Navigating to /timesheet/add');
-          this.router
-            .navigate(['/timesheet/add'], {
-              queryParams: { reload: new Date().getTime() },
-            })
-            .then(() => {
-              console.log('✅ Arrived at /timesheet/add');
-            })
-            .catch((err) => console.error('❌ Navigation error:', err));
-        });
-      });
-    };
-    ref.onClose.subscribe((isUpdated: boolean) => {
-      if (isUpdated) {
-        window.location.reload();
-        this.isListView = true;
-        this.refreshTimesheet.emit();
-      }
-    });
-  }
-  toggleView(viewType: 'list' | 'card') {
-    this.isListView = viewType === 'list';
-    const view = this.isListView ? 'list' : 'card';
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { view },
-      queryParamsHandling: 'merge',
-    });
-    this.cdr.detectChanges();
-  }
-
   route = inject(ActivatedRoute);
 
-  onFilterChange(filter: any) {
-    this.pagination.filters = filter;
-    this.getData();
-  }
-  onDelete(rowData: TimesheetDto) {
-    const reloadAddComponent = () => {
-      console.log('🔹 Navigating to /timesheet first');
-      this.router.navigate(['/timesheet']).then(() => {
-        console.log('✅ Arrived at /timesheet');
-        setTimeout(() => {
-          console.log('🔹 Navigating to /timesheet/add');
-          this.router
-            .navigate(['/timesheet/add'], {
-              queryParams: { reload: new Date().getTime() },
-            })
-            .then(() => {
-              console.log('✅ Arrived at /timesheet/add');
-            })
-            .catch((err) => console.error('❌ Navigation error:', err));
-        });
-      });
-    };
-    const ref = this._dialogService.open(SharedConfirmDialogComponent, {
-      modal: true,
-      styleClass: 'w-[400px]',
-      data: {
-        type: ConfirmDialogType.Danger,
-        title: this._languageService.getTransValue('timesheet.deleteTimeSheet'),
-        message: this._languageService.getTransValue('timesheet.delete'),
-        btns: [
-          {
-            label: this._languageService.getTransValue('lookups.discard'),
-            styleClass: 'border border-grey500 text-grey500',
-            command: () => {
-              ref.close();
-            },
-          },
-          {
-            label: this._languageService.getTransValue('timesheet.delete'),
-            styleClass: 'bg-textErrorBase text-white',
-            command: () => {
-              this._apiService
-                .post(API_Config.timesheet.delete, {}, { id: rowData.id })
-                .pipe(this._unsubscribe.takeUntilDestroy())
-                .subscribe({
-                  next: (res: ApiRes) => {
-                    if (res && res.isSuccess) {
-                      window.location.reload();
-                      ref.close();
-                      this.getData();
-                    }
-                  },
-                });
-            },
-          },
-        ],
-      },
-    });
+  @ViewChild('dt') table!: Table;
+  @ViewChildren('description') descriptionRefs!: QueryList<ElementRef>;
+
+  columns = timesheetEditorColumnsConfig;
+  isListView = false;
+  isInhouse = environment.brand === 'inhouse';
+
+  taskCodes: LookupItem[] = [];
+  billingHolds: LookupItem[] = [];
+  entryStatuses: LookupItem[] = [];
+  canViewRates = true;
+
+  laywers: any[] = [];
+  matters: any[] = [];
+  private _uidSeq = 1;
+
+  taskCodesRequests = new Map<number, Observable<any[]>>();
+
+  taskCodesLoadingByRow: Record<number, boolean> = {};
+  taskCodesByRow: Record<
+    number,
+    {
+      label: string;
+      value: number;
+      isBillable?: boolean;
+      isNoCharge?: boolean;
+    }[]
+  > = {};
+  taskCodesCacheByMatter: Record<
+    number,
+    {
+      label: string;
+      value: number;
+      isBillable?: boolean;
+      isNoCharge?: boolean;
+    }[]
+  > = {};
+
+  summary: TimesheetSummary = {
+    billableHours: 0,
+    nonBillableHours: 0,
+    noChargeHours: 0,
+    totalHours: 0,
+  };
+
+  isLoading = false;
+  isSavingDraft = false;
+  isSubmitting = false;
+  selectedRows: any[] = [];
+  timesheetDate!: Date;
+  @Output() refreshTimesheet = new EventEmitter<void>();
+
+  requestForm = this.fb.group({ data: this.fb.array([]) });
+  get getFormArray(): FormArray {
+    return this.requestForm.get('data') as FormArray;
   }
 
-  getData() {
-    this.isLoading = true;
+  ngOnInit(): void {
+    try {
+      const token: any = this._authService.getDecodedToken() ?? {};
+      let raw = token['UserInfo'];
+      if (typeof raw === 'string') {
+        try {
+          raw = JSON.parse(raw);
+        } catch {
+          raw = null;
+        }
+      }
+      const lockDateStr = raw?.TimeSheetDate;
+      this.timesheetDate = lockDateStr
+        ? new Date(lockDateStr)
+        : new Date(2000, 0, 1);
+      if (isNaN(this.timesheetDate.getTime())) {
+        this.timesheetDate = new Date(2000, 0, 1);
+      }
+    } catch {
+      this.timesheetDate = new Date(2000, 0, 1);
+    }
+
+    this.route.queryParams.subscribe(
+      (p) => (this.isListView = p['view'] === 'list'),
+    );
+
+    this.loadLookups();
+    this.loadUsers();
+    this.loadDrafts();
+    this.loadSummary();
+  }
+
+  ngOnDestroy(): void {
+    this._unsubscribe.destroy();
+  }
+
+  private unwrap(res: any): any {
+    if (!res) return null;
+    if (res.data !== undefined) return res.data;
+    if (res.result !== undefined) return res.result;
+    return res;
+  }
+  private reindexRows(): void {
+    this.getFormArray.controls.forEach((ctrl, i) => {
+      ctrl.get('rowIndex')?.setValue(i, { emitEvent: false });
+    });
+  }
+  private isOk(res: any): boolean {
+    if (!res) return false;
+    return res.success === true || res.isSuccess === true;
+  }
+
+  private unwrapList(res: any): any[] {
+    const d = this.unwrap(res);
+    if (!d) return [];
+    if (Array.isArray(d)) return d;
+    return d.items ?? d.dataList ?? d.records ?? [];
+  }
+
+  private getCurrentUserId(): any {
+    const token: any = this._authService.getDecodedToken() ?? {};
+    let id = token['Id'] ?? token['id'] ?? token['sub'];
+    if (!id && token['UserInfo']) {
+      try {
+        const userInfo =
+          typeof token['UserInfo'] === 'string'
+            ? JSON.parse(token['UserInfo'])
+            : token['UserInfo'];
+        id = userInfo['Id'] ?? userInfo['id'];
+      } catch {}
+    }
+    return id || this.laywers?.[0]?.value || null;
+  }
+
+  private loadLookups(): void {
+    const types = [
+      'taskCodes',
+      'billingHolds',
+      'timesheetEntryStatuses',
+      'rates',
+    ];
+    const qs = types
+      .map((t, i) => `types[${i}]=${encodeURIComponent(t)}`)
+      .join('&');
+
     this._apiService
-      .get(API_Config.timesheet.getDraftTimeSheet, this.pagination)
+      .get(`${API_Config.timesheet.lookups}?${qs}`)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const r = this.unwrap(res) ?? {};
+          this.taskCodes = r.taskCodes ?? [];
+          this.billingHolds = r.billingHolds ?? [];
+          this.entryStatuses = r.timesheetEntryStatuses ?? [];
+          this.canViewRates = Array.isArray(r.rates) && r.rates !== null;
+
+          this.getFormArray.controls.forEach((c) => {
+            if (c.get('hold')?.value == null) {
+              c.get('hold')?.setValue(this.defaultHold(), { emitEvent: false });
+            }
+          });
+        },
+        error: (err) => console.error('❌ Lookups failed:', err),
+      });
+  }
+
+  private loadUsers(): void {
+    this._apiService
+      .get(API_Config.timesheet.users, { mode: 'add' })
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const list = this.unwrapList(res);
+          this.laywers = list.map((u: any) => ({
+            label: u.name ?? u.userName ?? '',
+            value: u.id ?? u.userId,
+            initial: u.initial ?? u.userInitial ?? '',
+          }));
+        },
+        error: (err) => console.error('❌ Users failed:', err),
+      });
+  }
+
+  private loadDrafts(): void {
+    this.isLoading = true;
+    const qs = 'filters[statusCode]=Draft&pageNumber=1&pageSize=100';
+
+    this._apiService
+      .get(`${API_Config.timesheet.list}?${qs}`)
       .pipe(
         finalize(() => (this.isLoading = false)),
         this._unsubscribe.takeUntilDestroy(),
       )
-      .subscribe((res: any) => {
-        this.data = res?.result?.dataList || [];
-        this.pagination.totalElements = res?.result?.totalCount || 0;
+      .subscribe({
+        next: (res: any) => {
+          const rows = this.unwrapList(res);
+          this.getFormArray.clear();
+          this.selectedRows = [];
+          rows.forEach((item: any) =>
+            this.addRow(this.mapFromServer(item), true),
+          );
+          this.ensureTrailingEmpty();
+          this.reindexRows();
+          this.preloadTaskCodes();
+          this.updateLocalSummary();
+        },
+        error: (err) => console.error('❌ Drafts failed:', err),
       });
   }
-  onPageChange(event: any) {
-    this.pagination.pagSize = event.rows;
-    this.pagination.pageNum = event.first / event.rows + 1;
-    this.getData();
-  }
-  get toggleViewLabel(): string {
-    return this.isListView ? 'Show Table' : 'Show List';
-  }
 
-  TaskEnum = Task;
-  requestForm = this.fb.group({
-    data: this.fb.array([]),
-  });
-  get getFormArray(): FormArray {
-    return this.requestForm?.get('data') as FormArray;
-  }
-  timesheetDate!: Date;
-  currentRunningTimerIndex: number | null = null;
-  @ViewChildren('explanation') explanation!: QueryList<ElementRef>;
-  ngOnInit(): void {
-    this.initForm();
-    this.getDraftTimesheet();
-    this.getDefaultHoldId();
-    const userInfo = this._authService.getDecodedToken()['UserInfo'];
-    this.timesheetDate = new Date(JSON.parse(userInfo).TimeSheetDate);
-    this.route.queryParams.subscribe((params) => {
-      this.isListView = params['view'] === 'list';
-    });
-  }
-  listData: any[] = [];
-  get tableData() {
-    return this.getFormArray.value.map((item: any) => ({ ...item }));
-  }
-  // timesheettabelColumns = timesheettabelColumnsConfig;
-  initForm(): void {
-    this.updateTaskHoursSummary();
-  }
-  deletedRows: any[] = [];
-  isSavingDraft: boolean = false;
-  isSubmitting: boolean = false;
-
-  getDraftTimesheet() {
+  private loadSummary(period: 'today' | 'week' | 'month' = 'today'): void {
     this._apiService
-      .get(API_Config.timesheet.getDraftTimeSheet, this.filterOptions)
+      .get(API_Config.timesheet.summaryByUser, { period })
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res.result?.length > 0) {
-            const validRows = res.result.filter(
-              (item: any) =>
-                item.matterId && item.explanationExplanation?.trim(),
-            );
+        next: (res: any) => {
+          const r = this.unwrap(res) ?? {};
+          this.summary = {
+            billableHours: r.billableHours ?? 0,
+            nonBillableHours: r.nonBillableHours ?? 0,
+            noChargeHours: r.noChargeHours ?? 0,
+            totalHours: r.totalHours ?? 0,
+          };
+        },
+        error: (err) => console.error('❌ Summary failed:', err),
+      });
+  }
 
-            validRows.forEach((item: any, index: number) => {
-              const existingRow = this.getFormArray.at(index);
-              if (existingRow) {
-                existingRow.patchValue({
-                  ...item,
-                  isNewRow: false,
-                  hidden: false,
-                  // tmDate: this._datePipe.transform(item?.tmDate, 'YYYY-MM-dd'),
-                  tmDate: this.parseDateOnly(item?.tmDate),
-                });
-              } else {
-                this.addRow({
-                  ...item,
-                  isNewRow: false,
-                  hidden: false,
-                  // tmDate: this._datePipe.transform(item?.tmDate, 'YYYY-MM-dd'),
-                  tmDate: this.parseDateOnly(item?.tmDate),
-                });
-              }
-            });
-          }
-          // if (this.getFormArray.length === 0) {
-          //   this.addRow();
-          // } else {
-          //   const lastRow = this.getFormArray.at(this.getFormArray.length - 1);
-          //   if (
-          //     lastRow?.get('matterId')?.value ||
-          //     lastRow?.get('explanationExplanation')?.value
-          //   ) {
-          //     this.addRow();
-          //   }
-          const lastRow = this.getFormArray.at(this.getFormArray.length - 1);
+  private updateLocalSummary(): void {
+    let billable = 0;
+    let nonBillable = 0;
+    let noCharge = 0;
 
-          if (!lastRow) {
-            this.addRow();
-          } else {
-            const isLastRowEmpty =
-              !lastRow.get('matterId')?.value &&
-              !lastRow.get('explanationExplanation')?.value &&
-              !lastRow.get('mtrNo')?.value;
+    this.getFormArray.controls.forEach((ctrl) => {
+      const v = ctrl.value;
+      if (v.hidden || !v.matterId) return;
 
-            if (!isLastRowEmpty) {
-              this.addRow();
-            }
-          }
-          this.preloadTaskCodesForRows();
-          this.updateTaskHoursSummary();
-          this.getLookupsData();
+      const hours = Number(v.hours) || 0;
+      if (hours <= 0) return;
+
+      if (v.isBillable) {
+        billable += hours;
+      } else {
+        const taskList =
+          this.taskCodesByRow[ctrl.get('rowIndex')?.value] || this.taskCodes;
+        const task = taskList.find((t: any) => t.value === v.taskCodeId);
+
+        if (task && (task as any).isNoCharge) {
+          noCharge += hours;
+        } else {
+          nonBillable += hours;
+        }
+      }
+    });
+
+    this.summary = {
+      billableHours: Number(billable.toFixed(2)),
+      nonBillableHours: Number(nonBillable.toFixed(2)),
+      noChargeHours: Number(noCharge.toFixed(2)),
+      totalHours: Number((billable + nonBillable + noCharge).toFixed(2)),
+    };
+    this.cdRef.detectChanges();
+  }
+
+  private parseDateOnly(v: any): Date {
+    if (!v) return new Date();
+    if (v instanceof Date) return v;
+    const [y, m, d] = String(v).split('T')[0].split('-').map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+
+  private formatDateOnly(v: any): string {
+    const dt = this.parseDateOnly(v);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  }
+
+  private defaultHold(): number {
+    const noHold = this.billingHolds.find(
+      (h) => /no\s*hold/i.test(h.name) || h.name === 'No Hold',
+    );
+    return noHold?.id ?? 1;
+  }
+
+  private mapFromServer(item: TimesheetRowDto): any {
+    return {
+      id: item.id ?? null,
+      date: this.parseDateOnly(item.date),
+      matterId: item.matterId ?? null,
+      matterCode: item.matterCode ?? '',
+      clientName: item.clientName ?? '',
+      userId: item.userId ?? this.getCurrentUserId(),
+      userName: item.userName ?? '',
+      userInitial: item.userInitial ?? '',
+      taskCodeId: item.taskCodeId ?? null,
+      taskCodeName: item.taskCodeName ?? '',
+      hours: item.hours ?? 0,
+      rateId: item.rateId ?? null,
+      rateAmount: item.rateAmount ?? null,
+      amount: item.amount ?? 0,
+      effectiveBillable: item.effectiveBillable ?? null,
+      isBillable: item.isBillable ?? false,
+      description: item.description ?? '',
+      notes: item.notes ?? '',
+      hold: item.hold ?? this.defaultHold(),
+      holdName: item.holdName ?? '',
+      statusCode: item.statusCode ?? '',
+      statusName: item.statusName ?? '',
+      canEdit: item.canEdit ?? true,
+      hidden: false,
+      isNewRow: false,
+      isTimerRunning: false,
+      tsTimmer: null,
+    };
+  }
+
+  private ensureTrailingEmpty(): void {
+    const last = this.getFormArray.at(this.getFormArray.length - 1);
+    const empty =
+      !last ||
+      (!last.get('description')?.value &&
+        !last.get('hours')?.value &&
+        !last.get('id')?.value);
+
+    if (!last || !empty) {
+      this.addRow({ isTrailingEmpty: true });
+    }
+  }
+
+  getRowKey(i: number): number {
+    return this.getFormArray.at(i)?.get('rowIndex')?.value ?? i;
+  }
+
+  private preloadTaskCodes(): void {
+    const lastIdx = this.getFormArray.length - 1;
+    for (let i = 0; i < this.getFormArray.length; i++) {
+      if (i === lastIdx) continue;
+      const mid = Number(this.getFormArray.at(i)?.get('matterId')?.value);
+      if (mid) this.loadTaskCodesByMatterId(mid, i);
+    }
+  }
+
+  calculateAmount(rowIndex: number): void {
+    const row = this.getFormArray.at(rowIndex);
+    if (!row) return;
+
+    const hours = Number(row.get('hours')?.value) || 0;
+    const rate = Number(row.get('rateAmount')?.value) || 0;
+    const isBillable = row.get('isBillable')?.value ?? false;
+
+    const effectiveRate = isBillable ? rate : 0;
+    const amount = (hours * effectiveRate).toFixed(2);
+
+    row.patchValue({ amount: amount }, { emitEvent: false });
+    this.updateLocalSummary();
+  }
+
+  private fetchFromLegacy(rowIndex: number): void {
+    const row = this.getFormArray.at(rowIndex);
+    if (!row) return;
+
+    const matterId = row.get('matterId')?.value;
+    if (!matterId) return;
+
+    const userId = row.get('userId')?.value || this.getCurrentUserId();
+    const taskCodeId = row.get('taskCodeId')?.value;
+
+    const params: any = { id: matterId };
+    if (userId) params.lawerId = userId;
+    if (taskCodeId) params.taskCodeId = taskCodeId;
+
+    this._apiService
+      .get(API_Config.timesheet.getRateFromLawyerIdAndMatterId, params)
+      .pipe(
+        take(1),
+        catchError(() => of(null)),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const r = this.unwrap(res);
+          if (!r) return;
+          row.patchValue({
+            clientName: r.name ?? r.clientName ?? row.get('clientName')?.value,
+            matterCode: r.mtrNo ?? row.get('matterCode')?.value,
+            taskCodeId:
+              r.law_TaskCodeId ?? r.taskCodeId ?? row.get('taskCodeId')?.value,
+            taskCodeName:
+              r.law_TaskCode ??
+              r.taskCodeName ??
+              row.get('taskCodeName')?.value,
+            rateAmount: r.rate ?? r.rateAmount ?? null,
+          });
+          this.calculateAmount(rowIndex);
         },
       });
   }
 
-  hideRow(event: Event, index: number) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+  private fetchRateAndClient(rowIndex: number): void {
+    const row = this.getFormArray.at(rowIndex);
+    if (!row) return;
+
+    const matterId = row.get('matterId')?.value;
+    if (!matterId) return;
+
+    const userId = row.get('userId')?.value || this.getCurrentUserId();
+    if (!userId) return;
+
+    const taskCodeId = row.get('taskCodeId')?.value;
+    const params: any = { matterId, userId };
+    if (taskCodeId) params.taskCodeId = taskCodeId;
+
+    this._apiService
+      .get(API_Config.timesheet.rateSuggestion, params)
+      .pipe(
+        take(1),
+        catchError(() => of(null)),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const r = this.unwrap(res);
+          if (r) {
+            row.patchValue({
+              clientName:
+                r.clientName ?? r.name ?? row.get('clientName')?.value,
+              rateId: r.rateId ?? null,
+              rateAmount: r.amount ?? null,
+              taskCodeId: r.taskCodeId ?? taskCodeId ?? null,
+              taskCodeName: r.taskCodeName ?? row.get('taskCodeName')?.value,
+              isBillable: r.isBillable ?? false,
+            });
+            this.calculateAmount(rowIndex);
+          } else {
+            this.fetchFromLegacy(rowIndex);
+          }
+        },
+        error: () => this.fetchFromLegacy(rowIndex),
+      });
+  }
+
+  loadTaskCodesByMatterId(
+    matterId: number,
+    formIndex: number,
+    force = false,
+  ): void {
+    if (!matterId) return;
+    const key = this.getRowKey(formIndex);
+    const selected = this.getFormArray.at(formIndex)?.get('taskCodeId')?.value;
+
+    if (!force && this.taskCodesCacheByMatter[matterId]) {
+      this.taskCodesByRow[key] = this.taskCodesCacheByMatter[matterId];
+      if (selected != null) {
+        this.getFormArray
+          .at(formIndex)
+          ?.get('taskCodeId')
+          ?.setValue(selected, { emitEvent: false });
+      }
+      return;
     }
+
+    let request$ = this.taskCodesRequests.get(matterId);
+    if (force) {
+      this.taskCodesRequests.delete(matterId);
+      request$ = undefined;
+    }
+
+    if (!request$) {
+      request$ = this._apiService
+        .get(`${API_Config.timesheet.taskCodesByMatter}/${matterId}`)
+        .pipe(
+          take(1),
+          map((res: any) => {
+            const list = this.unwrapList(res);
+            return list.map((x: any) => ({
+              label: x.nameEn || x.nameAr || x.name || x.taskCodeName || '',
+              value: Number(x.id ?? x.taskCodeId),
+              isBillable: x.isBillable,
+              isNoCharge: x.isNoCharge,
+            }));
+          }),
+          catchError(() =>
+            this._apiService
+              .get(`${API_Config.timesheet.taskCodesByMatter}/${matterId}`, {
+                MatterId: matterId,
+              })
+              .pipe(
+                take(1),
+                map((res: any) => {
+                  const list = this.unwrapList(res);
+                  return list.map((x: any) => ({
+                    label:
+                      x.nameEn || x.nameAr || x.name || x.taskCodeName || '',
+                    value: Number(x.id ?? x.taskCodeId),
+                    isBillable: x.isBillable,
+                    isNoCharge: x.isNoCharge,
+                  }));
+                }),
+                catchError(() => of([])),
+              ),
+          ),
+          shareReplay(1),
+        );
+      this.taskCodesRequests.set(matterId, request$);
+    }
+
+    this.taskCodesLoadingByRow[key] = true;
+
+    request$.subscribe({
+      next: (opts: any[]) => {
+        this.taskCodesCacheByMatter[matterId] = opts;
+        this.taskCodesByRow[key] = opts;
+        this.taskCodesLoadingByRow[key] = false;
+        if (selected != null) {
+          this.getFormArray
+            .at(formIndex)
+            ?.get('taskCodeId')
+            ?.setValue(selected, { emitEvent: false });
+        }
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        this.taskCodesByRow[key] = [];
+        this.taskCodesLoadingByRow[key] = false;
+        this.cdRef.detectChanges();
+      },
+    });
+  }
+
+  onLawyerChange(rowIndex: number): void {
+    this.fetchRateAndClient(rowIndex);
+  }
+
+  onTaskCodeChange(rowIndex: number): void {
+    this.fetchRateAndClient(rowIndex);
+  }
+
+  onExplanationFocus(rowIndex: number): void {
+    if (rowIndex === this.getFormArray.length - 1) {
+      const currentRow = this.getFormArray.at(rowIndex);
+      if (currentRow && !currentRow.get('matterId')?.value && rowIndex > 0) {
+        const prevRow = this.getFormArray.at(rowIndex - 1);
+        if (prevRow) {
+          currentRow.patchValue({
+            matterId: prevRow.get('matterId')?.value,
+            matterCode: prevRow.get('matterCode')?.value,
+            clientName: prevRow.get('clientName')?.value,
+            userId: prevRow.get('userId')?.value,
+            userName: prevRow.get('userName')?.value,
+            userInitial: prevRow.get('userInitial')?.value,
+            taskCodeId: prevRow.get('taskCodeId')?.value,
+            taskCodeName: prevRow.get('taskCodeName')?.value,
+            rateId: prevRow.get('rateId')?.value,
+            rateAmount: prevRow.get('rateAmount')?.value,
+            isBillable: prevRow.get('isBillable')?.value,
+            isNewRow: true, 
+          });
+
+          if (prevRow.get('matterId')?.value) {
+            this.loadTaskCodesByMatterId(
+              prevRow.get('matterId')?.value,
+              rowIndex,
+              false,
+            );
+          }
+          this.updateLocalSummary();
+        }
+      }
+      this.addRow(); 
+    }
+  }
+
+  hideRow(event: Event | null, index: number): void {
+    event?.preventDefault();
+    event?.stopPropagation();
 
     const row = this.getFormArray.at(index);
     if (!row) return;
 
-    const confirmDeleteRef: DynamicDialogRef = this._dialogService.open(
+    if (row.get('id')?.value && !row.get('canEdit')?.value) {
+      this._toastrNotifiService.displayError(
+        'This timesheet cannot be deleted.',
+      );
+      return;
+    }
+
+    const ref: DynamicDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
       {
         data: {
-          type: ConfirmDialogType.Success,
+          type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
             'timesheet.deleteTimeSheet',
           ),
@@ -476,933 +689,397 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
             {
               label: this._languageService.getTransValue('timesheet.cancel'),
               styleClass: 'border border-grey500 text-grey500',
-              command: (): void => confirmDeleteRef.close(),
+              command: () => ref.close(),
             },
             {
               label: this._languageService.getTransValue('timesheet.delete'),
               styleClass: 'bg-textErrorBase text-white',
-              command: (): void => {
-                confirmDeleteRef.close();
-                const visibleRowsCount = this.getFormArray.controls.filter(
-                  (r) => !r.get('hidden')?.value,
-                ).length;
-
-                if (visibleRowsCount <= 1) {
-                  row.reset({
-                    id: null,
-                    rowIndex: 0,
-                    isTimerRunning: false,
-                    tsTimmer: null,
-                    tmDate: new Date(),
-                    matterId: null,
-                    mtrNo: '',
-                    clientName: '',
-                    law_LawerId: this._authService.getDecodedToken()['Id'],
-                    law_TaskCodeId: null,
-                    hours: 0,
-                    rate: 0,
-                    amount: 0,
-                    explanationExplanation: '',
-                    notes: '',
-                    hidden: false,
-                    isNewRow: true,
-                  });
-                  this.updateTaskHoursSummary();
-                  this.cdRef.detectChanges();
-                  confirmDeleteRef.close(true);
-                  return;
-                }
-
-                const reloadAddComponent = () => {
-                  console.log('🔹 Navigating to /timesheet first');
-                  this.router.navigate(['/timesheet']).then(() => {
-                    console.log('✅ Arrived at /timesheet');
-                    setTimeout(() => {
-                      console.log('🔹 Navigating to /timesheet/add');
-                      this.router
-                        .navigate(['/timesheet/add'], {
-                          queryParams: { reload: new Date().getTime() },
-                        })
-                        .then(() => {
-                          console.log('✅ Arrived at /timesheet/add');
-                        })
-                        .catch((err) =>
-                          console.error('❌ Navigation error:', err),
-                        );
-                    });
-                  });
-                };
-
-                if (row.get('id')?.value) {
-                  const param = { id: row.get('id')?.value };
-                  this._apiService
-                    .post(API_Config.timesheet.delete, {}, param)
-                    .pipe(this._unsubscribe.takeUntilDestroy())
-                    .subscribe({
-                      next: (res: ApiRes) => {
-                        if (res.isSuccess) {
-                          row.get('hidden')?.setValue(true);
-                          this.updateTaskHoursSummary();
-                          this.cdRef.detectChanges();
-                          this.backgroundReRenderTable();
-                          reloadAddComponent();
-                        } else {
-                          this._toastrNotifiService.displayError(res.message);
-                          confirmDeleteRef.close(true);
-                        }
-                      },
-                      error: () => {
-                        this._toastrNotifiService.displayError(
-                          'Failed to delete row',
-                        );
-                        confirmDeleteRef.close(true);
-                      },
-                    });
-                  // } else {
-                  //   row.get('hidden')?.setValue(true);
-                  //   this.updateTaskHoursSummary();
-                  //   this.cdRef.detectChanges();
-                  //   reloadAddComponent();
-                  //   confirmDeleteRef.close(true);
-                  // }
-                } else {
-                  this.getFormArray.removeAt(index);
-                  this.updateTaskHoursSummary();
-                  this.cdRef.detectChanges();
-                  this.backgroundReRenderTable();
-                  confirmDeleteRef.close(true);
-                }
-              },
+              command: () => ref.close(true),
             },
           ],
         },
       },
     );
-  }
 
-  private preloadTaskCodesForRows(): void {
-    const lastIndex = this.getFormArray.length - 1;
+    ref.onClose.subscribe((ok) => {
+      if (!ok) return;
 
-    for (let i = 0; i < this.getFormArray.length; i++) {
-      if (i === lastIndex) continue;
+      const id = row.get('id')?.value;
 
-      const ctrl = this.getFormArray.at(i);
-      const matterId = Number(ctrl.get('matterId')?.value);
-
-      if (!matterId) continue;
-      if (ctrl.get('rowIndex')?.value == null) {
-        ctrl.get('rowIndex')?.setValue(i, { emitEvent: false });
+      if (!id) {
+        this.loadDrafts();
+        this._toastrNotifiService.displaySuccess('Row removed.');
+      } else {
+        this._apiService
+          .delete(`${API_Config.timesheet.list}/${id}`)
+          .pipe(this._unsubscribe.takeUntilDestroy())
+          .subscribe({
+            next: (res: any) => {
+              if (this.isOk(res)) {
+                this.loadDrafts();
+                this._toastrNotifiService.displaySuccess(
+                  'Deleted successfully',
+                );
+              } else {
+                this._toastrNotifiService.displayError(
+                  res?.message || 'Delete failed.',
+                );
+              }
+            },
+            error: (err) => {
+              const msg = err?.error?.message || 'Delete failed.';
+              this._toastrNotifiService.displayError(msg);
+            },
+          });
       }
-
-      this.loadTaskCodesByMatterId(matterId, i);
-    }
-  }
-  private loadTaskCodesByMatterId(
-    matterId: number,
-    formIndex: number,
-    force = false,
-  ): void {
-    if (!matterId) return;
-
-    const rowKey = this.getRowKey(formIndex);
-    const selectedId = this.getFormArray
-      .at(formIndex)
-      ?.get('law_TaskCodeId')?.value;
-
-    if (!force && this.taskCodesCacheByMatter[matterId]) {
-      this.taskCodesByRow[rowKey] = this.taskCodesCacheByMatter[matterId];
-      if (selectedId != null) {
-        this.getFormArray
-          .at(formIndex)
-          ?.get('law_TaskCodeId')
-          ?.setValue(selectedId, { emitEvent: false });
-      }
-      return;
-    }
-
-    this.taskCodesLoadingByRow[rowKey] = true;
-
-    this._apiService
-      .get('AppLookup/GetLaw_TaskCodesByMatterId', { MatterId: matterId })
-      .pipe(
-        finalize(() => (this.taskCodesLoadingByRow[rowKey] = false)),
-        this._unsubscribe.takeUntilDestroy(),
-      )
-      .subscribe({
-        next: (res: any) => {
-          const opts =
-            (res?.result ?? []).map((x: any) => ({
-              label: x.name,
-              value: Number(x.id),
-            })) ?? [];
-
-          this.taskCodesCacheByMatter[matterId] = opts;
-          this.taskCodesByRow[rowKey] = opts;
-          if (selectedId != null) {
-            this.getFormArray
-              .at(formIndex)
-              ?.get('law_TaskCodeId')
-              ?.setValue(selectedId, { emitEvent: false });
-          }
-
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.taskCodesByRow[rowKey] = [];
-        },
-      });
-  }
-
-  private backgroundReRenderTable(): void {
-    const current = this.isListView;
-    this.isListView = !current;
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.isListView = current;
-      this.cdr.detectChanges();
-    }, 0);
-  }
-
-  onExplanationFocus(rowIndex: number) {
-    const lastIndex = this.getFormArray.length - 1;
-    if (rowIndex === lastIndex) {
-      this.addRow();
-    }
-  }
-
-  addRow(obj?: any) {
-    const lastRow = this.getFormArray.at(this.getFormArray.length - 1);
-    if (
-      lastRow &&
-      !lastRow.get('matterId')?.value &&
-      !lastRow.get('explanationExplanation')?.value
-    ) {
-      return;
-    }
-
-    const defaultDate =
-      obj?.tmDate ||
-      (lastRow?.get('tmDate')?.value
-        ? new Date(lastRow.get('tmDate')?.value)
-        : new Date());
-
-    const row = this.fb.group({
-      id: [obj?.id ?? null],
-      rowIndex: [this.getFormArray.length],
-      isTimerRunning: [false],
-      tsTimmer: [obj?.tsTimmer ?? null],
-      tmDate: [defaultDate, [Validators.required]],
-      matterId: [obj?.matterId ?? lastRow?.get('matterId')?.value ?? null],
-      mtrNo: [obj?.mtrNo ?? lastRow?.get('mtrNo')?.value ?? ''],
-      clientName: [obj?.clientName ?? lastRow?.get('clientName')?.value ?? ''],
-      // matterId: [obj?.matterId ?? null, [Validators.required]],
-      // mtrNo: [obj?.mtrNo ?? ''],
-      // clientName: [obj?.clientName ?? '', [Validators.required]],
-      law_LawerId: [
-        obj?.law_LawerId ?? this._authService.getDecodedToken()['Id'],
-        [Validators.required],
-      ],
-      law_TaskCodeId: [
-        obj?.law_TaskCodeId ?? lastRow?.get('law_TaskCodeId')?.value ?? '',
-      ],
-      rate: [obj?.rate ?? lastRow?.get('rate')?.value ?? ''],
-      // law_TaskCodeId: [obj?.law_TaskCodeId ?? null, [Validators.required]],
-      // rate: [obj?.rate ?? 0, [Validators.required]],
-      hours: [obj?.hours ?? 0, [Validators.required]],
-      amount: [obj?.amount ?? 0, [Validators.required]],
-      explanationExplanation: [
-        obj?.explanationExplanation ?? '',
-        [Validators.required],
-      ],
-      notes: [obj?.notes ?? ''],
-      hidden: [obj?.hidden ?? false],
-      isNewRow: [obj?.isNewRow ?? true],
     });
-
-    this.getFormArray.push(row);
-    row.get('rowIndex')?.setValue(this.getFormArray.length - 1);
-    this.tableValue = [...this.getFormArray.value];
-    const newIndex = this.getFormArray.length - 1;
-    const inheritedMatterId = Number(
-      this.getFormArray.at(newIndex)?.get('matterId')?.value,
-    );
-    if (inheritedMatterId) {
-      this.loadTaskCodesByMatterId(inheritedMatterId, newIndex);
-    }
   }
 
-  defaultHoldId: number | null = null;
-  getDefaultHoldId() {
-    this._apiService
-      .get('AppLookup/GetBillingExpenseHoldLookup')
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: any) => {
-          if (res?.isSuccess && res.result?.length) {
-            this.defaultHoldId = res.result[0].id;
-          } else {
-          }
-        },
-        error: (err) => console.error('❌ Error fetching Hold ID:', err),
-      });
-  }
-  saveInProgress = false;
-  saveDraft() {
-    this.isSavingDraft = true;
-    // const rows = this.getFormArray.value;
-    const rows = this.getFormArray.value.slice(0, -1);
-
-    const isPlaceholderRow = (row: any) => {
-      if (!row) return true;
-      const noMatter = !row.matterId;
-      const noExplanation = !(
-        row.explanationExplanation && row.explanationExplanation.trim()
-      );
-      const noTask = !row.law_TaskCodeId;
-      const noOther = !row.hours && !row.rate && !row.amount && !row.mtrNo;
-      return noMatter && noExplanation && noTask && noOther;
-    };
-
-    const rowsToValidate = rows.filter((r: any) => !isPlaceholderRow(r));
-
-    console.log('rows (all):', rows);
-    console.log('rowsToValidate (non-placeholder):', rowsToValidate);
-
-    const invalidMatterRows = rowsToValidate.filter(
-      (row: any) => !row.matterId,
-    );
-    if (invalidMatterRows.length > 0) {
-      this.getFormArray.controls.forEach((ctrl: any, idx: number) => {
-        const val = ctrl.value;
-        if (!isPlaceholderRow(val) && !val.matterId) {
-          if (ctrl.get) ctrl.get('mtrNo')?.setErrors({ required: true });
-        }
-        ctrl.markAllAsTouched?.();
-      });
-
-      this.isSavingDraft = false;
-      this._toastrNotifiService.displayError(
-        'Please select a Matter for all rows (except empty rows).',
-      );
-      return;
-    }
-
-    const invalidTaskRows = rowsToValidate.filter(
-      (row: any) =>
-        row.matterId && (!row.law_TaskCodeId || row.law_TaskCodeId === 0),
-    );
-    if (invalidTaskRows.length > 0) {
-      this.getFormArray.controls.forEach((ctrl: any) => {
-        const val = ctrl.value;
-        if (
-          !isPlaceholderRow(val) &&
-          val.matterId &&
-          (!val.law_TaskCodeId || val.law_TaskCodeId === 0)
-        ) {
-          if (ctrl.get)
-            ctrl.get('law_TaskCodeId')?.setErrors({ required: true });
-        }
-        ctrl.markAllAsTouched?.();
-      });
-
-      this.isSavingDraft = false;
-      this._toastrNotifiService.displayError(
-        'Some matters have no Task Code assigned.',
-      );
-      return;
-    }
-
-    const emptyExplanationRows = rowsToValidate.filter(
-      (row: any) =>
-        row.matterId &&
-        !(row.explanationExplanation && row.explanationExplanation.trim()),
-    );
-    if (emptyExplanationRows.length > 0) {
-      this.getFormArray.controls.forEach((ctrl: any) => {
-        const val = ctrl.value;
-        if (
-          !isPlaceholderRow(val) &&
-          val.matterId &&
-          !(val.explanationExplanation && val.explanationExplanation.trim())
-        ) {
-          if (ctrl.get)
-            ctrl.get('explanationExplanation')?.setErrors({ required: true });
-        }
-        ctrl.markAllAsTouched?.();
-      });
-
-      this.isSavingDraft = false;
-      this._toastrNotifiService.displayError(
-        'Please fill in the Explanation for all matters.',
-      );
-      return;
-    }
-
-    const rowsToSend = rows
-      .map((row: any) => row)
-      .filter((row: any) => !isPlaceholderRow(row) && !row.hidden)
-      .filter(
-        (row: any) =>
-          row.matterId &&
-          row.law_TaskCodeId &&
-          row.explanationExplanation?.trim(),
-      )
-      .map((row: any) => ({
-        id: row.id ?? null,
-        matterId: row.matterId,
-        mtrNo: row.mtrNo ?? '',
-        law_LawerId:
-          row.law_LawerId ?? this._authService.getDecodedToken()['Id'],
-        law_TaskCodeId: row.law_TaskCodeId,
-        tmDate: this.formatDateOnly(row.tmDate),
-        hours: row.hours ?? 0,
-        rate: row.rate ?? 0,
-        amount: row.amount ?? 0,
-        explanationExplanation: row.explanationExplanation.trim(),
-        notes: row.notes ?? '',
-        holdId: row.holdId ?? this.defaultHoldId,
-        // typeId:1
-      }));
-
-    console.log('rowsToSend:', rowsToSend);
-
-    if (rowsToSend.length === 0) {
-      this.isSavingDraft = false;
-      this._toastrNotifiService.displayError('No valid rows to save.');
-      return;
-    }
-
-    this.saveInProgress = true;
-
-    this._apiService
-      .post(API_Config.timesheet.update, rowsToSend)
-      .pipe(
-        this._unsubscribe.takeUntilDestroy(),
-        finalize(() => {
-          this.isSavingDraft = false;
-          this.saveInProgress = false;
-        }),
-      )
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this._toastrNotifiService.displaySuccess(
-              'Draft saved successfully.',
-            );
-            this.deletedRows = [];
-            this.getFormArray.clear();
-            this.getDraftTimesheet();
-          } else {
-            this._toastrNotifiService.displayError(
-              res.message || 'Error saving draft.',
-            );
-          }
-        },
-        error: (err) => {
-          console.error('Save Draft Error:', err);
-          this._toastrNotifiService.displayError('Error saving draft.');
-        },
-      });
+  trackByUid(index: number, item: any): number {
+    return item._uid;
   }
 
-  onHeaderCheckboxToggle(event: any) {
-    const validRows = this.getFormArray.value.slice(0, -1);
-
-    if (event.checked) {
-      this.selectedRows = [...validRows];
-    } else {
-      this.selectedRows = [];
-    }
-  }
-
-  expandedRows: { [key: string]: boolean } = {};
-  @ViewChild('dt') dt: Table | undefined;
-
-  getLookupsData() {
-    combineLatest({
-      lawyers: this._apiService.get(
-        API_Config.general.getUsersInitialSaparateForTimeShet,
-      ),
-      tasks: this._apiService.get(API_Config.general.getTaskCode),
-      matters: this._apiService.get(API_Config.general.getRecentMatters),
-    })
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: any) => {
-          // this.laywers =
-          //   res?.lawyers?.result.map((obj: any) => ({
-          //     label: obj.initial,
-          //     value: obj.id,
-          //     initial: obj.name,
-          //   })) || [];
-          this.laywers =
-            res?.lawyers?.result.map((obj: any) => ({
-              label: obj.name,
-              value: obj.id,
-              initial: obj.initial,
-            })) || [];
-
-          this.tasks = getOptionsArray(res?.tasks?.result, 'id', 'name');
-          this.matters = getOptionsArray(res?.matters?.result, 'id', 'name');
-        },
-      });
-  }
-  onStartTimer(rowIndex: number) {
-    const isAnyTimerRunning = this.getFormArray.controls.some(
-      (control) => control.get('isTimerRunning')?.value,
-    );
-    if (isAnyTimerRunning) {
-      (this.getFormArray.controls as FormGroup[]).forEach(
-        (formGroup: FormGroup, index: number) => {
-          if (rowIndex != index)
-            formGroup?.get('isTimerRunning')?.setValue(false);
-        },
-      );
-    }
+  onStartTimer(rowIndex: number): void {
+    this.getFormArray.controls.forEach((c, i) => {
+      if (i !== rowIndex) c.get('isTimerRunning')?.setValue(false);
+    });
     this.getFormArray.controls[rowIndex]?.get('isTimerRunning')?.setValue(true);
   }
-  onStopTimer(value: any, rowIndex: number) {
-    this.getFormArray.controls[rowIndex].patchValue({
+
+  onStopTimer(value: any, rowIndex: number): void {
+    this.getFormArray.at(rowIndex)!.patchValue({
       tsTimmer: value?.tsTimmer,
       hours: value?.hours,
       isTimerRunning: true,
     });
-    this.setAmountValue(rowIndex);
-    this.updateTaskHoursSummary();
+    this.calculateAmount(rowIndex);
   }
 
-  getRateFromLawyerIdAndMatterId(rowIndex: number) {
-    let row = this.getFormArray.value[rowIndex];
-    let lawyerId = row?.law_LawerId;
-    let matterId = row?.matterId;
-    if (!lawyerId && !matterId) return;
-    const param = {
-      id: matterId,
-      lawerId: lawyerId,
-    };
-    this._apiService
-      .get(API_Config.timesheet.getRateFromLawyerIdAndMatterId, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.getFormArray.controls[rowIndex].patchValue({
-              rate: +res['result'].rate,
-              law_TaskCodeId: res['result'].law_TaskCodeId,
-            });
-            this.setAmountValue(rowIndex);
-          }
-        },
-      });
-  }
+  addRow(obj?: any, fromServer = false): void {
+    const last = this.getFormArray.at(this.getFormArray.length - 1);
+    if (
+      !fromServer &&
+      last &&
+      !last.get('matterId')?.value &&
+      !last.get('description')?.value
+    )
+      return;
 
-  setAmountValue(rowIndex: number) {
-    const hours = this.getFormArray?.controls[rowIndex]?.get('hours')?.value;
-    const rate = this.getFormArray.controls[rowIndex]?.get('rate')?.value;
-    const taskCodeId =
-      this.getFormArray.controls[rowIndex]?.get('law_TaskCodeId')?.value;
-
-    if (!isNaN(hours)) {
-      let effectiveRate = 0;
-
-      const numericTaskCodeId = Number(taskCodeId);
-      const billableTaskCode = Number(this.TaskEnum.Billable);
-
-      if (numericTaskCodeId === billableTaskCode) {
-        effectiveRate = !isNaN(rate) ? Number(rate) : 0;
-      }
-
-      const amount = (Number(hours) * effectiveRate).toFixed(2);
-      this.getFormArray.controls[rowIndex].patchValue({
-        amount: amount,
-      });
+    const defaultDate =
+      obj?.date ??
+      (last?.get('date')?.value
+        ? new Date(last.get('date')!.value)
+        : new Date());
+    let rowToInheritFrom = last;
+    if (
+      last &&
+      !last.get('matterId')?.value &&
+      !last.get('description')?.value &&
+      this.getFormArray.length > 1
+    ) {
+      rowToInheritFrom = this.getFormArray.at(this.getFormArray.length - 2);
     }
-  }
-  selectMatter(e: any, rowIndex: number) {
-    let matterId = this.matters.find((obj) => obj.label == e.value)?.value;
-    this.getFormArray.controls[rowIndex]?.get('matterId')?.setValue(matterId);
-    this.explanation.toArray()[rowIndex].nativeElement.focus();
-    this.getRateFromLawyerIdAndMatterId(rowIndex);
-    if (matterId) this.getClientNameByMatterId(matterId, rowIndex);
 
-    this.addRow();
-  }
-  getClientNameByMatterId(matterId: number, rowIndex: number) {
-    const param = { id: matterId };
-    this._apiService
-      .get(API_Config.timesheet.getClientNameByMatterId, param)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          this.getFormArray.controls[rowIndex].patchValue({
-            clientName: res['result'].name,
-          });
-        },
-      });
-  }
+    let inheritedMatterId = null;
+    let inheritedMatterCode = '';
+    let inheritedClientName = '';
+    let inheritedTaskCodeId = null;
+    let inheritedTaskCodeName = '';
+    let inheritedRateId = null;
+    let inheritedRateAmount = null;
+    let inheritedIsBillable = false;
 
-  getRowKey(formIndex: number): number {
-    return this.getFormArray.at(formIndex)?.get('rowIndex')?.value ?? formIndex;
-  }
+    if (!fromServer && rowToInheritFrom) {
+      inheritedMatterId = rowToInheritFrom.get('matterId')?.value ?? null;
+      inheritedMatterCode = rowToInheritFrom.get('matterCode')?.value ?? '';
+      inheritedClientName = rowToInheritFrom.get('clientName')?.value ?? '';
+      inheritedTaskCodeId = rowToInheritFrom.get('taskCodeId')?.value ?? null;
+      inheritedTaskCodeName = rowToInheritFrom.get('taskCodeName')?.value ?? '';
+      inheritedRateId = rowToInheritFrom.get('rateId')?.value ?? null;
+      inheritedRateAmount = rowToInheritFrom.get('rateAmount')?.value ?? null;
+      inheritedIsBillable = rowToInheritFrom.get('isBillable')?.value ?? false;
+    }
 
-  saveSelectedMatter(rowIndex: number, selectedMatter: any) {
-    setTimeout(() => {
-      this.updateFormWithMatter(rowIndex, {
-        value: selectedMatter.id,
-        label: selectedMatter.mtrNo ?? selectedMatter.name,
-        clientName: selectedMatter.law_Client,
-      });
-    }, 0);
-  }
-
-  onDropdownChange(rowIndex: number, selectedValue: any) {
-    const selectedMatter =
-      this.matters.find((m) => m.value === selectedValue) ||
-      this.matters.find((m) => m.label === selectedValue);
-
-    if (!selectedMatter) return;
-
-    this.updateFormWithMatter(rowIndex, selectedMatter);
-  }
-  updateFormWithMatter(rowIndex: number, selectedMatter: any) {
-    const control = this.getFormArray.controls[rowIndex];
-    if (!control) return;
-
-    const lawyerId = control.get('law_LawerId')?.value;
-    const lang = localStorage.getItem('law8-LocalStore.lang') ?? 'en';
-
-    control.patchValue({
-      matterId: selectedMatter.value,
-      mtrNo: selectedMatter.label,
-      clientName: selectedMatter.clientName || '',
-      law_TaskCodeId: null,
+    const row = this.fb.group({
+      id: [obj?.id ?? null],
+      _uid: [obj?._uid ?? this._uidSeq++],
+      rowIndex: [this.getFormArray.length],
+      isTimerRunning: [false],
+      tsTimmer: [obj?.tsTimmer ?? null],
+      date: [defaultDate, Validators.required],
+      matterId: [obj?.matterId ?? inheritedMatterId],
+      matterCode: [obj?.matterCode ?? inheritedMatterCode],
+      clientName: [obj?.clientName ?? inheritedClientName],
+      userId: [
+        obj?.userId ??
+          rowToInheritFrom?.get('userId')?.value ??
+          this.getCurrentUserId(),
+        Validators.required,
+      ],
+      userName: [
+        obj?.userName ?? rowToInheritFrom?.get('userName')?.value ?? '',
+      ],
+      userInitial: [
+        obj?.userInitial ?? rowToInheritFrom?.get('userInitial')?.value ?? '',
+      ],
+      taskCodeId: [obj?.taskCodeId ?? inheritedTaskCodeId],
+      taskCodeName: [obj?.taskCodeName ?? inheritedTaskCodeName],
+      hours: [obj?.hours ?? 0, Validators.required],
+      rateId: [obj?.rateId ?? inheritedRateId],
+      rateAmount: [obj?.rateAmount ?? inheritedRateAmount],
+      amount: [obj?.amount ?? 0],
+      effectiveBillable: [obj?.effectiveBillable ?? null],
+      isBillable: [obj?.isBillable ?? inheritedIsBillable],
+      description: [obj?.description ?? '', Validators.required], 
+      notes: [obj?.notes ?? ''],
+      hold: [obj?.hold ?? this.defaultHold()],
+      holdName: [obj?.holdName ?? ''],
+      statusCode: [obj?.statusCode ?? ''],
+      statusName: [obj?.statusName ?? ''],
+      canEdit: [obj?.canEdit ?? true],
+      hidden: [false],
+      isNewRow: [obj?.isNewRow ?? true], 
     });
 
-    const rowKey = this.getRowKey(rowIndex);
-    this.taskCodesByRow[rowKey] = [];
-    this.loadTaskCodesByMatterId(Number(selectedMatter.value), rowIndex, true);
+    this.getFormArray.push(row);
+    row.get('rowIndex')!.setValue(this.getFormArray.length - 1);
 
-    this.fetchClientRate(selectedMatter.value, lawyerId, lang, rowIndex);
-  }
-
-  fetchClientRate(
-    matterId: number,
-    lawyerId: string,
-    lang: string,
-    rowIndex: number,
-    callback?: () => void,
-  ) {
-    if (!lawyerId || !matterId) {
-      console.warn(
-        `fetchClientRate: missing lawyerId or matterId`,
-        lawyerId,
+    const matterId = Number(row.get('matterId')?.value);
+    if (matterId) {
+      this.loadTaskCodesByMatterId(
         matterId,
+        this.getFormArray.length - 1,
+        false,
       );
-      return;
     }
-    const taskCodeId = this.getFormArray.controls[rowIndex]?.get('law_TaskCodeId')?.value;
-    this._apiService
-      .get(API_Config.timesheet.getRateFromLawyerIdAndMatterId, {
-        id: matterId,
-        lawerId: lawyerId,
-        taskCodeId: taskCodeId,
-      })
-      .subscribe({
-        next: (res: any) => {
-          if (res?.isSuccess && res.result) {
-            console.log('Client Rate API response', res.result);
 
-            const clientRate = {
-              clientName: res.result.name,
-              mtrNo: res.result.mtrNo ?? '',
-              law_TaskCodeId: res.result.law_TaskCodeId ?? null,
-              rate: res.result.rate ?? null,
-            };
-
-            const control = this.getFormArray.controls[rowIndex];
-            if (control) {
-              control.patchValue({
-                clientName: clientRate.clientName,
-                mtrNo: clientRate.mtrNo,
-                law_TaskCodeId: clientRate.law_TaskCodeId,
-                rate: clientRate.rate,
-              });
-              this.setAmountValue(rowIndex);
-              this.tableValue = [...this.getFormArray.value];
-            }
-
-            if (callback) callback();
-          } else {
-            console.warn('fetchClientRate: API returned invalid response', res);
-          }
-        },
-        error: (err) => console.error('fetchClientRate failed', err),
-      });
+    if (row.get('id')?.value || matterId) {
+      this.calculateAmount(this.getFormArray.length - 1);
+    }
   }
 
-onTaskCodeChange(rowIndex: number) {
-  const row = this.getFormArray.controls[rowIndex];
-
-  const matterId = row.get('matterId')?.value;
-  const lawyerId = row.get('law_LawerId')?.value;
-  const taskCodeId = row.get('law_TaskCodeId')?.value;
-
-  if (!matterId || !lawyerId || !taskCodeId) return;
-
-  this._apiService
-    .get(API_Config.timesheet.getRateFromLawyerIdAndMatterId, {
-      id: matterId,
-      lawerId: lawyerId,
-      taskCodeId: taskCodeId,
-    })
-    .subscribe((res: any) => {
-      if (res?.isSuccess) {
-        row.patchValue({
-          clientName: res.result.name,
-          rate: res.result.rate,
-        });
-
-        this.setAmountValue(rowIndex);
-      }
-    });
-}
-
-  openAllMattersDialog(rowIndex: number) {
-    if (!this.getFormArray.controls[rowIndex]) {
-      console.warn(`openAllMattersDialog: no control at rowIndex ${rowIndex}`);
-      return;
+  onMatterChange(rowIndex: number, eventOrValue: any): void {
+    let raw =
+      eventOrValue?.value !== undefined ? eventOrValue.value : eventOrValue;
+    if (raw && typeof raw === 'object') {
+      raw = raw.value ?? raw.id;
     }
+    const numericId = Number(raw);
 
-    const allMatterDialogRef = this._dialogService.open(SharedMatterComponent, {
-      width: '70%',
-      header: 'Select Matter',
-      data: {
-        selectionMode: 'multiple',
-        endpoint: API_Config.matters,
-      },
-      dismissableMask: true,
+    if (!numericId || isNaN(numericId)) return;
+
+    const row = this.getFormArray.at(rowIndex);
+    if (!row) return;
+
+    const selected = this.matters.find((m) => Number(m.value) === numericId);
+
+    row.patchValue({
+      matterId: numericId,
+      matterCode: selected?.label ?? '',
+      clientName: selected?.clientName ?? '',
+      taskCodeId: null,
+      taskCodeName: '',
+      rateId: null,
+      rateAmount: null,
+      amount: 0,
+      isNewRow: !row.get('id')?.value, 
     });
 
-    allMatterDialogRef.onClose
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: any) => {
-          if (res && res.length > 0) {
-            console.log('Selected matters from dialog', res);
-            this.saveSelectedMatter(rowIndex, res[0]);
-          }
-        },
-      });
-  }
+    const key = this.getRowKey(rowIndex);
+    this.taskCodesByRow[key] = [];
 
-  updateTaskHoursSummary() {
-    this.billableHoursCount = this.calculateHoursBasedOnTaskCode(
-      this.TaskEnum.Billable,
-    );
-    this.nonBillableHoursCount = this.calculateHoursBasedOnTaskCode(
-      this.TaskEnum.NonBillable,
-    );
-    this.noChargeHoursCount = this.calculateHoursBasedOnTaskCode(
-      this.TaskEnum.NoCharge,
-    );
-  }
-  private calculateHoursBasedOnTaskCode(taskCode: any): number {
-    return this.getFormArray.value
-      .filter((obj: any) => obj?.law_TaskCodeId === taskCode)
-      .reduce((acc: number, curr: any) => acc + curr.hours, 0);
-  }
+    this.loadTaskCodesByMatterId(numericId, rowIndex, true);
+    this.fetchRateAndClient(rowIndex);
 
-  onDeleteRow(rowIndex: number, event?: Event): void {
-    if (this.getFormArray.length <= 1) return;
+    setTimeout(() => {
+      this.descriptionRefs?.toArray()[rowIndex]?.nativeElement?.focus();
+    }, 100);
 
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    const confirmDeleteRef: DynamicDialogRef = this._dialogService.open(
-      SharedConfirmDialogComponent,
-      {
-        data: {
-          type: ConfirmDialogType.Success,
-          title: this._languageService.getTransValue(
-            'timesheet.DeleteTimeSheet',
-          ),
-          message: this._languageService.getTransValue(
-            'timesheet.areYouSureYouWantDeleteThisTimeSheet',
-          ),
-          btns: [
-            {
-              label: this._languageService.getTransValue('timesheet.cancel'),
-              styleClass: 'border border-grey500 text-grey500',
-              command: () => confirmDeleteRef.close(),
-            },
-            {
-              label: this._languageService.getTransValue('timesheet.delete'),
-              styleClass: 'bg-textErrorBase text-white',
-              command: () => confirmDeleteRef.close(true),
-            },
-          ],
-        },
-      },
-    );
-
-    confirmDeleteRef.onClose.subscribe({
-      next: (res) => {
-        if (res) {
-          const row = this.getFormArray.at(rowIndex);
-          const rowId = row.get('id')?.value;
-
-          if (!rowId) {
-            row.get('isHidden')?.setValue(true);
-            const selectedIndex = this.selectedRows.indexOf(row.value);
-            if (selectedIndex !== -1)
-              this.selectedRows.splice(selectedIndex, 1);
-
-            this.updateTaskHoursSummary();
-            return;
-          }
-
-          const param = { id: rowId };
-          this._apiService
-            .post(API_Config.timesheet.delete, {}, param)
-            .pipe(this._unsubscribe.takeUntilDestroy())
-            .subscribe({
-              next: (res: ApiRes) => {
-                if (res.isSuccess) {
-                  row.get('isHidden')?.setValue(true);
-
-                  const selectedIndex = this.selectedRows.indexOf(row.value);
-                  if (selectedIndex !== -1)
-                    this.selectedRows.splice(selectedIndex, 1);
-
-                  this.updateTaskHoursSummary();
-                } else {
-                  this._toastrNotifiService.displayError(res.message);
-                }
-              },
-              error: (err) => {
-                this._toastrNotifiService.displayError('Failed to delete row');
-              },
-            });
-        }
-      },
-    });
-  }
-
-  onSaveClick(rowData: any) {
-    if (!this.selectedRows.includes(rowData)) {
-      this.selectedRows = [...this.selectedRows, rowData];
-    }
-    this.onSubmit();
+    this.updateLocalSummary();
   }
 
   onSubmit(): void {
-    this.selectedRows = this.selectedRows.map((row) => {
-      const index = this.getFormArray.value.findIndex(
-        (r: { rowIndex: any }) => r.rowIndex === row.rowIndex,
+    if (this.selectedRows.length === 0) {
+      this._toastrNotifiService.displayError(
+        'Please select at least one row to submit.',
       );
-      return this.getFormArray.at(index)?.value;
+      return;
+    }
+    this.saveBatch(true);
+  }
+
+  saveDraft(): void {
+    this.saveBatch(false);
+  }
+
+  private buildBatchItems(isSubmit: boolean): BatchRowPayload[] {
+    const lastIdx = this.getFormArray.length - 1;
+    const payload: BatchRowPayload[] = [];
+
+    this.getFormArray.controls.forEach((ctrl, i) => {
+      if (i === lastIdx) return;
+      const v = ctrl.value;
+
+      if (v.hidden) return;
+      if (!v.matterId || !v.taskCodeId || !v.description?.trim()) return;
+      if (!v.userId) return;
+
+      if (isSubmit) {
+        const isSelected = this.selectedRows.some(
+          (r: any) => r._uid === v._uid,
+        );
+        if (!isSelected) return;
+      }
+      payload.push({
+        id: v.id ?? null,
+        matterId: v.matterId,
+        clientName: v.clientName ?? '',
+        userId: v.userId,
+        taskCodeId: v.taskCodeId,
+        date: this.formatDateOnly(v.date),
+        hours: v.hours ?? 0,
+        description: v.description.trim(),
+        notes: v.notes ?? '',
+        hold: v.hold ?? this.defaultHold(),
+        rateId: v.rateId ?? null,
+      });
     });
 
-    if (this.selectedRows.length === 0) {
-      this._toastrNotifiService.displayError('Please Select At Least One Row');
-      return;
-    }
+    return payload;
+  }
 
-    const hasZeroHours = this.selectedRows.some((row) => row.hours == 0);
-    if (hasZeroHours) {
-      this._toastrNotifiService.displayError(
-        'Time Value Should Be 0.1 Or Greater',
-      );
-      return;
-    }
-    const invalidRows = this.selectedRows.filter(
-      (row) =>
-        !row.matterId ||
-        !row.law_TaskCodeId ||
-        !row.explanationExplanation?.trim(),
-    );
+  private saveBatch(submit: boolean): void {
+    const items = this.buildBatchItems(submit);
 
-    if (invalidRows.length > 0) {
+    if (!items.length) {
       this._toastrNotifiService.displayError(
-        'Please complete all mandatory fields before submitting.',
+        submit ? 'No valid selected rows to submit.' : 'No valid rows to save.',
       );
       return;
     }
 
-    this.isSubmitting = true;
-
-    const payload = this.selectedRows.map((row) => ({
-      id: row.id ?? null,
-      matterId: row.matterId,
-      mtrNo: row.mtrNo ?? '',
-      law_LawerId: row.law_LawerId ?? this._authService.getDecodedToken()['Id'],
-      law_TaskCodeId: row.law_TaskCodeId,
-      // tmDate: row.tmDate
-      //   ? new Date(row.tmDate).toISOString()
-      //   : new Date().toISOString(),
-      tmDate: row.tmDate
-        ? this._datePipe.transform(row.tmDate, 'yyyy-MM-dd')
-        : this._datePipe.transform(new Date(), 'yyyy-MM-dd'),
-
-      hours: row.hours ?? 0,
-      rate: row.rate ?? 0,
-      amount: row.amount ?? 0,
-      explanationExplanation: row.explanationExplanation?.trim(),
-      notes: row.notes ?? '',
-      holdId: row.holdId ?? this.defaultHoldId,
-    }));
+    if (submit) this.isSubmitting = true;
+    else this.isSavingDraft = true;
 
     this._apiService
-      .post(API_Config.timesheet.create, payload)
+      .post(API_Config.timesheet.batch, { items, submit })
       .pipe(
-        finalize(() => (this.isSubmitting = false)),
+        finalize(() => {
+          this.isSavingDraft = false;
+          this.isSubmitting = false;
+        }),
         this._unsubscribe.takeUntilDestroy(),
       )
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this.getFormArray.clear();
-            this.selectedRows = [];
-            this.getDraftTimesheet();
-            this._toastrNotifiService.displaySuccess(res.message);
-          } else {
-            this._toastrNotifiService.displayError(res.message);
+        next: (res: any) => {
+          if (!this.isOk(res)) {
+            const msg =
+              res?.message ||
+              (res as any)?.error?.[0] ||
+              (submit ? 'Submit failed.' : 'Save failed.');
+            this._toastrNotifiService.displayError(msg);
+            return;
           }
+
+          this._toastrNotifiService.displaySuccess(
+            submit ? 'Submitted successfully.' : 'Draft saved.',
+          );
+
+          this.loadDrafts();
+
+          if (submit) this.refreshTimesheet.emit();
         },
         error: (err) => {
-          console.error(err);
-          this._toastrNotifiService.displayError('Error submitting timesheet.');
+          const msg =
+            err?.error?.message ||
+            err?.error?.error?.[0] ||
+            'Error saving timesheet.';
+          this._toastrNotifiService.displayError(msg);
         },
       });
   }
 
-  filterOptions: any = { orderByDirection: 'ASC' };
-
-  onSort(event: { field: string; order: number }) {
-    // const newOrder = event.order === 1 ? 'ASC' : 'DESC';
-    // if (
-    //   this.filterOptions.orderBy === event.field &&
-    //   this.filterOptions.orderByDirection === newOrder
-    // ) {
-    //   return;
-    // }
-    // this.table.value = [];
-    // this.filterOptions = {
-    //   orderBy: event.field,
-    //   orderByDirection: newOrder,
-    // };
-    // this.getDraftTimesheet();
+  onHeaderCheckboxToggle(e: any): void {
+    const rows = this.getFormArray.value.slice(0, -1);
+    this.selectedRows = e.checked ? [...rows] : [];
   }
 
-  tableValue: any[] = [];
-
-  trackByIndex(index: number, item: any): number {
-    return index;
+  toggleView(v: 'list' | 'card'): void {
+    this.isListView = v === 'list';
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: v },
+      queryParamsHandling: 'merge',
+    });
+    this.cdRef.detectChanges();
   }
 
-  ngOnDestroy(): void {
-    this._unsubscribe.destroy();
+  limitWords(text: string, n: number): string {
+    if (!text) return '';
+    const words = text.trim().split(/\s+/);
+    return words.length <= n ? text : words.slice(0, n).join(' ') + '...';
+  }
+
+  get listColumns(): any[] {
+    const cols = JSON.parse(JSON.stringify(this.columns));
+    const matterIdx = cols.findIndex((c: any) => c.field === 'matterCode');
+    if (!cols.some((c: any) => c.field === 'clientName')) {
+      cols.splice(matterIdx + 1, 0, {
+        header: this.isInhouse
+          ? 'timesheet.entityName'
+          : 'timesheet.clientName',
+        field: 'clientName',
+        style: {
+          width: '200px',
+          minWidth: '200px',
+          maxWidth: '200px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        },
+        sortable: true,
+      });
+    }
+    return cols;
+  }
+
+  openAllMattersDialog(rowIndex: number): void {
+    const ref = this._dialogService.open(SharedMatterComponent, {
+      width: '70%',
+      header: 'Select Matter',
+      dismissableMask: true,
+      data: { selectionMode: 'single', endpoint: API_Config.matters },
+    });
+
+    ref.onClose
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe((res: any) => {
+        if (!res) return;
+
+        const list = Array.isArray(res) ? res : [res];
+        if (!list.length) return;
+
+        const m = list[0];
+        const exists = this.matters.some(
+          (x) => Number(x.value) === Number(m.id),
+        );
+        if (!exists) {
+          this.matters = [
+            {
+              value: m.id,
+              label: m.matterCode ?? m.mtrNo ?? '',
+              clientName: m.clientName ?? '',
+            },
+            ...this.matters,
+          ];
+          this.cdRef.detectChanges();
+        }
+
+        this.onMatterChange(rowIndex, { value: m.id });
+      });
+  }
+
+  trackByIndex(i: number): number {
+    return i;
   }
 }

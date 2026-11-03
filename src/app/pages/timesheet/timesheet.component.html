@@ -83,23 +83,53 @@
             </span>
           </ng-container>
 
-          <ng-container *ngIf="field === 'law_TaskCode'">
+          <ng-container *ngIf="field === 'taskCodeName'">
             <span
               class="px-3 py-1 rounded-full text-xs font-medium"
-              [ngClass]="getTaskClass(rowData.law_TaskCode)"
+              [ngClass]="
+                rowData.isBillable
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-200 text-gray-700'
+              "
             >
-              {{ rowData.law_TaskCode }}
+              {{ rowData.taskCodeName }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngIf="field === 'statusName'">
+            <span
+              class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+            >
+              {{ rowData.statusName }}
+            </span>
+          </ng-container>
+
+          <ng-container *ngIf="field === 'holdName'">
+            <span
+              class="px-2 py-1 rounded-full text-xs font-medium bg-grey100 text-grey700"
+            >
+              {{ rowData.holdName }}
+            </span>
+          </ng-container>
+          <!-- Lawyer Initial & Tooltip -->
+          <ng-container *ngIf="field === 'userName'">
+            <span
+              [pTooltip]="rowData.userName"
+              tooltipPosition="top"
+              class="cursor-pointer font-medium"
+            >
+              {{ rowData.userInitial || rowData.userName }}
             </span>
           </ng-container>
         </ng-template>
+
         <ng-template #columnActions let-rowData let-rowIndex="rowIndex">
           <div class="font-medium text-sm text-textSecondary rounded-e-lg">
             <div class="flex gap-6">
-              <!-- <div class="cursor-pointer" (click)="openTimesheetEdit(rowData)" title="Edit"
-              [requiredPermission]="'Update_Timesheet'"> -->
+              <!-- Edit -->
               <div
                 class="cursor-pointer"
-                pTooltip="This timesheet is invoiced and cannot be edited"
+                pTooltip="This timesheet cannot be edited"
                 tooltipPosition="left"
                 [tooltipDisabled]="canEditOrDelete(rowData)"
                 [ngClass]="{
@@ -138,12 +168,10 @@
                 </svg>
               </div>
 
-              <!-- 
-            <div class="cursor-pointer" (click)="onDelete(rowData)" title="Delete"
-              [requiredPermission]="'Delete_Timesheet'"> -->
+              <!-- Delete -->
               <div
                 class="cursor-pointer"
-                pTooltip="This timesheet is invoiced and cannot be deleted"
+                pTooltip="This timesheet cannot be deleted"
                 tooltipPosition="left"
                 [tooltipDisabled]="canEditOrDelete(rowData)"
                 [ngClass]="{
