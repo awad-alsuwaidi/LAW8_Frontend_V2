@@ -67,6 +67,13 @@
   "inactiveEntities": "الجهات المعطلة",
   "newEntity": "جهة جديدة",
   "editEntity": "تعديل الجهة",
-  "viewEntity": "عرض الجهة"
+  "viewEntity": "عرض الجهة",
+  "doc8": "Doc8",
+"crm": "CRM",
+"allApps": "جميع التطبيقات",
+"allAppsDescription": "استكشف جميع الأنظمة الفرعية المتاحة.",
+"hr8": "الموارد البشرية",
+"accounting": "المحاسبة",
+"moduleUnavailable": "هذا النظام غير متاح، يرجى التواصل مع مسؤول النظام."
   }
 }
