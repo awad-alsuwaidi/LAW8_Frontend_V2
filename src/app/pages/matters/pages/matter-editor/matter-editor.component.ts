@@ -139,16 +139,29 @@ export class MatterEditorComponent implements OnInit, OnDestroy {
           this._router.navigate(['./applicant'], { relativeTo: this._route });
         },
       },
+      // {
+      //   label: this._languageService.getTransValue('matters.class'),
+      //   route: 'class',
+
+      //   visible:
+      //     ![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(
+      //       practsAreaId || 0,
+      //     ) &&
+      //     matter.law_MtrCatId == 8 &&
+      //     this._permissionService.hasPermission('View_Matter_Classes'),
+      //   command: () => {
+      //     this._router.navigate(['./class'], { relativeTo: this._route });
+      //   },
+      // },
       {
         label: this._languageService.getTransValue('matters.class'),
         route: 'class',
-
-        visible:
-          ![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(
-            practsAreaId || 0,
-          ) &&
-          matter.law_MtrCatId == 8 &&
+        visible: Boolean(
+          (Number(matter.law_MtrCatId) === 23 ||
+            (matter as any).law_MtrCat?.toLowerCase()?.includes('trademark') ||
+            (matter as any).law_MtrCat?.includes('علامات تجارية')) &&
           this._permissionService.hasPermission('View_Matter_Classes'),
+        ),
         command: () => {
           this._router.navigate(['./class'], { relativeTo: this._route });
         },

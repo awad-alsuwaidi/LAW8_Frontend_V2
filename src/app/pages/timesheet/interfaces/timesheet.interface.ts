@@ -22,27 +22,27 @@ export interface TimesheetListItemDto {
   taskCodeId: number;
   taskCodeName: string;
 
-  date: string;                          // YYYY-MM-DD
+  date: string;
   hours: number;
   description: string;
   notes?: string;
 
-  hold: number;                          // 1 = No Hold, 2 = Hold, 3 = Never Bill
+  hold: number;
   holdName: string;
 
-  statusCode: string;                    // Draft | Submitted | Approved | ...
+  statusCode: string;
   statusName: string;
 
   rateId?: number | null;
-  rateAmount?: number | null;            // null = مفيش صلاحية أسعار
+  rateAmount?: number | null;
   amount?: number;
   effectiveBillable?: number | null;
   isBillable: boolean;
 
   canEdit: boolean;
-  invoiceNo?: string | null;             // deprecated
+  invoiceNo?: string | null;
 
-  serial?: number;                       // عمود serial في القايمة
+  serial?: number;
 }
 
 // ===================== Timesheet editor row =====================
@@ -114,6 +114,4 @@ export interface BatchPayload {
   submit: boolean;
 }
 
-// ===================== Legacy alias (مؤقتًا) =====================
-/** @deprecated استخدم TimesheetListItemDto */
 export type TimesheetDto = TimesheetListItemDto;

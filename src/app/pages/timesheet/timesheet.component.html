@@ -83,14 +83,10 @@
             </span>
           </ng-container>
 
-          <ng-container *ngIf="field === 'taskCodeName'">
+       <ng-container *ngIf="field === 'taskCodeName'">
             <span
               class="px-3 py-1 rounded-full text-xs font-medium"
-              [ngClass]="
-                rowData.isBillable
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-200 text-gray-700'
-              "
+              [ngClass]="getTaskClass(rowData.taskCodeName)"
             >
               {{ rowData.taskCodeName }}
             </span>

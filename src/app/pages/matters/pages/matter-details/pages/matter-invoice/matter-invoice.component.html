@@ -55,14 +55,14 @@
     }
   </div>
 
-<p-table
-  [value]="data"
-  [lazy]="true"
-  [loading]="isLoading"
-  [sortField]="sortField"
-  [sortOrder]="sortOrder"
-  (onSort)="onSort($event)"
->
+  <p-table
+    [value]="data"
+    [lazy]="true"
+    [loading]="isLoading"
+    [sortField]="sortField"
+    [sortOrder]="sortOrder"
+    (onSort)="onSort($event)"
+  >
     <ng-template pTemplate="header">
       <tr>
         @for (col of matterInvoiceColumns; track $index) {
@@ -90,18 +90,24 @@
             class="font-medium text-sm text-textSecondary border-y border-grey100"
           >
             <span class="bg-grey100 font-medium">
-              @if (col.field === "date" || col.field === "dueDate") {
+              @if (col.field === "invoiceDate" || col.field === "dueDate") {
                 {{ timesheet[col.field] | date: "yyyy-MM-dd" }}
               } @else if (
-                col.field === "fees" ||
-                col.field === "expenses" ||
+                col.field === "feesSubTotal" ||
+                col.field === "expensesSubTotal" ||
                 col.field === "total" ||
                 col.field === "paidAmount" ||
-                col.field === "balance"
+                col.field === "balance" ||
+                col.field === "feesTaxAmount" ||
+                col.field === "expensesTaxAmount"
               ) {
-                {{ timesheet[col.field] | number: "1.1-1" }}
+                {{ timesheet[col.field] | number: "1.2-2" }}
               } @else {
-                {{ timesheet[col.field] }}
+                {{
+                  col.field === "invoiceNumber" && !timesheet[col.field]
+                    ? timesheet["matterCode"]
+                    : timesheet[col.field]
+                }}
               }
             </span>
           </td>
@@ -109,15 +115,11 @@
       </tr>
     </ng-template>
   </p-table>
-  @if (totalRecords > 0) {
-    <!-- <p-paginator [dir]="'ltr'" (onPageChange)="onPageChange($event)"
-    [first]="(filterOptions.pageNum - 1) * filterOptions.pagSize" [rows]="filterOptions.pagSize"
-    [totalRecords]="totalRecords" [showCurrentPageReport]="true" pageLinkSize="2"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"> </p-paginator> -->
+      @if (totalRecords > 0) {
     <p-paginator
       (onPageChange)="onPageChange($event)"
-      [first]="(filterOptions.pageNum - 1) * filterOptions.pagSize"
-      [rows]="filterOptions.pagSize"
+      [first]="(filterOptions.PageNumber - 1) * filterOptions.PageSize" 
+      [rows]="filterOptions.PageSize"
       [rowsPerPageOptions]="[10, 20, 50]"
       [totalRecords]="totalRecords"
       [showCurrentPageReport]="true"

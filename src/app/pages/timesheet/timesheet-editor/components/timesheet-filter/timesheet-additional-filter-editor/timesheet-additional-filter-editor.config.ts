@@ -28,42 +28,47 @@ export function timsheeteAdditionalFilterFields(
           },
         },
 
-{
-  type: 'multi-select',
-  key: 'lawyerId',
-  props: {
-    label: THIS._languageService.getTransValue('report.lawyer'),
-    multiple: true,
-    optionsArr: (THIS.lookupsData?.lawyers?.result ?? []).map((l: any) => ({
-      label: l.name,
-      value: l.userId,
-    })),
-  },
-},
-{
-  type: 'select',
-  key: 'taskId',
-  props: {
-    label: THIS._languageService.getTransValue('matters.task'),
-    optionsArr: (THIS.lookupsData?.tasks?.result ?? []).map((t: any) => ({
-      label: t.name,
-      value: t.id,
-    })),
-  },
-},
-{
-  key: 'matterId',
-  type: 'select',
-  props: {
-    virtualScroll: true,
-    label: THIS._languageService.getTransValue('matters.title'),
-    optionsArr: (THIS.lookupsData?.matterCode?.result ?? []).map((m: any) => ({
-      label: m.name,
-      value: m.id,
-    })),
-  },
-},
-
+        {
+          type: 'multi-select',
+          key: 'lawyerId',
+          props: {
+            label: THIS._languageService.getTransValue('report.lawyer'),
+            multiple: true,
+            optionsArr: (THIS.lookupsData?.lawyers?.result ?? []).map(
+              (l: any) => ({
+                label: l.name,
+                value: l.userId,
+              }),
+            ),
+          },
+        },
+        {
+          type: 'select',
+          key: 'taskId',
+          props: {
+            label: THIS._languageService.getTransValue('matters.task'),
+            optionsArr: (THIS.lookupsData?.tasks?.result ?? []).map(
+              (t: any) => ({
+                label: t.name,
+                value: t.id,
+              }),
+            ),
+          },
+        },
+        {
+          key: 'matterId',
+          type: 'select',
+          props: {
+            virtualScroll: true,
+            label: THIS._languageService.getTransValue('matters.title'),
+            optionsArr: (THIS.lookupsData?.matterCode?.result ?? []).map(
+              (m: any) => ({
+                label: m.name,
+                value: m.id,
+              }),
+            ),
+          },
+        },
       ],
       validators: {
         validation: [

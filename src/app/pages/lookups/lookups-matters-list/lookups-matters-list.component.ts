@@ -38,13 +38,23 @@ export class LookupsMattersListComponent {
   ngOnInit(): void {
     this.getData();
   }
+
+
   getData() {
-    this.data = MATTERS_LIST.filter((item) =>
+    let filteredData = MATTERS_LIST.filter((item) =>
       this._permsissionsService.hasPermission(item.permission),
     );
+    if (this.searchText && this.searchText.trim() !== '') {
+      const searchLower = this.searchText.toLowerCase().trim();
+      filteredData = filteredData.filter(
+        (item) =>
+          item.nameEN?.toLowerCase().includes(searchLower) ||
+          item.nameAR?.toLowerCase().includes(searchLower),
+      );
+    }
+    this.data = filteredData;
     if (this.data.length) {
       const currentId = this._route.snapshot.firstChild?.params['id'];
-
       if (!currentId) {
         this.openSubMatterList(this.data[0]);
       }

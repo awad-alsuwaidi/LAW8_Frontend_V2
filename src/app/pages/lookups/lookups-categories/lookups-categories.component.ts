@@ -144,7 +144,7 @@ export class LookupsCategoriesComponent implements OnInit, OnDestroy {
 
   searchValueChange(value: string): void {
     this.searchText = value;
-    this.filterOptions.search = value;
+    this.filterOptions.SearchTerm = value;
     this.filterOptions = { ...this.filterOptions };
     this.getData();
   }

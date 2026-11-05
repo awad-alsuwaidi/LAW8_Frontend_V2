@@ -21,7 +21,7 @@ export const General_API = {
     getGlAccountsTypeLookup: 'lookups/gl-account-types',
     getUsersLookup: 'predefinedtasks/lookups/users',
     getTaskPriority: 'lookups/task-priorities',
-    getContactsCategoryV2: 'lookups/contact-categories',
+    getContactsCategory: 'lookups/contact-categories',
     getClients: 'lookups/clients',
     getPractsAreaLookup: 'lookups/practice-areas',
     getMatterStatus: 'lookups/matter-statuses',
@@ -36,17 +36,12 @@ export const General_API = {
     getUsersInitialViewForTimeShet: 'MatterTimesheet/users',
     getTaskCode: 'lookups',
     getMatterCodes: 'lookups/matters',
-    // ============ ⚠️ DEPRECATED — مؤقتاً لحد ما الـ components تتحدث ============
-    /** @deprecated استخدم getLookups (types=...) */
     getPartyTypes: 'lookups/party-types',
-    /** @deprecated استخدم getLookups (types=partyDescriptions) */
     getPartiesDescription: 'lookups/party-descriptions',
-    /** @deprecated استخدم practiceArea.isLitigation من getLookups */
     checkIsLitigation: 'AppLookup/CheckIsLitigation',
-    /** @deprecated استخدم getLookups (judicatures) وفلتر بـ parentId */
     getJudicatureByJurisdictionId: 'AppLookup/GetLaw_JudicatureLookup',
-    /** @deprecated استخدم getMainMatters (lookups/matters?mainOnly=true) */
     getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
+    getContactsType: 'lookups/GetContactsType',
 
     // ============ V1 (شغالة) ============
     getLawyer: '/GetSPList',
@@ -95,8 +90,8 @@ export const General_API = {
     getDefaultRate: 'AppLookup/GetDefaultRate',
     getDisbursements: 'AppLookup/GetDisbursements',
     getDisbursementsType: 'AppLookup/GetDisbursementsType',
-    getContactsType: 'AppLookup/GetContactsType',
+    // getContactsType: 'AppLookup/GetContactsType',
     Payments: 'Payments/GetList',
-    getContactsCategory: 'AppLookup/GetContactsCategory',
+    // getContactsCategory: 'AppLookup/GetContactsCategory',
   },
 };

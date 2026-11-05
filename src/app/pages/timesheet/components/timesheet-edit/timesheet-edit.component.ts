@@ -11,17 +11,7 @@ import { SharedModule } from 'src/app/@shared/shared.module';
 import { timesheetEditorFormlyConfig } from './timesheet-edit-formly.config';
 import { GLOBAL_DATE_TIME_Without_Seconds2_FORMATE } from 'src/app/@core/utilities/defines/date-time';
 import { DatePipe } from '@angular/common';
-
-// export enum TaskEnum {
-//   Billable = 1,
-//   NonBillable = 2,
-//   NoCharge = 3,
-// }
-export enum TaskEnum {
-  Billable = 12,
-  NonBillable = 1,
-  NoCharge = 4,
-}
+import { TaskEnum } from '../../enums/task.enum';
 
 @Component({
   selector: 'app-timesheet-edit',
@@ -59,8 +49,8 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
       .join('&');
 
     const lookupsUrl = `${API_Config.timesheet.lookups}?${lookupsQuery}`;
-    const mattersUrl = `lookups/Matters?pageNumber=1&pageSize=100`;
-    const usersUrl = `MatterTimesheet/users?mode=add`;
+    const mattersUrl = `${API_Config.general.getMainMatters}?pageNumber=1&pageSize=100`;
+    const usersUrl = `${API_Config.timesheet.users}?mode=add`;
 
     const timesheetId = this._dynamicDialogConfig.data?.id;
 
@@ -100,7 +90,6 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
       )
       .subscribe({
         next: (res: any) => {
-          // Extract data from API response
           const matters = res.matters?.result?.items ?? [];
           const lawyers = res.users?.result ?? [];
           const tasks = res.lookups?.result?.taskCodes ?? [];
@@ -112,13 +101,6 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
             tasks: { result: tasks },
             holds: { result: holds },
           };
-
-          console.log('Loaded Matters:', matters);
-          console.log('Loaded Lawyers:', lawyers);
-          console.log('Loaded Tasks:', tasks);
-          console.log('Loaded Holds:', holds);
-
-          // Initialize form after loading lookups
           const apiData = res.timesheet?.result;
           this.initForm(apiData);
         },
@@ -131,16 +113,12 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
   }
 
   initForm(apiData?: any): void {
-    // 1. بناء الـ Fields بعد ما الـ Lookups اتحدثت
     this.formlyFields = timesheetEditorFormlyConfig(this);
-
-    // 2. تحديد مصدر الداتا
     const rowData = apiData || this._dynamicDialogConfig.data;
 
     if (rowData && Object.keys(rowData).length > 0) {
       const dateValue = rowData.date;
 
-      // 👇 تعيين القيم كأرقام صريحة لتطابق الـ value في الـ Dropdowns
       this.formlyModel = {
         ...rowData,
         tmDateDate: dateValue ? new Date(dateValue) : new Date(),
@@ -150,7 +128,7 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
         holdId: rowData.hold,
         rate: rowData.rateAmount ?? rowData.rate,
         amount: rowData.amount,
-        matterId: rowData.matterId, // رقم 7
+        matterId: rowData.matterId,
       };
 
       this.setFormData();
@@ -236,7 +214,7 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
         next: (res: ApiRes) => {
           if (res.isSuccess) {
             this._toastrNotifiService.displaySuccess(
-              res.message || 'تم الحفظ بنجاح ✅',
+              res.message || 'تم الحفظ بنجاح ',
             );
             this._dynamicDialogRef.close({
               success: true,
@@ -244,13 +222,13 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
             });
           } else {
             this._toastrNotifiService.displayError(
-              res.message || 'فشل في العملية ❌',
+              res.message || 'فشل في العملية ',
             );
           }
         },
         error: (err: any) => {
           this._toastrNotifiService.displayError(
-            err?.error?.message || 'حدث خطأ غير متوقع ❌',
+            err?.error?.message || 'حدث خطأ غير متوقع ',
           );
         },
       });

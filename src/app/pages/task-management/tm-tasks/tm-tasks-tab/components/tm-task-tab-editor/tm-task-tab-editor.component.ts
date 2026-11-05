@@ -299,7 +299,14 @@ export class TmTaskTabEditorComponent extends FormBaseClass implements OnInit {
   }
 
   downloadTaskAttachment(attachment: any) {
-    this._fileService.downloadDocumentTAsk(attachment.id).subscribe({
+    const taskId = this._dynamicDialogConfig?.data?.rowData?.id;
+    const attachmentId = attachment.id;
+
+    if (!taskId || !attachmentId) {
+      console.error('Task ID or Attachment ID is missing');
+      return;
+    }
+    this._fileService.downloadTaskAttachment(taskId, attachmentId).subscribe({
       next: (response: any) => {
         const blob = new Blob([response.body], {
           type:

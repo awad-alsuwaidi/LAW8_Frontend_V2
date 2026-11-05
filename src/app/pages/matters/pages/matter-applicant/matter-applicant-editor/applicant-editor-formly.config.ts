@@ -2,7 +2,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { MatterApplicantEditorComponent } from './matter-applicant-editor.component';
 
 export function applicantEditorFormlyConfig(
-  THIS: MatterApplicantEditorComponent
+  THIS: MatterApplicantEditorComponent,
 ): FormlyFieldConfig[] {
   return [
     {
@@ -14,9 +14,17 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.firstName'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+        {
+          key: 'middleName', 
+          type: 'input',
+          props: {
+            label:
+              THIS._languageService.getTransValue('matters.middleName') ||
+              'Middle Name',
           },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'lastName',
@@ -24,9 +32,7 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.lastName'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'position',
@@ -34,9 +40,7 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.position'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'email',
@@ -44,9 +48,7 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.email'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'address',
@@ -56,65 +58,55 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.address'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'phone',
+          key: 'phone1', 
           type: 'phone',
           props: {
             label: THIS._languageService.getTransValue('matters.phone'),
           },
-         hooks: {
+          hooks: {
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
-                  const validValue = value.replace(/[^0-9+ ]/g, '');
-                  control.setValue(validValue, { emitEvent: false });
+                  control.setValue(value.replace(/[^0-9+ ]/g, ''), {
+                    emitEvent: false,
+                  });
                 }
               });
             },
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'mobileNumber',
+          key: 'mobile1', 
           type: 'phone',
           props: {
             label: THIS._languageService.getTransValue('matters.mobile'),
           },
-         hooks: {
+          hooks: {
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
-                  const validValue = value.replace(/[^0-9+ ]/g, '');
-                  control.setValue(validValue, { emitEvent: false });
+                  control.setValue(value.replace(/[^0-9+ ]/g, ''), {
+                    emitEvent: false,
+                  });
                 }
               });
             },
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'fax',
           type: 'input',
-          props: {
-            label: THIS._languageService.getTransValue('matters.fax'),
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          props: { label: THIS._languageService.getTransValue('matters.fax') },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'remarks',
@@ -122,9 +114,7 @@ export function applicantEditorFormlyConfig(
           props: {
             label: THIS._languageService.getTransValue('matters.remark'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
       ],
     },

@@ -103,7 +103,6 @@ export class MatterDetailsComponent implements OnInit, OnDestroy, OnChanges {
       this.getMatterById();
     }
   }
-
   setTabsBasedOnPracticeArea() {
     this.tabs = [
       {
@@ -132,7 +131,8 @@ export class MatterDetailsComponent implements OnInit, OnDestroy, OnChanges {
           ![this.practiceArea.Litigation, this.practiceArea.Corporate].includes(
             this.data.practsAreaId || 0,
           ) &&
-          this.data.law_MtrCatId == 8 &&
+          (this.data.law_MtrCatId === 23 ||
+            this.data.law_MtrCat?.toLowerCase().includes('trademark')) &&
           this._permissionService.hasPermission('View_Matter_Classes'),
       },
       {
@@ -375,9 +375,10 @@ export class MatterDetailsComponent implements OnInit, OnDestroy, OnChanges {
     this.isImportant = !this.isImportant;
 
     this._apiService
-      .post(API_Config.matters.importentMatter, null, {
-        matterId: this.matterIdentifier,
-      })
+      .patch(
+        `${API_Config.matters.importentMatter}/${this.matterIdentifier}/important`,
+        null,
+      )
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
@@ -398,7 +399,6 @@ export class MatterDetailsComponent implements OnInit, OnDestroy, OnChanges {
         },
       });
   }
-
   ngOnDestroy(): void {
     this._unsubscribe.destroy();
     document.body.classList.remove('page-matter');

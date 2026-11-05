@@ -116,11 +116,6 @@ export class TimesheetAdditionalFilterEditorComponent
             },
           };
 
-          console.log('========== MAPPED FILTER LOOKUPS ==========');
-          console.log('Lawyers:', this.lookupsData.lawyers.result);
-          console.log('Tasks:', this.lookupsData.tasks.result);
-          console.log('Matters:', this.lookupsData.matterCode.result);
-
           this.isLoading = false;
 
           this.initForm();

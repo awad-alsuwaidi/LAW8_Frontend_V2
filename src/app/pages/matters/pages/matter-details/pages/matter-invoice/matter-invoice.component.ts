@@ -33,13 +33,14 @@ export class MatterInvoiceComponent implements OnInit, OnDestroy {
   columns = Matter_Invoice_Columns;
   matterInvoiceColumns = Matter_Invoice_Columns;
   filterOptions: any = {
-    pageNum: 1,
-    pagSize: 10,
-    orderByDirection: 'ASC',
+    PageNumber: 1,
+    PageSize: 10,
+    SortBy: 'invoiceDate',
+    IsDescending: true,
   };
   sortField = '';
- sortOrder = 1;
- 
+  sortOrder = 1;
+
   @Input() set id(value: number) {
     this.matterIdentifier = value;
   }
@@ -51,7 +52,7 @@ export class MatterInvoiceComponent implements OnInit, OnDestroy {
   isLoading!: boolean;
 
   getData() {
-    this.filterOptions.matterId = this.matterIdentifier;
+    this.filterOptions['Filters[matterId]'] = this.matterIdentifier;
     this.isLoading = true;
 
     this._apiService
@@ -61,41 +62,40 @@ export class MatterInvoiceComponent implements OnInit, OnDestroy {
         finalize(() => (this.isLoading = false)),
       )
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res.isSuccess) {
-            this.data = res.result.dataList;
-            this.totalRecords = res.result.totalCount;
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const body = res?.data ?? res?.result;
+
+          if (isSuccess && body) {
+            this.data = body.items || body.dataList || [];
+            this.totalRecords = body.totalCount || 0;
           } else {
             this.data = [];
             this.totalRecords = 0;
           }
         },
         error: (err) => {
-          //console.error('Error fetching invoices:', err);
           this.data = [];
           this.totalRecords = 0;
         },
       });
   }
-onSort(event: any): void {
-  this.sortField = event.field;
-  this.sortOrder = event.order;
+  onSort(event: any): void {
+    this.sortField = event.field;
+    this.sortOrder = event.order;
 
-  this.filterOptions.orderBy = event.field;
-  this.filterOptions.orderByDirection =
-    event.order === 1 ? 'ASC' : 'DESC';
+    this.filterOptions.SortBy = event.field;
+    this.filterOptions.IsDescending = event.order === -1;
 
-  this.filterOptions.pageNum = 1;
+    this.filterOptions.PageNumber = 1;
 
-  this.getData();
-}
-
+    this.getData();
+  }
 
   onPageChange(event: PaginatorState): void {
-    const page = (event.first ?? 0) / (event.rows ?? 10);
-    this.filterOptions.pageNum = page + 1;
-    this.filterOptions.pagSize = event.rows ?? 10;
-
+    this.filterOptions.PageNumber = ((event.first ?? 0) / (event.rows ?? 10)) + 1;
+    this.filterOptions.PageSize = event.rows ?? 10;
+    
     this.getData();
   }
   createInvoice() {

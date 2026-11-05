@@ -1,12 +1,15 @@
-export interface MatterApplicantDto{
-    id: number;
-    law_MatterId: number;
-    fullName: string;
-    address: string;
-    email: string;
-    phone: string;
-    mobileNumber: string;
-    fax: string;
-    remarks: string;
-    position: string;
+export interface MatterApplicantDto {
+  id?: number;
+  matterId?: number; 
+  firstName: string;
+  middleName?: string | null; 
+  lastName: string;
+  fullName?: string; 
+  position?: string | null;
+  address?: string | null;
+  email?: string | null;
+  phone1?: string | null;
+  mobile1?: string | null; 
+  fax?: string | null;
+  remarks?: string | null;
 }

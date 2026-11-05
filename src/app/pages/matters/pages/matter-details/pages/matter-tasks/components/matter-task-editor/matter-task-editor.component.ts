@@ -62,9 +62,7 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
           const lawyersOnly = allUsers.filter((u: any) => u.isLawyer === true);
 
           this.lookupsData = {
-            lawyers: {
-              result: normalize(lawyersOnly), 
-            },
+            lawyers: { result: normalize(lawyersOnly) },
             taskStatus: {
               result: normalize(extractList(batchData.activityStatuses)),
             },
@@ -90,18 +88,18 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
   }
 
   override initForm(): void {
+    this.formlyFields = matterTaskEditorFields(this);
     if (this._dynamicDialogConfig?.data?.rowData) {
       this.setFormData();
-    } else {
-      this.formlyFields = matterTaskEditorFields(this);
     }
   }
 
-  setFormData(): void {
+   setFormData(): void {
     this.mode = this._dynamicDialogConfig.data.mode;
     this.formlyOptions.formState = {
       readonly: this.mode === 'view',
     };
+
     const param = { id: this._dynamicDialogConfig?.data?.rowData?.id };
     const url = API_Config.matterTask.getById.includes('{id}')
       ? API_Config.matterTask.getById.replace('{id}', String(param.id))
@@ -115,40 +113,43 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
           const isSuccess = res?.success ?? res?.isSuccess;
           const result = res?.data ?? res?.result;
           if (!isSuccess || !result) return;
-          const incomingAssigned = result.assignedUserIds || [];
 
-          const mappedIds = incomingAssigned.map((val: any) => {
+          const incomingAssigned = result.assignedUserIds || [];
+          const mappedIds = incomingAssigned.map((userId: any) => {
             const user = this.lookupsData?.lawyers?.result.find(
-              (l: any) => l.userId === val || l.id == val,
+              (l: any) => l.userId === userId || l.id == userId,
             );
-            return user ? user.id : val;
+            return user ? user.id : userId;
+          });
+
+          const mappedAttachments = (result.attachments || []).map((att: any) => {
+            return {
+              ...att,
+              fileName: att.originalFileName || att.fileName,
+              name: att.originalFileName || att.name,
+              size: att.sizeBytes || att.size,
+              url: att.attachmentPath,
+              filePath: att.attachmentPath,
+            };
           });
 
           this.formlyModel = {
             ...result,
             startDate: result.startDate ? new Date(result.startDate) : null,
             dueDate: result.dueDate ? new Date(result.dueDate) : null,
-            attachments: result.attachments || result.attachmentList || [],
-            assignedUserIds: mappedIds, 
+            attachments: mappedAttachments,
+            assignedUserIds: mappedIds,
             priorityId: result.priorityId,
             matterTaskStatusId: result.matterTaskStatusId,
           };
 
-          this.formlyFields = matterTaskEditorFields(this);
+          // تحديث القيم جوه الفورم
           this.formly.patchValue(this.formlyModel);
 
-          const priorityField: FieldTypeConfig = findField(
-            this.formlyFields,
-            'priorityId',
-          );
-          const statusField: FieldTypeConfig = findField(
-            this.formlyFields,
-            'matterTaskStatusId',
-          );
-          const assigneeField: FieldTypeConfig = findField(
-            this.formlyFields,
-            'assignedUserIds',
-          );
+          // 3. تحديث الحقول المخصصة
+          const priorityField: FieldTypeConfig = findField(this.formlyFields, 'priorityId');
+          const statusField: FieldTypeConfig = findField(this.formlyFields, 'matterTaskStatusId');
+          const assigneeField: FieldTypeConfig = findField(this.formlyFields, 'assignedUserIds');
 
           if (this.formlyModel?.priorityId && priorityField) {
             priorityField.props['selectedObj'] = this.setPriorityValue();
@@ -177,12 +178,6 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
     return selected ? { label: selected?.name, value: selected?.id } : null;
   }
 
-  onEdit() {
-    this.formlyOptions.formState.readonly = false;
-    this._dynamicDialogConfig.header =
-      this._languageService.getTransValue('common.editTask');
-  }
-
   setAssigneeValue() {
     const selected = this.lookupsData?.lawyers?.result.filter((obj: any) =>
       this.formlyModel?.assignedUserIds.includes(obj.id),
@@ -190,6 +185,12 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
     return selected
       ? selected.map((obj: any) => ({ label: obj?.name, value: obj?.id }))
       : null;
+  }
+
+  onEdit() {
+    this.formlyOptions.formState.readonly = false;
+    this._dynamicDialogConfig.header =
+      this._languageService.getTransValue('common.editTask');
   }
 
   override onSubmit(): void {
@@ -249,21 +250,31 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
         }
       });
     }
-
+    // ============ Attachments Handling ============
     const attachmentList = this.formlyModel.attachments || [];
-    const newFiles = attachmentList.filter(
-      (file: any) => file instanceof File || file.file instanceof File,
+        const newFiles = attachmentList.filter(
+      (file: any) =>
+        !file?.id &&
+        (file instanceof File || 
+         (file.file && file.file instanceof File) || 
+         (file._file && file._file instanceof File)),
     );
+    
     newFiles.forEach((item: any) => {
-      const file = item instanceof File ? item : item.file;
-      if (file) formData.append('files', file, file.name);
+      const file = item instanceof File ? item : (item.file || item._file);
+      if (file) {
+        formData.append('files', file, file.name);
+      }
     });
 
     const attachmentField = findField(this.formlyFields, 'attachments');
     const deletedIds = attachmentField?.props?.['deletedAttachmentIds'] || [];
+    
     deletedIds.forEach((id: number) => {
       formData.append('removeAttachmentIds', id.toString());
     });
+
+
 
     if (isEdit) formData.append('id', String(rowData.id));
 
@@ -300,22 +311,33 @@ export class MatterTaskEditorComponent extends FormBaseClass implements OnInit {
       });
   }
 
-  downloadTaskAttachment(attachment: any) {
-    this._fileService.downloadDocumentTAsk(attachment.id).subscribe({
+    downloadTaskAttachment(attachment: any) {
+    const taskId = this._dynamicDialogConfig?.data?.rowData?.id; 
+    const attachmentId = attachment.id;
+
+    if (!taskId || !attachmentId) {
+      console.error('Task ID or Attachment ID is missing');
+      return;
+    }
+    this._fileService.downloadTaskAttachment(taskId, attachmentId).subscribe({
       next: (response: any) => {
         const blob = new Blob([response.body], {
-          type:
-            response.headers.get('content-type') ?? 'application/octet-stream',
+          type: response.headers.get('content-type') ?? 'application/octet-stream',
         });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = attachment.fileName ?? 'download';
+        a.download = attachment.originalFileName ?? attachment.fileName ?? 'download';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       },
+      error: (err: any) => {
+        this._toastrNotifiService.displayError('Failed to download file');
+        console.error(err);
+      }
     });
   }
+  
 }

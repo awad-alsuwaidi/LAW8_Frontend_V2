@@ -11,42 +11,51 @@ import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly
 @Component({
   selector: 'app-matter-class-update',
   standalone: true,
-  imports: [
-    SharedModule,
-    FormlyConfigModule,
-    SharedButtonComponent
-  ],
+  imports: [SharedModule, FormlyConfigModule, SharedButtonComponent],
   templateUrl: './matter-class-update.component.html',
   styleUrl: './matter-class-update.component.scss'
 })
 export class MatterClassUpdateComponent extends FormBaseClass implements OnInit {
   matterIdentifier: any;
+  rowData: any;
+
   ngOnInit(): void {
     this.initForm()
   }
+
   override initForm(): void {
     this.formlyFields = matterClassFieldsConfig(this)
     this.setFormData()
   }
-  setFormData() {
-    this.formlyModel = { ...this._dynamicDialogConfig.data.rowData }
-    this.matterIdentifier = this._dynamicDialogConfig.data.matterIdentifier;
 
+  setFormData() {
+    this.rowData = this._dynamicDialogConfig.data.rowData;
+    this.formlyModel = { ...this.rowData }
+    this.matterIdentifier = this._dynamicDialogConfig.data.matterIdentifier;
   }
 
   reset() {
     this.formlyModel = {};
   }
+
   override onSubmit(): void {
     if (this.formly.invalid) return;
-    this.isLoading = true
+    this.isLoading = true;
+
     if (this._router.url.includes('add')) {
       this._dynamicDialogRef.close(this.formlyModel);
-      return
+      return;
     }
 
+    const payload = {
+      matterId: this.matterIdentifier,
+      matterClassCategoryId: this.rowData.id || this.rowData.classNo, 
+      description: this.formlyModel.description
+    };
+    const url = `${API_Config.matterClass.update}/${this.rowData.id}`;
+
     this._apiService
-      .post(API_Config.matterClass.update, this.formlyModel)
+      .put(url, payload)
       .pipe(
         finalize(() => this.isLoading = false),
         this._unsubscribe.takeUntilDestroy()

@@ -69,11 +69,21 @@ export class FileService {
     });
   }
 
-  downloadDocumentTAsk(id: number | string) {
-    if (!id) {
-      throw new Error('FileService: No document ID provided');
+
+  downloadTaskAttachment(
+    taskId: number | string,
+    attachmentId: number | string,
+  ) {
+    if (!taskId || !attachmentId) {
+      throw new Error('FileService: taskId and attachmentId are required');
     }
-    const url = `${environment.baseUrl}/api/${API_Config.matterTask.download}/${id}`;
+    let urlPath = API_Config.matterTask.downloadAttachment;
+    urlPath = urlPath
+      .replace('{taskId}', String(taskId))
+      .replace('{attachmentId}', String(attachmentId));
+
+    const url = `${environment.baseUrl}/api/v1/${urlPath}`;
+
     return this._http.get(url, {
       responseType: 'blob',
       observe: 'response',

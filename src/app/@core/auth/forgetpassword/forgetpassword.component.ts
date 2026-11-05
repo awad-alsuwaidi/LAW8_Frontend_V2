@@ -31,27 +31,27 @@ export class ForgetpasswordComponent {
     ? 'assets/images/Logo.svg'
     : 'assets/images/Law8logoDemo.png';
       ngOnInit(): void {
-        this.getCompanyLogo();
+        // this.getCompanyLogo();
       }
     
-      getCompanyLogo() {
-        this._apiService
-          .get(API_Config.setting.getLogo)
-          .pipe(this._unsubscribe.takeUntilDestroy())
-          .subscribe({
-            next: (res: ApiRes) => {
-              if (res.isSuccess && res.result && res.result.logoPath) {
-                this.logoPath = res.result.logoPath;
-              } else {
-                this.logoPath = this.defaultLogoPath;
-              }
-            },
-            error: (error) => {
-              //console.error('Failed to load company logo:', error);
-              this.logoPath = this.defaultLogoPath;
-            },
-          });
-      }
+      //  getCompanyLogo() {
+      //   this._apiService
+      //     .get(API_Config.setting.getLogo)
+      //     .pipe(this._unsubscribe.takeUntilDestroy())
+      //     .subscribe({
+      //       next: (res: ApiRes) => {
+      //         if (res.isSuccess && res.result && res.result.logoPath) {
+      //           this.logoPath = res.result.logoPath;
+      //         } else {
+      //           this.logoPath = this.defaultLogoPath;
+      //         }
+      //       },
+      //       error: (error) => {
+      //         //console.error('Failed to load company logo:', error);
+      //         this.logoPath = this.defaultLogoPath;
+      //       },
+      //     });
+      //  }
     
       onImageError(event: any) {
         event.target.src = this.defaultLogoPath;

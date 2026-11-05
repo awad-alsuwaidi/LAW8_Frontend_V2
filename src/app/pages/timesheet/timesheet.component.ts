@@ -55,7 +55,7 @@ export class TimesheetComponent implements OnInit, OnDestroy {
     PageNumber: 1,
     PageSize: PAGESIZE,
     SortBy: 'date',
-    IsDescending: false, // 👈 التعديل هنا (حرف I كبير)
+    IsDescending: false,
     searchTerm: '',
     filters: {} as any,
   };
@@ -87,7 +87,7 @@ export class TimesheetComponent implements OnInit, OnDestroy {
       PageNumber: this.pagination.PageNumber,
       PageSize: this.pagination.PageSize,
       SortBy: this.pagination.SortBy,
-      IsDescending: this.pagination.IsDescending, // 👈 التعديل هنا
+      IsDescending: this.pagination.IsDescending,
     };
     if (this.pagination.searchTerm)
       flat['searchTerm'] = this.pagination.searchTerm;
@@ -186,12 +186,20 @@ export class TimesheetComponent implements OnInit, OnDestroy {
     if (e?.taskId?.value) f.taskCodeId = e.taskId.value;
     if (e?.rateId?.value) f.rateId = e.rateId.value;
     if (e?.statusCode) f.statusCode = e.statusCode;
-    if (e?.isBillable !== undefined && e?.isBillable !== null)
+
+    if (e?.isBillable !== undefined && e?.isBillable !== null) {
       f.isBillable = e.isBillable;
+    }
+
     if (e?.hold) f.hold = e.hold;
-    if (e?.fromDate)
+
+    if (e?.fromDate) {
       f.dateFrom = new Date(e.fromDate).toISOString().split('T')[0];
-    if (e?.toDate) f.dateTo = new Date(e.toDate).toISOString().split('T')[0];
+    }
+
+    if (e?.toDate) {
+      f.dateTo = new Date(e.toDate).toISOString().split('T')[0];
+    }
 
     if (Array.isArray(e?.lawyerId) && e.lawyerId.length) {
       f.userId = e.lawyerId
@@ -202,13 +210,34 @@ export class TimesheetComponent implements OnInit, OnDestroy {
     }
 
     this.pagination.filters = f;
+    this.pagination.searchTerm = e?.search?.trim() || '';
+
     this.pagination.PageNumber = 1;
-    if (e?.search !== undefined) this.pagination.searchTerm = e.search || '';
+
     this.getData();
   }
 
   canEditOrDelete(row: TimesheetListItemDto): boolean {
     return !!(row as any)?.canEdit;
+  }
+  
+  getTaskClass(task: string): string {
+    switch (task) {
+      case 'Billable':
+        return 'bg-green-100 text-green-700';
+
+      case 'Non-Billable':
+        return 'bg-gray-200 text-gray-700';
+
+      case 'No-Charge':
+        return 'bg-yellow-100 text-yellow-600';
+
+      case 'Research':
+        return 'bg-blue-100 text-blue-700';
+
+      default:
+        return 'bg-gray-100 text-gray-600';
+    }
   }
 
   onDelete(rowData: TimesheetListItemDto): void {

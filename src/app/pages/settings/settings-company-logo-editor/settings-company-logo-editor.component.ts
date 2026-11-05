@@ -21,8 +21,7 @@ import { SharedModule } from 'src/app/@shared/shared.module';
 export class SettingsCompanyLogoEditorComponent extends FormBaseClass implements OnInit, OnDestroy {
 
   ngOnInit(): void {
-    // TODO: Add initialization logic here
-    this.setFormData();
+    // this.setFormData();
   }
 
 
@@ -66,19 +65,20 @@ export class SettingsCompanyLogoEditorComponent extends FormBaseClass implements
     
   }
 
-  setFormData(){
-    this._apiService.get(API_Config.setting.getLogo).pipe(
-      this._unsubscribe.takeUntilDestroy()
-    ).subscribe({
-      next: (res: ApiRes) => {
-        if (res.isSuccess) {
-          this.formlyModel = res.result;
-          this.formlyModel={...this.formlyModel,Logo: res.result.logoPath};
-          this.initForm();
-        }
-      }
-    })
-  }
+  // setFormData(){
+  //   this._apiService.get(API_Config.setting.getLogo).pipe(
+  //     this._unsubscribe.takeUntilDestroy()
+  //   ).subscribe({
+  //     next: (res: ApiRes) => {
+  //       if (res.isSuccess) {
+  //         this.formlyModel = res.result;
+  //         this.formlyModel={...this.formlyModel,Logo: res.result.logoPath};
+  //         this.initForm();
+  //       }
+  //     }
+  //   })
+  // }
+
   onSubmit(): void {
     if (this.formly.invalid) {
       this.formly.markAllAsTouched();

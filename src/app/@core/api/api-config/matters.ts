@@ -29,15 +29,12 @@ export const Matters_API = {
     toggleImportant: 'Matters',
     deactiveMatter: 'Matters/{id}/activation',
     getMatterCodeByMatterId: 'lookups/matters',
-    // ============ ⚠️ DEPRECATED — مؤقتاً ============
-    /** @deprecated استخدم nextCode */
     getClientNameAndMatterCodeByClientId:
       'Law_Matter/GetCLientNameAndMattCodeByClient',
-    /** @deprecated استخدم nextCode مع parentMatterId */
     getCLientNameAndMattCodeByClientAndParent:
       'Law_Matter/GetCLientNameAndMattCodeByClientAndParent',
-    /** @deprecated استخدم getMatterParties */
     getPartiesByMatterId: 'Law_MattParties/GetMatterPartiesById',
+    importentMatter: 'Matters',
 
     // ============ V1 (شغالة) ============
     delete: 'Law_Matter/Delete',
@@ -45,7 +42,7 @@ export const Matters_API = {
     // getMatterCodeByMatterId: 'AppLookup/GetMatterCodeById',
     updateGeneral: 'Law_Matter/UpdateGeneral',
     // deactiveMatter: 'Law_Matter/Law_MatterActiveAndDeactive',
-    importentMatter: 'Law_Matter/SetUserImportent',
+    // importentMatter: 'Law_Matter/SetUserImportent',
     sendMatterToSAP: 'Law_Matter/AddMatterToSap',
   },
 };

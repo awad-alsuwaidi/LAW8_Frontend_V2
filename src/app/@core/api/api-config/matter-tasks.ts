@@ -6,7 +6,7 @@
 //       getById: 'Law_Matter_Tasks/GetById',
 //       delete: 'Law_Matter_Tasks/Delete',
 //       createList: 'Law_Matter_Tasks/CreateList',
-//       download: 'Law_Matter_Tasks/download',      
+//       download: 'Law_Matter_Tasks/download',
 //       changeStatus: 'Law_Matter_Tasks/ChangeStatus'
 //     },
 //   };
@@ -18,8 +18,9 @@ export const Matters_Task_API = {
     create: 'MatterTasks',
     getById: 'MatterTasks/{id}',
     delete: 'MatterTasks/{id}',
-    createList: 'MatterTasks/CreateList', 
-    download: 'MatterTasks/download',      
-    changeStatus: 'MatterTasks'
+    createList: 'MatterTasks/CreateList',
+    downloadAttachment:
+      'MatterTasks/{taskId}/attachments/{attachmentId}/download',
+    changeStatus: 'MatterTasks',
   },
 };

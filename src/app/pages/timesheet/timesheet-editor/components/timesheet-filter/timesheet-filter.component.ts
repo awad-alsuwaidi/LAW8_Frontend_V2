@@ -17,6 +17,7 @@ import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-s
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
 import { TimesheetAdditionalFilterEditorComponent } from './timesheet-additional-filter-editor/timesheet-additional-filter-editor.component';
 import { ObjToArrWithValuesPipe } from 'src/app/@shared/pipes/obj-to-arr-with-values.pipe';
+import { Subject, debounceTime, distinctUntilChanged, map, of, switchMap, takeUntil, timer } from 'rxjs';
 
 @Component({
   selector: 'app-timesheet-filter',
@@ -41,9 +42,36 @@ export class TimesheetFilterComponent implements OnInit {
   formly: FormGroup = new FormGroup({});
   formlyModel: any = {};
   formlyFields: FormlyFieldConfig[] = [];
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.initForm();
+
+    this.searchSubject
+      .pipe(
+        distinctUntilChanged(),
+        switchMap((search) => {
+          const value = search.trim();
+
+          return value ? timer(400).pipe(map(() => value)) : of('');
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((search) => {
+        if (!search) {
+          delete this.formlyModel.search;
+          this.emitOrReset();
+          return;
+        }
+
+        this.formlyModel = {
+          ...this.formlyModel,
+          search,
+        };
+
+        this.onFilter.emit({ ...this.formlyModel });
+      });
   }
 
   initForm() {
@@ -58,11 +86,9 @@ export class TimesheetFilterComponent implements OnInit {
               placeholder: 'Search',
               icon: 'icon-search text-grey400',
               input: () => {
-                this.formlyModel = {
-                  ...this.formlyModel,
-                  ...this.formly.value,
-                };
-                this.onFilter.emit(this.formlyModel);
+                const value = String(this.formly.get('search')?.value ?? '');
+
+                this.searchSubject.next(value);
               },
             },
           },
@@ -106,7 +132,6 @@ export class TimesheetFilterComponent implements OnInit {
   updateFilter(key: string, value?: any) {
     if (!key) return;
 
-    // 1) شيل الـ chip من الـ model
     if (key === 'search') {
       delete this.formlyModel.search;
       this.formly.get('search')?.reset();
@@ -125,12 +150,10 @@ export class TimesheetFilterComponent implements OnInit {
       }
     }
 
-    // 2) ثبّت الـ search لو لسه موجود
     const currentSearch = this.formly.value?.search;
     if (currentSearch) this.formlyModel.search = currentSearch;
     else delete this.formlyModel.search;
 
-    // 3) 👇 القرار: فاضي؟ reset، مش فاضي؟ emit عادي
     this.emitOrReset();
   }
 
@@ -146,9 +169,12 @@ export class TimesheetFilterComponent implements OnInit {
     }
   }
 
-  reset() {
-    this.formly.reset();
+  reset(): void {
+    this.searchSubject.next('');
+
+    this.formly.reset({}, { emitEvent: false });
     this.formlyModel = {};
+
     this.onFilter.emit({});
   }
 
@@ -213,7 +239,6 @@ export class TimesheetFilterComponent implements OnInit {
   getChipLabel(key: string, value: any): string {
     if (value === null || value === undefined) return '';
 
-    // لو القيمة Object
     if (typeof value === 'object') {
       return value.name || value.label || value.id || '';
     }
@@ -243,5 +268,10 @@ export class TimesheetFilterComponent implements OnInit {
     }
 
     return value;
+  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.searchSubject.complete();
   }
 }

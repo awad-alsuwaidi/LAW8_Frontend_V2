@@ -3,6 +3,7 @@ import { MatterDetailsEditorComponent } from './matter-details-editor.component'
 import { DropdownChangeEvent } from 'primeng/dropdown';
 import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 import { resetFields } from 'src/app/@core/utilities/functions/reset-fields';
+import { findField } from 'src/app/@core/utilities/functions/find-field';
 
 export function matterDetailsEditorFields(
   THIS: MatterDetailsEditorComponent,
@@ -220,18 +221,17 @@ export function matterDetailsEditorFields(
                 'wordMark',
                 'isCaseSensitive',
               ]);
+              const catField = findField(THIS.formlyFields, 'law_MtrCatId');
+              if (catField) catField.props['optionsArr'] = [];
+
+              const typeField = findField(THIS.formlyFields, 'mtrTypeId');
+              if (typeField) typeField.props['optionsArr'] = [];
+
+              const judField = findField(THIS.formlyFields, 'judicatureId');
+              if (judField) judField.props['optionsArr'] = [];
               THIS.checkIsLitigation(e.value);
               THIS.getMatterCategoriesByPracticeArea(e.value);
-            },
-          },
-          hooks: {
-            onInit: (field) => {
-              field?.formControl?.valueChanges.subscribe({
-                next: (res) => {
-                  THIS.getMatterCategoriesByPracticeArea(res);
-                  THIS._matterService.updateMatter(THIS.formlyModel);
-                },
-              });
+              THIS._matterService.updateMatter(THIS.formlyModel);
             },
           },
         },
@@ -242,10 +242,10 @@ export function matterDetailsEditorFields(
             label: THIS._languageService.getTransValue('common.matterCategory'),
             required: true,
             onChange: (e: DropdownChangeEvent) => {
-              THIS.getMatterTypeByMatterCategory(e.value);
-              THIS._matterService.updateMatter(THIS.formlyModel);
               resetFields(THIS.formly, ['mtrTypeId']);
-              if (e.value != 8) {
+              const typeField = findField(THIS.formlyFields, 'mtrTypeId');
+              if (typeField) typeField.props['optionsArr'] = [];
+              if (!THIS.isTrademarkCategory(e.value)) {
                 resetFields(THIS.formly, [
                   'tradmarkTypeId',
                   'logoFileBase64',
@@ -253,6 +253,9 @@ export function matterDetailsEditorFields(
                   'isCaseSensitive',
                 ]);
               }
+
+              THIS.getMatterTypeByMatterCategory(e.value);
+              THIS._matterService.updateMatter(THIS.formlyModel);
             },
           },
         },
@@ -276,6 +279,9 @@ export function matterDetailsEditorFields(
               'name',
             ),
             onChange: (e: DropdownChangeEvent) => {
+              resetFields(THIS.formly, ['judicatureId']);
+              const judField = findField(THIS.formlyFields, 'judicatureId');
+              if (judField) judField.props['optionsArr'] = [];
               THIS.getJudicatureByJurisdiction(e.value);
             },
           },
@@ -357,9 +363,13 @@ export function matterDetailsEditorFields(
               'name',
             ),
           },
+          // expressions: {
+          //   hide: (field: FormlyFieldConfig) =>
+          //     !field.model?.law_MtrCatId || field.model?.law_MtrCatId != 8,
+          // },
           expressions: {
             hide: (field: FormlyFieldConfig) =>
-              !field.model?.law_MtrCatId || field.model?.law_MtrCatId != 8,
+              !THIS.isTrademarkCategory(field.model?.law_MtrCatId),
           },
         },
         {
@@ -438,9 +448,13 @@ export function matterDetailsEditorFields(
               },
             },
           ],
+          // expressions: {
+          //   hide: (field: FormlyFieldConfig) =>
+          //     !field.model?.law_MtrCatId || field.model?.law_MtrCatId != 8,
+          // },
           expressions: {
             hide: (field: FormlyFieldConfig) =>
-              !field.model?.law_MtrCatId || field.model?.law_MtrCatId != 8,
+              !THIS.isTrademarkCategory(field.model?.law_MtrCatId),
           },
         },
 

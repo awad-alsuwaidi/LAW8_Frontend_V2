@@ -15,11 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-matter-class-add',
   standalone: true,
-  imports: [
-    SharedTableComponent,
-    SharedButtonComponent,
-    TranslateModule
-  ],
+  imports: [SharedTableComponent, SharedButtonComponent, TranslateModule],
   templateUrl: './matter-class-add.component.html',
   styleUrl: './matter-class-add.component.scss'
 })
@@ -29,13 +25,14 @@ export class MatterClassAddComponent implements OnInit, OnDestroy {
   _dynamicDialogConfig = inject(DynamicDialogConfig);
   _dynamicDialogRef = inject(DynamicDialogRef);
   _toastrNotifiService = inject(ToastrNotifiService);
-  _router=inject(Router)
+  _router = inject(Router)
   isLoading: boolean = false
   data: MatterClassDto[] = [];
   columns: any[] = Matter_Class_Columns;
   pagination: any = { pagSize: 5, pageNum: 1, orderByDirection: 'ASC', };
   first!: number;
   selectedClass: MatterClassDto[] = []
+
   ngOnInit(): void {
     this.getClass()
   }
@@ -43,51 +40,54 @@ export class MatterClassAddComponent implements OnInit, OnDestroy {
   getClass() {
     this.pagination = {
       ...this.pagination,
-      matterId: this._dynamicDialogConfig.data.matterIdentifier,
+      'Filters[matterId]': this._dynamicDialogConfig.data.matterIdentifier,
     };
-    this._apiService.get(API_Config.Class.get, this.pagination).pipe(
+    this._apiService.get(API_Config.matterClass.get, this.pagination).pipe(
       this._unsubscribeService.takeUntilDestroy()
     ).subscribe({
       next: (res: ApiRes) => {
         if (res && res.isSuccess) {
-          this.data = res.result.dataList;
+          this.data = res.result.dataList || [];
           this.pagination.totalElements = res.result.totalCount
           this.pagination = { ...this.pagination }
         }
-
       }
     })
   }
+
   onPageChange(e: any) {
     this.pagination.pagSize = Number(e.rows);
     this.pagination.pageNum = e.first / e.rows + 1;
     this.first = e?.first;
     this.getClass()
   }
+
   onRowSelectChange(e: any) {
     this.selectedClass = e
   }
 
   submit() {
-
+    const matterId = this._dynamicDialogConfig.data.matterIdentifier;
     const requestPayload = {
-      law_MatterClassCreateList: this.selectedClass.map(obj => {
-        return {
-          ...obj,
-          law_MatterId: this._dynamicDialogConfig.data.matterIdentifier
-        }
-      }
-      ),
+      matterId: matterId,
+      items: this.selectedClass.map(obj => ({
+        matterClassCategoryId: obj.id || obj.classNo, 
+        description: obj.description
+      }))
     };
+
     if (this._router.url.includes('add')) {
       this._dynamicDialogRef.close(this.selectedClass);
       return
     }
+
+    this.isLoading = true;
     this._apiService
-      .post(API_Config.matterClass.create, requestPayload)
+      .post(API_Config.matterClass.bulkAssign, requestPayload)
       .pipe(this._unsubscribeService.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
+          this.isLoading = false;
           if (res && res.isSuccess) {
             this._toastrNotifiService.displaySuccess(res?.message);
             this._dynamicDialogRef.close(true);
@@ -96,6 +96,7 @@ export class MatterClassAddComponent implements OnInit, OnDestroy {
           }
         },
         error: (err: any) => {
+          this.isLoading = false;
           this._toastrNotifiService.displayError(err?.error?.message);
         },
       });

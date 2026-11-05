@@ -1,7 +1,7 @@
 import { Component, effect, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ApiService } from 'src/app/@core/api/api.service';
 import { ApiRes } from 'src/app/@core/models/apiRes-model';
 import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
@@ -55,7 +55,7 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
       label: this._languageService.getTransValue('matters.edit'),
       icon: 'icon-edit',
       visible: this._permissionService.hasPermission(
-        'Update_Matter_Applicants'
+        'Update_Matter_Applicants',
       ),
 
       command: () => {
@@ -67,7 +67,7 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
       label: this._languageService.getTransValue('matters.delete'),
       icon: 'icon-trash',
       visible: this._permissionService.hasPermission(
-        'Delete_Matter_Applicants'
+        'Delete_Matter_Applicants',
       ),
 
       command: () => {
@@ -104,10 +104,10 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.emptyConfig = {
       messageTitle: this._languageService.getTransValue(
-        'matters.noApplicantTitle'
+        'matters.noApplicantTitle',
       ),
       description: this._languageService.getTransValue(
-        'matters.noApplicantDescription'
+        'matters.noApplicantDescription',
       ),
       addPermission: '',
     };
@@ -175,16 +175,16 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
       });
   }
   onDelete() {
-    const confirmDeleteRef = this._dialogService.open(
+    const confirmDeleteRef: DynamicDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,
       {
         data: {
           type: ConfirmDialogType.Success,
           title: this._languageService.getTransValue(
-            'matters.areYouSureYouWantDelete?'
+            'matters.aareYouSureYouWantDelete',
           ),
           message: this._languageService.getTransValue(
-            'matters.youWillDeleteApplicant?'
+            'matters.youWillDeleteApplicant',
           ),
           btns: [
             {
@@ -195,7 +195,7 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
               },
             },
             {
-              label: this._languageService.getTransValue('matters.delete?'),
+              label: this._languageService.getTransValue('matters.delete'),
               styleClass: 'bg-textErrorBase text-white',
               command: () => {
                 confirmDeleteRef.close(true);
@@ -203,26 +203,24 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
             },
           ],
         },
-      }
+      },
     );
+
     confirmDeleteRef.onClose.subscribe({
       next: (res) => {
         if (res) {
           if (this._router.url.includes('add')) {
             this.applicants = this.applicants.filter(
-              (obj) => obj != this.selectedRow
+              (obj) => obj != this.selectedRow,
             );
             this.totalRecords = this.applicants.length;
             this.selectedRow = undefined;
-            confirmDeleteRef.close();
             return;
           }
+          const url = `${API_Config.matterApplicant.delete}/${this.selectedRow?.id}`;
+
           this._apiService
-            .post(
-              API_Config.matterApplicant.delete,
-              {},
-              { id: this.selectedRow?.id }
-            )
+            .delete(url)
             .pipe(this._unsubscribe.takeUntilDestroy())
             .subscribe({
               next: (res: ApiRes) => {
@@ -237,10 +235,11 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
       },
     });
   }
+
   getApplicants() {
     this.filterOptions = {
       ...this.filterOptions,
-      matterId: this.matterIdentifier,
+      'Filters[matterId]': this.matterIdentifier,
     };
 
     this._apiService
@@ -249,8 +248,8 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: ApiRes) => {
           if (res.isSuccess) {
-            this.applicants = res.result.dataList;
-            this.totalRecords = res.result.totalCount;
+            this.applicants = res.result.dataList || res.result.items || [];
+            this.totalRecords = res.result.totalCount || 0;
           }
         },
       });
@@ -261,10 +260,30 @@ export class MatterApplicantComponent implements OnInit, OnDestroy {
     this.filterOptions = { ...this.filterOptions };
     this.getApplicants();
   }
+
   nextPage() {
-    this._router.navigate(['../billing'], { relativeTo: this._route })
-    this._matterService.updateRefreshCurrentTab(true)
+    const matter = this._matterService.getMatter() || this.formlyModel;
+
+    const practsAreaId = Number(matter?.practsAreaId);
+    const catId = Number(matter?.law_MtrCatId);
+
+    const catName = (matter as any)?.law_MtrCat || '';
+
+    const isIp = practsAreaId === 3;
+    const isTrademark =
+      catId === 23 ||
+      catName.toLowerCase().includes('trademark') ||
+      catName.includes('علامات تجارية');
+
+    if (isIp && isTrademark) {
+      this._router.navigate(['../class'], { relativeTo: this._route });
+    } else {
+      this._router.navigate(['../billing'], { relativeTo: this._route });
+    }
+
+    this._matterService.updateRefreshCurrentTab(true);
   }
+
   ngOnDestroy(): void {
     this._unsubscribe.destroy();
   }

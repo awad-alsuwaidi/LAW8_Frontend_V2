@@ -96,8 +96,16 @@ export class FormlyAttachmentListFieldComponent
   }
 
   private getFileInfo(url: string, fileName?: string) {
-    const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
+    let pathname = url || '';
+    
+    try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+      const urlObj = new URL(url, baseUrl);
+      pathname = urlObj.pathname;
+    } catch (e) {
+      console.warn('FormlyAttachmentList: Could not parse URL, using raw string', url);
+    }
+
     const name = fileName ?? pathname.substring(pathname.lastIndexOf('/') + 1);
     const fileExtension = name?.split('.')?.pop()?.toLowerCase();
 
@@ -167,17 +175,11 @@ downloadFile(index: number, file: any) {
     return;
   }
 
-  // ============================================================
-  // 1. Custom download function
-  // ============================================================
   if (this.props['downloadFn']) {
     this.props['downloadFn'](attachment, file);
     return;
   }
 
-  // ============================================================
-  // 2. Reference Document from Matter
-  // ============================================================
   if (attachment?.isReference) {
     const documentId =
       attachment?.documentId ??
@@ -223,10 +225,6 @@ downloadFile(index: number, file: any) {
 
     return;
   }
-
-  // ============================================================
-  // 3. Local File
-  // ============================================================
   if (attachment instanceof File) {
     this._fileService.downloadFile(attachment);
     return;
@@ -236,10 +234,6 @@ downloadFile(index: number, file: any) {
     this._fileService.downloadFile(attachment.file);
     return;
   }
-
-  // ============================================================
-  // 4. Existing Server Attachment with filePath
-  // ============================================================
   if (attachment?.filePath) {
     this._fileService.downloadFileFromPath(
       attachment.filePath,
@@ -248,10 +242,6 @@ downloadFile(index: number, file: any) {
 
     return;
   }
-
-  // ============================================================
-  // 5. No download source
-  // ============================================================
   console.warn(
     'FormlyAttachmentList: Cannot determine download source',
     attachment

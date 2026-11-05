@@ -20,12 +20,12 @@ import { Matter_Class_Columns } from './matter-class-columns.config';
 import { MatterClassAddComponent } from './matter-class-add/matter-class-add.component';
 import { SharedConfirmDialogComponent } from 'src/app/@shared/components/shared-confirm-dialog/shared-confirm-dialog.component';
 import { ConfirmDialogType } from 'src/app/@shared/enums/confirm-dialog-type';
-import { LanguageService } from 'src/app/@core/services';
+import { LanguageService, ToastrNotifiService } from 'src/app/@core/services';
 import { MatterClassUpdateComponent } from './matter-class-update/matter-class-update.component';
 import { MatterService } from '../../services/matter.service';
 import { EmptyConfig } from 'src/app/@shared/components/shared-empty-section/interface/empty-config.interface';
 import { SharedEmptySectionComponent } from 'src/app/@shared/components/shared-empty-section/shared-empty-section.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatterDetailsEditorComponent } from '../matter-editor/pages/matter-details-editor/matter-details-editor.component';
 import { PermissionService } from 'src/app/@core/services/permission.service';
 
@@ -50,7 +50,9 @@ export class MatterClassComponent implements OnInit, OnDestroy {
   _matterService = inject(MatterService);
   matterDetailsEditorComponent = inject(MatterDetailsEditorComponent);
   _router = inject(Router);
-    _permsissionsService = inject(PermissionService);
+  _permsissionsService = inject(PermissionService);
+  _toastrNotifiService = inject(ToastrNotifiService);
+  _route = inject(ActivatedRoute);
 
   data: MatterClassDto[] = [];
   columns: any[] = Matter_Class_Columns;
@@ -71,26 +73,31 @@ export class MatterClassComponent implements OnInit, OnDestroy {
     }
   });
   emptyConfig?: EmptyConfig;
- ngOnInit(): void {
-  this.emptyConfig = {
-    messageTitle: this._languageService.getTransValue('matters.noClassTitle'),
-    description: this._languageService.getTransValue('matters.noClassDescription'),
-    addPermission: '',
-  };
+  ngOnInit(): void {
+    this.emptyConfig = {
+      messageTitle: this._languageService.getTransValue('matters.noClassTitle'),
+      description: this._languageService.getTransValue(
+        'matters.noClassDescription',
+      ),
+      addPermission: '',
+    };
 
-if (!this._router.url.includes('inactive') && this._permsissionsService.hasPermission('Add_Matter_Classes')) {
-  const addButton = {
-    label: this._languageService.getTransValue('matters.addNewClass'),
-    command: () => {
-      this.openAddClassEditor();
-    },
-  };
-  this.emptyConfig.addButton = addButton;
-}
-  if (!this._router.url.includes('add')) {
-    this.getClass();
+    if (
+      !this._router.url.includes('inactive') &&
+      this._permsissionsService.hasPermission('Add_Matter_Classes')
+    ) {
+      const addButton = {
+        label: this._languageService.getTransValue('matters.addNewClass'),
+        command: () => {
+          this.openAddClassEditor();
+        },
+      };
+      this.emptyConfig.addButton = addButton;
+    }
+    if (!this._router.url.includes('add')) {
+      this.getClass();
+    }
   }
-}
 
   openAddClassEditor() {
     const ref = this._dialogService.open(MatterClassAddComponent, {
@@ -145,20 +152,49 @@ if (!this._router.url.includes('inactive') && this._permsissionsService.hasPermi
     this.first = e?.first;
     this.getClass();
   }
+  nextPage() {
+    this._router.navigate(['../billing'], { relativeTo: this._route });
+    this._matterService.updateRefreshCurrentTab(true);
+  }
   getClass() {
     this.pagination = {
       ...this.pagination,
-      matterId: this.matterIdentifier,
+      'Filters[matterId]': this.matterIdentifier,
     };
+
     this._apiService
       .get(API_Config.matterClass.get, this.pagination)
       .pipe(this._unsubscribeService.takeUntilDestroy())
       .subscribe({
         next: (res: ApiRes) => {
           if (res && res.isSuccess) {
-            this.data = res.result.dataList;
+            this.data = res.result.dataList || [];
             this.pagination.totalElements = res.result.totalCount;
             this.pagination = { ...this.pagination };
+          }
+        },
+      });
+  }
+
+  deleteParty(rowData: MatterClassDto) {
+    if (this._router.url.includes('add')) {
+      this.data = this.data.filter((obj) => obj != rowData);
+      this.deleteDialogRef.close();
+      return;
+    }
+
+    const url = `${API_Config.matterClass.delete}/${rowData.id}`;
+
+    this._apiService
+      .delete(url)
+      .pipe(this._unsubscribeService.takeUntilDestroy())
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res && res.isSuccess) {
+            this.data.length == 1 ? this.pagination.pageNum-- : null;
+            this.getClass();
+            this.deleteDialogRef.close();
+            this._toastrNotifiService.displaySuccess(res.message);
           }
         },
       });
@@ -173,10 +209,10 @@ if (!this._router.url.includes('inactive') && this._permsissionsService.hasPermi
           type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
             'matters.deleteClassTitle',
-            { value: rowData?.classNo }
+            { value: rowData?.classNo },
           ),
           message: this._languageService.getTransValue(
-            'matters.deleteClassMessage'
+            'matters.deleteClassMessage',
           ),
           btns: [
             {
@@ -195,28 +231,10 @@ if (!this._router.url.includes('inactive') && this._permsissionsService.hasPermi
             },
           ],
         },
-      }
+      },
     );
   }
-  deleteParty(rowData: MatterClassDto) {
-    if (this._router.url.includes('add')) {
-      this.data = this.data.filter((obj) => obj != rowData);
-      this.deleteDialogRef.close();
-      return;
-    }
-    this._apiService
-      .post(API_Config.matterClass.delete, {}, { id: rowData.id })
-      .pipe(this._unsubscribeService.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data.length == 1 ? this.pagination.pageNum-- : null;
-            this.getClass();
-            this.deleteDialogRef.close();
-          }
-        },
-      });
-  }
+
   ngOnDestroy(): void {
     this._unsubscribeService.destroy();
   }

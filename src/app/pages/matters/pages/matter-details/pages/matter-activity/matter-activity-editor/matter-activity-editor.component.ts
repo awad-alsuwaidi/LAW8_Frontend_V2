@@ -303,19 +303,19 @@ export class MatterActivityEditorComponent
   }
 
   private initializeDocumentTracking(rowData: any): void {
-    const rootDocs = Array.isArray(rowData?.linkedDocuments)
-      ? rowData.linkedDocuments
+    const rootDocs = Array.isArray(rowData?.attachments)
+      ? rowData.attachments
       : [];
     this.hearingDocumentTracker.originalDocumentIds = rootDocs
-      .filter((doc: any) => (doc?.documentId ?? doc?.id) != null)
-      .map((doc: any) => String(doc.documentId ?? doc.id));
+      .filter((doc: any) => doc?.id != null)
+      .map((doc: any) => String(doc.id));
 
-    const newSessionDocs = Array.isArray(rowData?.newSession?.linkedDocuments)
-      ? rowData.newSession.linkedDocuments
+    const newSessionDocs = Array.isArray(rowData?.newSession?.attachments)
+      ? rowData.newSession.attachments
       : [];
     this.newSessionDocumentTracker.originalDocumentIds = newSessionDocs
-      .filter((doc: any) => (doc?.documentId ?? doc?.id) != null)
-      .map((doc: any) => String(doc.documentId ?? doc.id));
+      .filter((doc: any) => doc?.id != null)
+      .map((doc: any) => String(doc.id));
   }
 
   private getCurrentReferenceDocumentIds(
@@ -599,41 +599,56 @@ export class MatterActivityEditorComponent
               (obj: any) => obj.id === result?.activityTypeId,
             )?.name;
 
-            const mapLinkedDocs = (docs: any[]) =>
+            // ⭐ دالة المابينج الجديدة للمرفقات
+            const mapAttachments = (docs: any[]) =>
               (docs || []).map((doc: any) => {
-                const docId = doc?.documentId ?? doc?.id;
+                const docId = doc?.id;
                 const fileName =
-                  doc?.fileName ||
                   doc?.originalFileName ||
+                  doc?.fileName ||
                   doc?.documentName ||
-                  this.extractFileNameFromUrl(doc?.filePath) ||
+                  this.extractFileNameFromUrl(
+                    doc?.attachmentPath || doc?.filePath,
+                  ) ||
                   `document_${docId}`;
+
+                // لو فيه matterDocumentId يبقى مرجع، غير كده يبقى مرفق عادي
+                const isRef = doc?.matterDocumentId != null;
+
                 return {
                   id: docId,
-                  documentId: docId,
+                  documentId: doc?.matterDocumentId || docId,
                   __docId: docId,
                   name: fileName,
-                  fileName,
+                  fileName: fileName,
                   originalFileName: fileName,
-                  filePath: doc?.filePath || null,
-                  isReference: true,
+                  // ⭐ هنا بنحط المسار الجديد عشان الـ formly يقدر يعرضه
+                  filePath:
+                    doc?.attachmentPath ||
+                    doc?.viewUrl ||
+                    doc?.filePath ||
+                    null,
+                  isReference: isRef,
                   documentDate: doc?.documentDate || null,
                   receivedDate: doc?.receivedDate || null,
                   description: doc?.description || '',
+                  size: doc?.sizeBytes,
                   file: null,
                 };
               });
 
-            const linkedDocs = Array.isArray(result?.linkedDocuments)
-              ? result.linkedDocuments
+            // ⭐ قراءة المرفقات من الحقل الجديد attachments
+            const activityDocs = Array.isArray(result?.attachments)
+              ? result.attachments
               : [];
-            const mappedDocs = mapLinkedDocs(linkedDocs);
+            const mappedDocs = mapAttachments(activityDocs);
 
+            // ⭐ قراءة مرفقات الجلسة الجديدة (لو موجودة)
             const newSessionDocs = Array.isArray(
-              result?.newSession?.linkedDocuments,
+              result?.newSession?.attachments,
             )
-              ? result.newSession.linkedDocuments
-              : [];
+              ? result.newSession.attachments
+              : result?.nextSession?.attachments || [];
 
             const newSessionDateRaw =
               result?.eventDate ||
@@ -642,13 +657,16 @@ export class MatterActivityEditorComponent
               null;
 
             let newSessionModel: any = null;
-            if (result?.newSession || result?.isNewHearingSession) {
+            if (
+              result?.newSession &&
+              Object.keys(result.newSession).length > 0
+            ) {
               newSessionModel = {
                 ...(result?.newSession || {}),
                 newSessionStartDate: newSessionDateRaw
                   ? new Date(newSessionDateRaw)
                   : null,
-                newSessionAttachments: mapLinkedDocs(newSessionDocs),
+                newSessionAttachments: mapAttachments(newSessionDocs),
               };
             }
 
@@ -685,13 +703,30 @@ export class MatterActivityEditorComponent
             this.formlyModel = mappedModel;
 
             setTimeout(() => {
-              this.hearingAttachmentsFieldInstance?.setReferenceDocuments?.(
-                mappedDocs,
-              );
-              if (newSessionModel?.newSessionAttachments?.length) {
-                this.newSessionAttachmentsFieldInstance?.setReferenceDocuments?.(
-                  newSessionModel.newSessionAttachments,
+              const actualRefs = mappedDocs.filter((d) => d.isReference);
+              if (
+                this.hearingAttachmentsFieldInstance?.setReferenceDocuments &&
+                actualRefs.length > 0
+              ) {
+                this.hearingAttachmentsFieldInstance.setReferenceDocuments(
+                  actualRefs,
                 );
+              }
+
+              if (newSessionModel?.newSessionAttachments?.length) {
+                const actualNewSessionRefs =
+                  newSessionModel.newSessionAttachments.filter(
+                    (d: any) => d.isReference,
+                  );
+                if (
+                  this.newSessionAttachmentsFieldInstance
+                    ?.setReferenceDocuments &&
+                  actualNewSessionRefs.length > 0
+                ) {
+                  this.newSessionAttachmentsFieldInstance.setReferenceDocuments(
+                    actualNewSessionRefs,
+                  );
+                }
               }
             }, 100);
 
@@ -809,40 +844,50 @@ export class MatterActivityEditorComponent
     this.isLoading = true;
     const rowData = this._dynamicDialogConfig?.data?.rowData;
     const isEdit = !!rowData?.id;
-
+    // ============ HEARING Attachments ============
     // ============ HEARING Attachments ============
     const hearingAttachments = this.formlyModel?.attachments || [];
+
     const hearingFilesForPayload = hearingAttachments.filter(
-      (f: any) => !f?.isReference,
+      (f: any) => !f?.isReference && !f?.id && (f instanceof File || f.file instanceof File || f._file instanceof File),
     );
 
-    const currentHearingIds = this.getCurrentReferenceDocumentIds(
-      this.hearingAttachmentsFieldInstance,
-      hearingAttachments,
-    );
-    const hearingExistingIds = currentHearingIds.map(Number);
+    // ⭐ بنجيب الملفات الممسوحة مباشرة من الكومبوننت (بيشيل كل الملفات اللي اتشالت)
+    const deletedHearingIds = Array.from(
+      new Set(this.hearingAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [])
+    ).map(Number);
 
-    const deletedHearingIds = this.hearingDocumentTracker.originalDocumentIds
-      .filter((id) => !currentHearingIds.includes(id))
-      .map((id) => Number(id));
+    const currentHearingRefIds = hearingAttachments
+      .filter((f: any) => f?.isReference && f?.documentId != null)
+      .map((f: any) => String(f.documentId));
 
     // ============ NEW SESSION Attachments ============
-    const newSessionModel = this.formlyModel?.newSession || {};
-    const newSessionAttachments = newSessionModel.newSessionAttachments || [];
+    const newSessionModel = this.formlyModel?.newSession;
+    const newSessionAttachments = newSessionModel?.newSessionAttachments || [];
+
     const newSessionFilesForPayload = newSessionAttachments.filter(
-      (f: any) => !f?.isReference,
+      (f: any) => !f?.isReference && !f?.id && (f instanceof File || f.file instanceof File || f._file instanceof File),
     );
+    const deletedNewSessionIds = Array.from(
+      new Set(this.newSessionAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [])
+    ).map(Number);
 
-    const currentNewSessionIds = this.getCurrentReferenceDocumentIds(
-      this.newSessionAttachmentsFieldInstance,
-      newSessionAttachments,
-    );
-    const newSessionExistingIds = currentNewSessionIds.map(Number);
+    const currentNewSessionRefIds = newSessionAttachments
+      .filter((f: any) => f?.isReference && f?.documentId != null)
+      .map((f: any) => String(f.documentId));
 
-    const deletedNewSessionIds =
-      this.newSessionDocumentTracker.originalDocumentIds
-        .filter((id) => !currentNewSessionIds.includes(id))
-        .map((id) => Number(id));
+    const hearingExistingIds = hearingAttachments
+      .filter((f: any) => f?.id != null)
+      .map((f: any) => Number(f.id));
+
+    const newSessionExistingIds = newSessionAttachments
+      .filter((f: any) => f?.id != null)
+      .map((f: any) => Number(f.id));
+
+
+    const currentNewSessionIds = newSessionAttachments
+      .filter((f: any) => f?.id != null)
+      .map((f: any) => String(f.id));
 
     // ============ Dates ============
     const activityTypeId = Number(this.formlyModel?.law_ActivityTypeId);
@@ -876,7 +921,6 @@ export class MatterActivityEditorComponent
       location: this.formlyModel?.location || '',
       chamber: this.formlyModel?.chamber || '',
       rollNumber: Number(this.formlyModel?.rollNumber) || 0,
-
       ...(this.formlyModel?.law_AdjournmentReasonsId &&
       Number(this.formlyModel.law_AdjournmentReasonsId) > 0
         ? {
@@ -919,7 +963,7 @@ export class MatterActivityEditorComponent
             .filter((v: string | null) => !!v)
         : [],
 
-      matterDocumentIds: hearingExistingIds,
+      matterDocumentIds: currentHearingRefIds.map(Number),
       removeAttachmentIds: deletedHearingIds,
     };
 
@@ -946,7 +990,11 @@ export class MatterActivityEditorComponent
       if (file) formData.append('files', file, file.name);
     });
 
-    if (this.formlyModel?.isNewHearingSession && newSessionModel) {
+    if (
+      this.formlyModel?.isNewHearingSession &&
+      newSessionModel &&
+      newSessionModel.law_ActivityStatusId
+    ) {
       const ns = newSessionModel;
 
       const rawDate = ns.newSessionStartDate;
@@ -998,7 +1046,7 @@ export class MatterActivityEditorComponent
       });
 
       if (newSessionExistingIds.length) {
-        newSessionExistingIds.forEach((id) =>
+        newSessionExistingIds.forEach((id: any) =>
           formData.append('NewSession.matterDocumentIds', String(id)),
         );
       }
