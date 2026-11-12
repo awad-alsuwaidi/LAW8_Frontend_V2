@@ -18,32 +18,73 @@ export class TmSessionFilterAdditionalEditorComponent
   extends FormBaseClass
   implements OnInit
 {
- override isLoading = true; // ✅ يبدأ على لودينج
+  override isLoading = true;
 
   ngOnInit(): void {
     this.getLookupsData();
   }
 
   override getLookupsData(): void {
-    combineLatest({
-      status: this._apiService.get(API_Config.general.getActivityStatus),
-      user: this._apiService.get(API_Config.general.getUsersLookup),
-      activityType: this._apiService.get(API_Config.general.getActivityType),
-      taskPriority: this._apiService.get(API_Config.general.getTaskPriority),
-    })
+    this.isLoading = true;
+
+    this._apiService
+      .get(API_Config.general.getBatchLookups, {
+        'types[0]': 'activityStatuses',
+        'types[1]': 'taskPriorities',
+        'types[2]': 'activityTypes',
+        'types[3]': 'users',
+        PageSize: 1000,
+      })
       .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res) => {
-        this.lookupsData = res;
+      .subscribe({
+        next: (res: any) => {
+          const data = res?.data ?? res?.result ?? res;
 
-        if (this._router.url.includes('activity')) {
-          this.lookupsData.activityType.result =
-            this.lookupsData.activityType.result.filter(
-              (obj: any) => obj.id !== 1 && obj.id !== 2
+          const extractList = (obj: any): any[] => {
+            if (!obj) return [];
+            if (Array.isArray(obj)) return obj;
+            return obj.items ?? obj.dataList ?? [];
+          };
+          const statuses = extractList(data.activityStatuses).map((s: any) => ({
+            ...s,
+            name: s.nameEn || s.nameAr || '---',
+          }));
+
+          const priorities = extractList(data.taskPriorities).map((p: any) => ({
+            ...p,
+            name: p.nameEn || p.nameAr || '---',
+          }));
+
+          let activityTypes = extractList(data.activityTypes).map((a: any) => ({
+            ...a,
+            name: a.nameEn || a.nameAr || '---',
+          }));
+
+          const users = extractList(data.users).map((u: any) => ({
+            ...u,
+            name: u.name || u.nameEn || '---',
+          }));
+
+          if (this._router.url.includes('activity')) {
+            activityTypes = activityTypes.filter(
+              (obj: any) => obj.id !== 1 && obj.id !== 2,
             );
-        }
+          }
 
-        this.initForm();
-        this.isLoading = false; // ✅ يخفي السبنر ويظهر الفورم
+          this.lookupsData = {
+            status: { result: statuses },
+            taskPriority: { result: priorities },
+            activityType: { result: activityTypes },
+            user: { result: users },
+          };
+
+          this.initForm();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Lookups Error:', err);
+          this.isLoading = false;
+        },
       });
   }
 
@@ -65,19 +106,4 @@ export class TmSessionFilterAdditionalEditorComponent
   onSubmit(): void {
     this._dynamicDialogRef.close(this.formly.value);
   }
-
-
-  // ✅ لو حابب تبعت Payload مبسط بدل الـ objects
-  // onSubmit(): void {
-  //   const formValue = this.formly.value;
-  //   const simplifiedPayload = {
-  //     status: formValue.StatusId?.value,
-  //     availability: formValue.AvailabilityId?.value,
-  //     fromDate: formValue.FromDate,
-  //     toDate: formValue.ToDate,
-  //     type: formValue.TypeId?.value,
-  //     userId: formValue.UserId?.value,
-  //   };
-  //   this._dynamicDialogRef.close(simplifiedPayload);
-  // }
 }

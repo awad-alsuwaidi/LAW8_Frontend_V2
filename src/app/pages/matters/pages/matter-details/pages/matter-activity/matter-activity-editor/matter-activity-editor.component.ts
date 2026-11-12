@@ -599,7 +599,6 @@ export class MatterActivityEditorComponent
               (obj: any) => obj.id === result?.activityTypeId,
             )?.name;
 
-            // ⭐ دالة المابينج الجديدة للمرفقات
             const mapAttachments = (docs: any[]) =>
               (docs || []).map((doc: any) => {
                 const docId = doc?.id;
@@ -612,7 +611,6 @@ export class MatterActivityEditorComponent
                   ) ||
                   `document_${docId}`;
 
-                // لو فيه matterDocumentId يبقى مرجع، غير كده يبقى مرفق عادي
                 const isRef = doc?.matterDocumentId != null;
 
                 return {
@@ -622,7 +620,6 @@ export class MatterActivityEditorComponent
                   name: fileName,
                   fileName: fileName,
                   originalFileName: fileName,
-                  // ⭐ هنا بنحط المسار الجديد عشان الـ formly يقدر يعرضه
                   filePath:
                     doc?.attachmentPath ||
                     doc?.viewUrl ||
@@ -637,13 +634,11 @@ export class MatterActivityEditorComponent
                 };
               });
 
-            // ⭐ قراءة المرفقات من الحقل الجديد attachments
             const activityDocs = Array.isArray(result?.attachments)
               ? result.attachments
               : [];
             const mappedDocs = mapAttachments(activityDocs);
 
-            // ⭐ قراءة مرفقات الجلسة الجديدة (لو موجودة)
             const newSessionDocs = Array.isArray(
               result?.newSession?.attachments,
             )
@@ -782,20 +777,34 @@ export class MatterActivityEditorComponent
     idProp: string = 'id',
     labelProp: string = 'name',
   ): void {
-    const field: FieldTypeConfig = findField(this.formlyFields, key);
     const modelValue = this.formlyModel?.[key];
-    if (field && modelValue) {
-      const lookupData = this.lookupsData?.[lookupPath]?.result;
-      const selected = lookupData?.find(
-        (obj: any) => obj[idProp] == modelValue,
-      );
-      if (selected) {
-        field.props['selectedObj'] = {
-          label: selected[labelProp],
-          value: selected[idProp],
-        };
-      }
-    }
+    if (!modelValue) return;
+
+    const lookupData = this.lookupsData?.[lookupPath]?.result;
+    const selected = lookupData?.find(
+      (obj: any) => Number(obj[idProp]) === Number(modelValue), 
+    );
+    
+    if (!selected) return;
+
+    const selectedObj = {
+      label: selected[labelProp],
+      value: selected[idProp],
+    };
+
+    const traverse = (fields: any[]) => {
+      fields.forEach((field) => {
+        if (field.key === key) {
+          field.props = field.props || {};
+          field.props['selectedObj'] = selectedObj;
+        }
+        if (field.fieldGroup) {
+          traverse(field.fieldGroup);
+        }
+      });
+    };
+
+    traverse(this.formlyFields);
   }
 
   private extractFile(item: AttachmentItem | File): File | null {
@@ -828,7 +837,7 @@ export class MatterActivityEditorComponent
     if (this.formly.invalid) {
       this.formly.markAllAsTouched();
       this._toastrNotifiService.displayError(
-        this._languageService.getTransValue('common.pleaseFillRequiredFields'),
+        this._languageService.getTransValue('common.pleaseFillRequiredData'),
       );
       return;
     }
@@ -844,50 +853,40 @@ export class MatterActivityEditorComponent
     this.isLoading = true;
     const rowData = this._dynamicDialogConfig?.data?.rowData;
     const isEdit = !!rowData?.id;
-    // ============ HEARING Attachments ============
+
     // ============ HEARING Attachments ============
     const hearingAttachments = this.formlyModel?.attachments || [];
-
+    
+    // الملفات الجديدة اللي هتترفع
     const hearingFilesForPayload = hearingAttachments.filter(
       (f: any) => !f?.isReference && !f?.id && (f instanceof File || f.file instanceof File || f._file instanceof File),
     );
-
-    // ⭐ بنجيب الملفات الممسوحة مباشرة من الكومبوننت (بيشيل كل الملفات اللي اتشالت)
+    
+    // الملفات القديمة اللي اتشالت
     const deletedHearingIds = Array.from(
       new Set(this.hearingAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [])
     ).map(Number);
-
+    
+    // الملفات المرجعية (بناخد الـ documentId أو الـ id كبديل)
     const currentHearingRefIds = hearingAttachments
-      .filter((f: any) => f?.isReference && f?.documentId != null)
-      .map((f: any) => String(f.documentId));
+      .filter((f: any) => f?.isReference && (f?.documentId != null || f?.id != null))
+      .map((f: any) => String(f.documentId ?? f.id));
 
     // ============ NEW SESSION Attachments ============
     const newSessionModel = this.formlyModel?.newSession;
     const newSessionAttachments = newSessionModel?.newSessionAttachments || [];
-
+    
     const newSessionFilesForPayload = newSessionAttachments.filter(
       (f: any) => !f?.isReference && !f?.id && (f instanceof File || f.file instanceof File || f._file instanceof File),
     );
+    
     const deletedNewSessionIds = Array.from(
       new Set(this.newSessionAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [])
     ).map(Number);
-
+    
     const currentNewSessionRefIds = newSessionAttachments
-      .filter((f: any) => f?.isReference && f?.documentId != null)
-      .map((f: any) => String(f.documentId));
-
-    const hearingExistingIds = hearingAttachments
-      .filter((f: any) => f?.id != null)
-      .map((f: any) => Number(f.id));
-
-    const newSessionExistingIds = newSessionAttachments
-      .filter((f: any) => f?.id != null)
-      .map((f: any) => Number(f.id));
-
-
-    const currentNewSessionIds = newSessionAttachments
-      .filter((f: any) => f?.id != null)
-      .map((f: any) => String(f.id));
+      .filter((f: any) => f?.isReference && (f?.documentId != null || f?.id != null))
+      .map((f: any) => String(f.documentId ?? f.id));
 
     // ============ Dates ============
     const activityTypeId = Number(this.formlyModel?.law_ActivityTypeId);
@@ -895,9 +894,7 @@ export class MatterActivityEditorComponent
 
     const startDateValue = isHearing
       ? this.formlyModel?.startDate || new Date()
-      : this.formlyModel?.activityStartDate ||
-        this.formlyModel?.startDate ||
-        new Date();
+      : this.formlyModel?.activityStartDate || this.formlyModel?.startDate || new Date();
 
     const eventDateValue = this.formlyModel?.isNewHearingSession
       ? this.formlyModel?.newSession?.newSessionStartDate || startDateValue
@@ -906,66 +903,62 @@ export class MatterActivityEditorComponent
     // ============ Flat Payload ============
     const requestPayload: any = {
       matterId,
-      activityTypeId: activityTypeId || 0,
-      activityStatusId: Number(this.formlyModel?.law_ActivityStatusId) || 0,
-
-      description: this.formlyModel?.description || '',
-      report: this.formlyModel?.report || '',
-      decision: this.formlyModel?.decision || this.formlyModel?.decission || '',
-      remark: this.formlyModel?.remark || '',
-
+      activityTypeId: activityTypeId,
       startDate: this.getDate(startDateValue),
-      endDate: this.getDate(this.formlyModel?.endDate),
-      eventDate: this.getDate(eventDateValue),
-
-      location: this.formlyModel?.location || '',
-      chamber: this.formlyModel?.chamber || '',
-      rollNumber: Number(this.formlyModel?.rollNumber) || 0,
-      ...(this.formlyModel?.law_AdjournmentReasonsId &&
-      Number(this.formlyModel.law_AdjournmentReasonsId) > 0
-        ? {
-            adjournmentReasonId: Number(
-              this.formlyModel.law_AdjournmentReasonsId,
-            ),
-          }
-        : {}),
-
-      ...(this.formlyModel?.litigatorId
-        ? { litigatorId: String(this.formlyModel.litigatorId) }
-        : {}),
-
-      ...(this.formlyModel?.law_FinalJudgementId &&
-      Number(this.formlyModel.law_FinalJudgementId) > 0
-        ? { finalJudgementId: Number(this.formlyModel.law_FinalJudgementId) }
-        : {}),
-
-      appealPeriodDays:
-        Number(this.formlyModel?.cassation_Or_AppealPeriod) || 0,
-
       isPrivate: !!this.formlyModel?.isPrivate,
       isNewHearingSession: !!this.formlyModel?.isNewHearingSession,
       visibleToClient: !!this.formlyModel?.visibleToClient,
-
-      ...(this.formlyModel?.courtNumber
-        ? { courtNumber: String(this.formlyModel.courtNumber) }
-        : {}),
-      ...(this.formlyModel?.attachmentDescription
-        ? {
-            attachmentDescription: String(
-              this.formlyModel.attachmentDescription,
-            ),
-          }
-        : {}),
-
-      assignedUserIds: Array.isArray(this.formlyModel?.users)
-        ? this.formlyModel.users
-            .map((u: any) => (u?.value != null ? String(u.value) : null))
-            .filter((v: string | null) => !!v)
-        : [],
-
-      matterDocumentIds: currentHearingRefIds.map(Number),
-      removeAttachmentIds: deletedHearingIds,
     };
+
+    // ⭐ الحقول اللي بنبعتها بس لو ليها قيمة (عشان منبعتش 0 أو "")
+    if (this.formlyModel?.law_ActivityStatusId) {
+      requestPayload.activityStatusId = Number(this.formlyModel.law_ActivityStatusId);
+    }
+    if (this.formlyModel?.description) {
+      requestPayload.description = this.formlyModel.description;
+    }
+    if (this.formlyModel?.remark) {
+      requestPayload.remark = this.formlyModel.remark;
+    }
+    if (this.formlyModel?.report) {
+      requestPayload.report = this.formlyModel.report;
+    }
+    if (this.formlyModel?.decission) {
+      requestPayload.decision = this.formlyModel.decission;
+    }
+    if (this.formlyModel?.eventDate) {
+      requestPayload.eventDate = this.getDate(eventDateValue);
+    }
+
+    if (isHearing) {
+      if (this.formlyModel?.chamber) requestPayload.chamber = this.formlyModel.chamber;
+      if (this.formlyModel?.rollNumber) requestPayload.rollNumber = Number(this.formlyModel.rollNumber);
+      if (this.formlyModel?.litigatorId) requestPayload.litigatorId = this.formlyModel.litigatorId;
+      if (this.formlyModel?.courtNumber) requestPayload.courtNumber = this.formlyModel.courtNumber;
+      if (this.formlyModel?.law_AdjournmentReasonsId) {
+        requestPayload.adjournmentReasonId = Number(this.formlyModel.law_AdjournmentReasonsId);
+      }
+    } else {
+      if (this.formlyModel?.location) requestPayload.location = this.formlyModel.location;
+      if (this.formlyModel?.endDate) requestPayload.endDate = this.getDate(this.formlyModel.endDate);
+    }
+
+    if (this.formlyModel?.law_FinalJudgementId) {
+      requestPayload.finalJudgementId = Number(this.formlyModel.law_FinalJudgementId);
+    }
+    if (this.formlyModel?.cassation_Or_AppealPeriod) {
+      requestPayload.appealPeriodDays = Number(this.formlyModel.cassation_Or_AppealPeriod);
+    }
+
+    // الحضور (Attendees)
+    if (Array.isArray(this.formlyModel?.users) && this.formlyModel.users.length > 0) {
+      requestPayload.assignedUserIds = this.formlyModel.users
+        .map((u: any) => (u?.value != null ? String(u.value) : (typeof u === 'string' ? u : null)))
+        .filter((v: string | null) => !!v);
+    }
+
+    requestPayload.matterDocumentIds = currentHearingRefIds.map(Number);
+    requestPayload.removeAttachmentIds = deletedHearingIds;
 
     if (isEdit) requestPayload.id = rowData.id;
 
@@ -973,7 +966,8 @@ export class MatterActivityEditorComponent
     const formData = new FormData();
 
     Object.entries(requestPayload).forEach(([key, value]) => {
-      if (value === null || value === undefined) return;
+      // شرط الحماية عشان منبعتش أي حاجة فاضية خالص
+      if (value === null || value === undefined || value === '') return;
 
       if (Array.isArray(value)) {
         if (value.length === 0) return;
@@ -990,50 +984,22 @@ export class MatterActivityEditorComponent
       if (file) formData.append('files', file, file.name);
     });
 
-    if (
-      this.formlyModel?.isNewHearingSession &&
-      newSessionModel &&
-      newSessionModel.law_ActivityStatusId
-    ) {
+    if (this.formlyModel?.isNewHearingSession && newSessionModel) {
       const ns = newSessionModel;
-
       const rawDate = ns.newSessionStartDate;
-      const nsDate =
-        rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+      const nsDate = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
 
       if (nsDate && !isNaN(nsDate.getTime())) {
-        formData.append(
-          'NewSession.newSessionStartDate',
-          this.getDate(nsDate) || '',
-        );
+        formData.append('NewSession.newSessionStartDate', this.getDate(nsDate) || '');
       }
-
-      if (ns.law_ActivityStatusId != null) {
-        formData.append(
-          'NewSession.law_ActivityStatusId',
-          String(ns.law_ActivityStatusId),
-        );
+      if (ns.law_ActivityStatusId) {
+        formData.append('NewSession.law_ActivityStatusId', String(ns.law_ActivityStatusId));
       }
-
-      if (ns.description) {
-        formData.append('NewSession.description', String(ns.description));
-      }
-
-      if (ns.remark) {
-        formData.append('NewSession.remark', String(ns.remark));
-      }
-
-      if (ns.rollNumber != null && ns.rollNumber !== '') {
-        formData.append('NewSession.rollNumber', String(ns.rollNumber));
-      }
-
-      if (ns.chamber) {
-        formData.append('NewSession.chamber', String(ns.chamber));
-      }
-
-      if (ns.litigatorId) {
-        formData.append('NewSession.litigatorId', String(ns.litigatorId));
-      }
+      if (ns.description) formData.append('NewSession.description', String(ns.description));
+      if (ns.remark) formData.append('NewSession.remark', String(ns.remark));
+      if (ns.rollNumber) formData.append('NewSession.rollNumber', String(ns.rollNumber));
+      if (ns.chamber) formData.append('NewSession.chamber', String(ns.chamber));
+      if (ns.litigatorId) formData.append('NewSession.litigatorId', String(ns.litigatorId));
 
       const today = new Date().toISOString().split('T')[0];
       formData.append('NewSession.DocumentDate', today);
@@ -1045,18 +1011,15 @@ export class MatterActivityEditorComponent
         if (file) formData.append('NewSession.Attachments', file, file.name);
       });
 
-      if (newSessionExistingIds.length) {
-        newSessionExistingIds.forEach((id: any) =>
-          formData.append('NewSession.matterDocumentIds', String(id)),
-        );
-      }
-      if (deletedNewSessionIds.length) {
-        deletedNewSessionIds.forEach((id) =>
-          formData.append('NewSession.removeAttachmentIds', String(id)),
-        );
-      }
+      currentNewSessionRefIds.forEach((id: any) => 
+        formData.append('NewSession.matterDocumentIds', String(id))
+      );
+      deletedNewSessionIds.forEach((id) => 
+        formData.append('NewSession.removeAttachmentIds', String(id))
+      );
     }
 
+    // ============ API CALL ============
     const baseUpdate = API_Config.matterActivity.update;
     const url = isEdit
       ? baseUpdate.includes('{id}')
@@ -1068,40 +1031,34 @@ export class MatterActivityEditorComponent
       ? this._apiService.put(url, formData)
       : this._apiService.post(url, formData);
 
-    request$
-      .pipe(
-        finalize(() => (this.isLoading = false)),
-        this._unsubscribe.takeUntilDestroy(),
-      )
-      .subscribe({
-        next: (res: any) => {
-          const isSuccess = res?.success ?? res?.isSuccess;
-          if (isSuccess) {
-            this._toastrNotifiService.displaySuccess(res?.message || 'Success');
-            this._dynamicDialogRef.close(true);
-          } else {
-            this._toastrNotifiService.displayError(
-              res?.message || 'Request failed',
-            );
-          }
-        },
-        error: (err: any) => {
-          console.error('[MatterActivity] Submit error:', err);
-          const message =
-            err?.error?.message ||
-            err?.error?.title ||
-            (Array.isArray(err?.error?.error)
-              ? err.error.error.join(', ')
-              : null) ||
-            err?.error?.errors?.[0]?.message ||
-            (typeof err?.error === 'string' ? err.error : null) ||
-            err?.message ||
-            'Failed to save activity';
-          this._toastrNotifiService.displayError(message);
-        },
-      });
+    request$.pipe(
+      finalize(() => (this.isLoading = false)),
+      this._unsubscribe.takeUntilDestroy(),
+    ).subscribe({
+      next: (res: any) => {
+        const isSuccess = res?.success ?? res?.isSuccess;
+        if (isSuccess) {
+          this._toastrNotifiService.displaySuccess(res?.message || 'Success');
+          this._dynamicDialogRef.close(true);
+        } else {
+          this._toastrNotifiService.displayError(res?.message || 'Request failed');
+        }
+      },
+      error: (err: any) => {
+        console.error('[MatterActivity] Submit error:', err);
+        const message =
+          err?.error?.message ||
+          err?.error?.title ||
+          (Array.isArray(err?.error?.error) ? err.error.error.join(', ') : null) ||
+          err?.error?.errors?.[0]?.message ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          err?.message ||
+          'Failed to save activity';
+        this._toastrNotifiService.displayError(message);
+      },
+    });
   }
-
+  
   downloadFile(attachment: any) {
     if (!attachment) {
       this._toastrNotifiService.displayError('No attachment selected');

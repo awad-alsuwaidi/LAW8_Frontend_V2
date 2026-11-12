@@ -80,12 +80,10 @@
   </p-menu>
 
   <div class="relative inline-block">
-    @if (rowData.attachmentCount > 0) { <!-- أو rowData.haveAttachment لو دي اللي عندك -->
+    @if (rowData.attachmentCount > 0) {
       <img src="/assets/images/icons/attachment.svg" alt="Attachment" class="absolute end-0 -top-1">
     }
-    
-    <!-- 👇 نستخدم الـ ID والـ Name الجداد -->
-    <app-shared-status 
+        <app-shared-status 
       [label]="rowData.matterTaskStatusName" 
       [data]="rowData.matterTaskStatusId" 
       [statusConfig]="statusConfig"

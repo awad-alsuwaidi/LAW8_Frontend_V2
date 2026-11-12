@@ -42,6 +42,8 @@ export const General_API = {
     getJudicatureByJurisdictionId: 'AppLookup/GetLaw_JudicatureLookup',
     getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
     getContactsType: 'lookups/GetContactsType',
+    getUsersLookupForReports: 'users/lookup',   
+    getMattersForReport:      'Matters',        
 
     // ============ V1 (شغالة) ============
     getLawyer: '/GetSPList',

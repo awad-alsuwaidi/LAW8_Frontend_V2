@@ -378,4 +378,18 @@ export const PAGES_ROUTES: Routes = [
       },
     ],
   },
+  // {
+  //   path: 'contacts',
+  //   loadComponent: () =>
+  //     import('./contacts/contacts.component').then(
+  //       (comp) => comp.ContactsComponent,
+  //     ),
+  // },
+    {
+      path: 'task-management',
+      loadChildren: () =>
+        import('./task-management/task-management.routes').then(
+          (mod) => mod.TASK_MANAGEMENT_ROUTES
+        ),
+    },
 ];

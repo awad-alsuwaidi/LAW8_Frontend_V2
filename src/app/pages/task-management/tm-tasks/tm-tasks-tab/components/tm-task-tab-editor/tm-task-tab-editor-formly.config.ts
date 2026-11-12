@@ -1,6 +1,7 @@
 import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
 import { TmTaskTabEditorComponent } from './tm-task-tab-editor.component';
 import { FormlyFieldConfig } from '@ngx-formly/core';
+
 export function matterTaskEditorFields(
   THIS: TmTaskTabEditorComponent
 ): FormlyFieldConfig[] {
@@ -8,145 +9,100 @@ export function matterTaskEditorFields(
     {
       fieldGroupClassName: 'grid gap-4 md:grid-cols-2 bg-white rounded-2xl',
       fieldGroup: [
-              {
+        {
           type: 'select',
           key: 'matterId',
           props: {
             label: THIS._languageService.getTransValue('common.matterCode'),
-            selectedObj: {},
             required: true,
-            optionsArr: getOptionsArray(
-              THIS.lookupsData.matterCode.result,
-              'id',
-              'name'
-            ),
-            virtualScroll: true,
+            optionsArr: getOptionsArray(THIS.lookupsData.matterCode.result, 'id', 'name'),
+            searchable: true,
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
-          {
-          key: 'description',
-          type: 'textarea',
+        {
+          key: 'title', 
+          type: 'input',
           className: 'col-span-2',
           props: {
-            require: true,
-
-            label: THIS._languageService.getTransValue('matters.description'),
-            //label: 'Description',
+            required: true,
+            label: THIS._languageService.getTransValue('matters.taskTitle'),
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-        },
-           {
-          key: 'StartDate',
-          type: 'date',
-          props: {
-            label: THIS._languageService.getTransValue('matters.startDate'),
-            //label: 'Start Date',
-            require: true,
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'DueDate',
-          type: 'date',
-          props: {
-            label: THIS._languageService.getTransValue('matters.dueDate'),
-            //label: 'Due Date',
-            require: true,
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-        },
-      
-     
-        {
-          key: 'assigneeList',
-          type: 'multi-select',
-          className: 'col-span-2',
-          props: {
-            label: THIS._languageService.getTransValue('matters.assignee'),
-            //label: 'Assignee',
-            selectedObj: {},
-            required:true,
-            optionsArr: getOptionsArray(
-              THIS.lookupsData.lawyers.result,
-              'id',
-              'name'
-            ),
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-        },
-        {
-          key: 'Periority',
-          type: 'select',
-          props: {
-            label: THIS._languageService.getTransValue('matters.priority'),
-            //label: THIS._languageService.getTransValue('common.priority'),
-            optionsArr: getOptionsArray(
-              THIS.lookupsData.taskPriority.result,
-              'id',
-              'name'
-            ),
-            selectedObj: {},
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-        },
-        {
-          key: 'status',
-          type: 'select',
-          props: {
-            label: THIS._languageService.getTransValue('matters.status'),
-            //label: 'Status',
-            optionsArr: getOptionsArray(
-              THIS.lookupsData.taskStatus.result,
-              'id',
-              'name'
-            ),
-            selectedObj: {},
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
-        },
-        {
-          key: 'notes',
+          key: 'description', 
           type: 'textarea',
           className: 'col-span-2',
           props: {
             label: THIS._languageService.getTransValue('matters.notes'),
-            //label: 'Notes',
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'AttachmentList',
+          key: 'startDate', 
+          type: 'date',
+          props: {
+            label: THIS._languageService.getTransValue('matters.startDate'),
+            required: true,
+            showTime: false,
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+        {
+          key: 'dueDate', 
+          type: 'date',
+          props: {
+            label: THIS._languageService.getTransValue('matters.dueDate'),
+            required: true,
+            showTime: false,
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+        {
+          key: 'assignedUserIds', 
+          type: 'multi-select',
+          className: 'col-span-2',
+          props: {
+            label: THIS._languageService.getTransValue('matters.assignee'),
+            required: true,
+            optionsArr: getOptionsArray(THIS.lookupsData.lawyers.result, 'userId', 'name'),
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+          {
+          key: 'priorityId', 
+          type: 'select',
+          props: {
+            label: THIS._languageService.getTransValue('matters.priority'),
+            selectedObj: {}, 
+            optionsArr: getOptionsArray(THIS.lookupsData.taskPriority.result, 'id', 'name'),
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+        {
+          key: 'matterTaskStatusId', 
+          type: 'select',
+          props: {
+            label: THIS._languageService.getTransValue('matters.status'),
+            selectedObj: {}, 
+            optionsArr: getOptionsArray(THIS.lookupsData.taskStatus.result, 'id', 'name'),
+          },
+          expressions: { 'props.readonly': 'formState.readonly' },
+        },
+        {
+          key: 'attachments', 
           type: 'attachment-list',
           className: 'col-span-2',
           props: {
             label: THIS._languageService.getTransValue('matters.file'),
-            //label: 'File',
             fileType: 'blob',
             multiple: true,
-                 downloadFn: (attachment: any) => {
+            downloadFn: (attachment: any) => {
               THIS.downloadTaskAttachment(attachment);
             },
           },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
       ],
       validators: {
@@ -154,9 +110,9 @@ export function matterTaskEditorFields(
           {
             name: 'dateRange',
             options: {
-              startDate: 'StartDate',
-              endDate: 'DueDate',
-              errorPath: 'DueDate',
+              startDate: 'startDate',
+              endDate: 'dueDate',
+              errorPath: 'dueDate',
             },
           },
         ],

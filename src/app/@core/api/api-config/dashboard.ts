@@ -44,7 +44,6 @@ export const Dashboard_API = {
     get: 'DashboardV2/GetTasksList'
   },
   hearingSessiontaskMangement: {
-    // get: 'DashboardV2/GetHearingSessionActivityList_ViewAll'
     get: 'DashboardV2/GetHearingSessionActivityList_ViewAll'
   },
   hearingSessionDashboard: {

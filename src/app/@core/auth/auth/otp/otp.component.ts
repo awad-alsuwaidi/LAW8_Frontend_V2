@@ -116,7 +116,6 @@ onSubmit() {
         });
       }),
 
-      // ★ بعد نجاح التوكن، نجيب /me
       switchMap((tokenRes: any) => {
         const ok = tokenRes?.isSuccess === true || tokenRes?.success === true;
         const body = tokenRes?.result ?? tokenRes?.data;
@@ -136,10 +135,8 @@ onSubmit() {
           throw { step: 'token', res: tokenRes };
         }
 
-        // ★ خزّن التوكنز الأول عشان الطلبات الجاية (زي /me) تبقى authorized
         this._authService.setTokens(accessToken, refreshToken);
 
-        // ★ نجيب /me
         return this._apiService.get<any>(Auth_API.auth.me);
       }),
 
@@ -155,8 +152,6 @@ onSubmit() {
           this.showOtpError();
           return;
         }
-
-        // ★ خزّن اليوزر + حمّل الصلاحيات
         this._authService.setUser(me);
         this._permissionService.loadFromMe(me);
 

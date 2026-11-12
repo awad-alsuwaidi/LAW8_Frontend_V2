@@ -134,20 +134,8 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     this._toastrNotifiService.displayError(
       this._languageService.getTransValue('menu.moduleUnavailable'),
     );
-
-    this.showCrmDialog = false;
   }
 
-  // public onMenuItemClick(item: SubMenuItem, event: MouseEvent) {
-  //   event.stopPropagation();
-  //   if (item.children?.length) {
-  //     item.expanded = !item.expanded;
-  //   } else if (item.route) {
-  //     this.activeRoute = item.route;
-  //     this._router.navigate([item.route]);
-  //   }
-  //   setTimeout(() => this.updateScrollbar(), 0);
-  // }
   public onMenuItemClick(item: SubMenuItem, event: MouseEvent) {
     event.stopPropagation();
 

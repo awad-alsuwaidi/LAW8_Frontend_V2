@@ -8,12 +8,17 @@
 //   },
 // };
 
+
 export const Matters_Activity_API = {
   matterActivity: {
     get: 'MatterActivities',
-    getById: 'MatterActivities',
     create: 'MatterActivities',
-    update: 'MatterActivities',
-    delete: 'MatterActivities',
+    update: 'MatterActivities/{id}',
+    getById: 'MatterActivities/{id}',
+    delete: 'MatterActivities/{id}',
+    adjourn: 'MatterActivities/{id}/adjourn',
+    lookups: 'lookups',
+    usersLookup: 'users/lookup',
+    mattersLookup: 'Matters',
   },
 };

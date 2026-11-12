@@ -22,5 +22,8 @@ export const Matters_Task_API = {
     downloadAttachment:
       'MatterTasks/{taskId}/attachments/{attachmentId}/download',
     changeStatus: 'MatterTasks',
+    lookups: 'lookups',
+    usersLookup: 'users/lookup',
+    mattersLookup: 'Matters',
   },
 };

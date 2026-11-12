@@ -28,7 +28,7 @@ export class AuthService {
   private _storageService = inject(StorageService);
   readonly redirectUri = `${window.location.origin}/auth/callback`;
 
-  //  TEMP 
+  //  TEMP
   private readonly TENANT_KEY = 'tenant_subdomain';
 
   user: any;
@@ -51,7 +51,7 @@ export class AuthService {
     this.updateUserProfile(this.user);
   }
 
-  //  TEMP 
+  //  TEMP
   setTenantSubdomain(subdomain: string): void {
     const clean = (subdomain ?? '').trim().toLowerCase();
     if (clean) {
@@ -68,7 +68,7 @@ export class AuthService {
     );
   }
 
-  //  TEMP 
+  //  TEMP
   clearTenantSubdomain(): void {
     this._storage.removeLocal(this.TENANT_KEY);
   }
@@ -234,7 +234,7 @@ export class AuthService {
   }
 
   getRefreshToken(): string | null {
-    return this._storage.getSession<string>('refreshToken');
+    return this._storage.get<string>('refreshToken');
   }
 
   hasToken(): boolean {

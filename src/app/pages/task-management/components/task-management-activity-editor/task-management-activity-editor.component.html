@@ -10,16 +10,14 @@
 
     <form [formGroup]="formly" (ngSubmit)="onSubmit()">
         <formly-form [form]="formly" [fields]="formlyFields" [model]="formlyModel" [options]="formlyOptions" />
-        @if(!formlyOptions.formState.readonly && formlyModel.law_ActivityTypeId===4){
+                    @if(!formlyOptions.formState.readonly && formlyModel.law_ActivityTypeId===4){
         <div class="grid gap-4 md:grid-cols-3  bg-white rounded-2xl p-6">
             <div class="col-span-2">
                 <h6 class="text-sm text-grey500 font-medium mt-3 my-2">Attendance</h6>
-                @for (item of formlyModel.users; track $index) {
+                @for (userId of formlyModel.users; track $index) {
                 <div class="flex justify-between bg-grey50 mb-2 p-4 border-grey100 rounded-lg">
-                    <p class="text-sm text-textSecondary font-medium">{{item?.label}}</p>
-
-                    <span class="cursor-pointer icon-trash text-grey500" (click)="deleteItem(item)"></span>
-
+                    <p class="text-sm text-textSecondary font-medium">{{ getAssigneeName(userId) }}</p>
+                    <span class="cursor-pointer icon-trash text-grey500" (click)="deleteItem(userId)"></span>
                 </div>
                 }
             </div>

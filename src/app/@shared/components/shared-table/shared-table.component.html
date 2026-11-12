@@ -311,7 +311,7 @@
     </tr>
   </ng-template>
 </p-table>
-@if (withPagination && pagination?.totalElements > 5 && !paginationClient) {
+@if (withPagination && pagination?.totalElements > 10 && !paginationClient) {
   <p-paginator
     [dir]="'ltr'"
     styleClass="py-6"

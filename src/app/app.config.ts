@@ -27,6 +27,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CamelCaseInterceptor } from './@core/interceptors/camel-case.interceptor';
 import { AppConfigService } from './@core/services/app-config.service';
+import { AuthRefreshInterceptor } from './@core/interceptors/auth-refresh.interceptor';
 
 export function HttpLoaderFactory(httpClient: HttpClient) {
   return new MultiTranslateHttpLoader(httpClient, [
@@ -62,6 +63,7 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([
         AppHttpInterceptor,
+        AuthRefreshInterceptor,
         CamelCaseInterceptor,
         HttpErrorInterceptor,
       ]),

@@ -155,6 +155,26 @@
             </div>
           </div>
         </ng-template>
+<ng-template #customAssignee let-rowData>
+  <div class="flex items-center gap-1">
+    @for (initial of rowData.assigneeInitial; track $index) {
+      <div 
+        class="w-8 h-8 rounded-full bg-grey100 border-2 border-white flex items-center justify-center text-xs font-bold text-grey600 cursor-pointer"
+        [pTooltip]="rowData.assigneeName[$index]" 
+        tooltipPosition="top">
+        {{ initial }}
+      </div>
+    }
+    @if (rowData.assigneeInitial?.length > 2) {
+      <div 
+        class="w-8 h-8 rounded-full bg-grey700 text-white flex items-center justify-center text-xs font-bold border-2 border-white cursor-pointer"
+        [pTooltip]="rowData.assigneeName.slice(2).join(', ')" 
+        tooltipPosition="top">
+        +{{ rowData.assigneeInitial.length - 2 }}
+      </div>
+    }
+  </div>
+</ng-template>
       </app-shared-table>
     }
   </div>

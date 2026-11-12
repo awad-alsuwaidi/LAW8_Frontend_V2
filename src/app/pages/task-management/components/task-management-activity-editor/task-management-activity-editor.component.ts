@@ -13,7 +13,7 @@ import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
 import { SharedModule } from 'src/app/@shared/shared.module';
 import { taskManagementActivityEditorFields } from './task-management-activity-editor-formly.config';
-import { FieldTypeConfig } from '@ngx-formly/core';
+import { FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { findField } from 'src/app/@core/utilities/functions/find-field';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { GLOBAL_DATE_TIME_Without_Seconds2_FORMATE } from 'src/app/@core/utilities/defines/date-time';
@@ -80,37 +80,36 @@ export class TaskManagementActivityEditorComponent
     originalDocumentIds: [],
     deletedDocumentIds: [],
   };
-private isProgrammaticMatterUpdate = false;
-private lastMatterId: any = null;
-  
-ngOnInit(): void {
-  this.getLookupsData();
+  private isProgrammaticMatterUpdate = false;
+  private lastMatterId: any = null;
 
-  this.formly.valueChanges
-    .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe((v: any) => {
-      if (this.isProgrammaticMatterUpdate) return;
-      if (v?.law_MatterId === this.lastMatterId) return;
-      this.lastMatterId = v?.law_MatterId;
-      this.resetAttachmentsOnMatterChange();
-    });
-}
+  ngOnInit(): void {
+    this.getLookupsData();
+
+    this.formly.valueChanges
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe((v: any) => {
+        if (this.isProgrammaticMatterUpdate) return;
+        if (v?.law_MatterId === this.lastMatterId) return;
+        this.lastMatterId = v?.law_MatterId;
+        this.resetAttachmentsOnMatterChange();
+      });
+  }
+
   override getLookupsData(): void {
     this.isLoading = true;
+
     combineLatest({
-      activityType: this._apiService.get(API_Config.general.getActivityType),
-      finalJudement: this._apiService.get(API_Config.general.getFinalJudgement),
-      laywer: this._apiService.get(API_Config.responsibleLawyerSecurity.get),
-      activityStatus: this._apiService.get(
-        API_Config.general.getActivityStatus,
-      ),
-      adjournmentReasons: this._apiService.get(
-        API_Config.general.getAdjournmentReasons,
-      ),
-      matterCode: this._apiService.get(API_Config.general.getMatterCodes),
-      users: this._apiService.get(API_Config.general.getUsersLookup),
-      assigneeLawyers: this._apiService.get(API_Config.general.getLawyerShort),
-      taskPriority: this._apiService.get(API_Config.general.getTaskPriority),
+      lookups: this._apiService.get(API_Config.matterActivity.lookups, {
+        types:
+          'activityStatuses,activityTypes,adjournmentReasons,finalJudgements,taskPriorities',
+      }),
+      users: this._apiService.get(API_Config.matterActivity.usersLookup),
+      matters: this._apiService.get(API_Config.matterActivity.mattersLookup, {
+        pageNumber: 1,
+        pageSize: 20,
+        searchTerm: '',
+      }),
     })
       .pipe(
         finalize(() => (this.isLoading = false)),
@@ -118,17 +117,378 @@ ngOnInit(): void {
       )
       .subscribe({
         next: (res: any) => {
-          this.lookupsData = res;
-          if (this._router.url.includes('activity')) {
-            this.lookupsData.activityType.result =
-              this.lookupsData.activityType.result.filter(
-                (obj: any) => obj.id !== 1 && obj.id !== 9 && obj.id !== 2,
-              );
+          const lookupsData =
+            res.lookups?.data ?? res.lookups?.result ?? res.lookups ?? {};
+
+          const extractList = (response: any): any[] => {
+            if (!response) return [];
+            const data = response.data ?? response.result ?? response;
+            if (Array.isArray(data)) return data;
+            return data?.items ?? data?.dataList ?? [];
+          };
+
+          const usersList = extractList(res.users);
+          const mattersList = extractList(res.matters);
+          const mapToIdAndName = (arr: any[], nameField = 'nameEn') => {
+            return (arr || []).map((item: any) => ({
+              ...item,
+              id: item.id || item.userId,
+              name: item[nameField] || item.name || item.nameAr || '---',
+            }));
+          };
+
+          // ⭐ الفلترة الخاصة بـ Activity Type
+          let activityTypes = lookupsData.activityTypes || [];
+          if (this._router.url.includes('hearing-session')) {
+            // لو إحنا في صفحة الهيرنج، بنعرض بس الـ Hearing Session
+            activityTypes = activityTypes.filter((t: any) => t.id === 1);
+          } else if (this._router.url.includes('activity')) {
+            // لو إحنا في صفحة الاكتيفيتي، بنشيل الـ Hearing Session من الاختيارات
+            activityTypes = activityTypes.filter((t: any) => t.id !== 1);
           }
+
+          this.lookupsData = {
+            activityStatus: {
+              result: mapToIdAndName(lookupsData.activityStatuses),
+            },
+            activityType: { result: mapToIdAndName(activityTypes) }, // ⭐ هنا بنحط الداتا المفلترة
+            adjournmentReasons: {
+              result: mapToIdAndName(lookupsData.adjournmentReasons),
+            },
+            finalJudement: {
+              result: mapToIdAndName(lookupsData.finalJudgements),
+            },
+            taskPriority: {
+              result: mapToIdAndName(lookupsData.taskPriorities),
+            },
+
+            laywer: { result: mapToIdAndName(usersList, 'nameEn') },
+            users: { result: mapToIdAndName(usersList, 'nameEn') },
+            assigneeLawyers: { result: mapToIdAndName(usersList, 'nameEn') },
+            matterCode: {
+              result: mattersList.map((matter: any) => ({
+                ...matter,
+                id: matter.id,
+                name: [matter.matterCode, matter.descr]
+                  .filter(Boolean)
+                  .join(' | '),
+              })),
+            },
+          };
+
           this.initForm();
+        },
+        error: (err: any) => {
+          console.error('Error loading lookups:', err);
+          this._toastrNotifiService.displayError(
+            'Failed to load dropdown data',
+          );
+          this.isLoading = false;
         },
       });
   }
+
+  override onSubmit(): void {
+    if (this.formly.invalid) return;
+
+    this.isLoading = true;
+    const rowData = this._dynamicDialogConfig?.data?.rowData;
+    const isEdit = !!rowData?.id;
+
+    const hearingAttachments = this.formlyModel?.attachments || [];
+
+    const hearingFilesForPayload = hearingAttachments.filter(
+      (f: any) =>
+        !f?.isReference &&
+        !f?.id &&
+        (f instanceof File || f.file instanceof File || f._file instanceof File),
+    );
+
+    const deletedHearingIds = Array.from(
+      new Set(
+        this.hearingAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [],
+      ),
+    ).map(Number);
+
+    const currentHearingRefIds = hearingAttachments
+      .filter((f: any) => f?.isReference && (f?.documentId != null || f?.id != null))
+      .map((f: any) => String(f.documentId ?? f.id));
+
+    const newSessionModel = this.formlyModel?.newSession;
+    const newSessionAttachments = newSessionModel?.newSessionAttachments || [];
+
+    const newSessionFilesForPayload = newSessionAttachments.filter(
+      (f: any) =>
+        !f?.isReference &&
+        !f?.id &&
+        (f instanceof File || f.file instanceof File || f._file instanceof File),
+    );
+
+    const deletedNewSessionIds = Array.from(
+      new Set(
+        this.newSessionAttachmentsFieldInstance?.props?.['deletedAttachmentIds'] || [],
+      ),
+    ).map(Number);
+
+    const currentNewSessionRefIds = newSessionAttachments
+      .filter((f: any) => f?.isReference && (f?.documentId != null || f?.id != null))
+      .map((f: any) => String(f.documentId ?? f.id));
+
+    const activityTypeId = Number(this.formlyModel?.law_ActivityTypeId);
+    const isHearing = activityTypeId === 1;
+
+    const startDateValue = isHearing
+      ? this.formlyModel?.startDate || new Date()
+      : this.formlyModel?.activityStartDate ||
+        this.formlyModel?.startDate ||
+        new Date();
+
+    const eventDateValue = this.formlyModel?.isNewHearingSession
+      ? this.formlyModel?.newSession?.hearingStartDate ||
+        this.formlyModel?.newSession?.newSessionStartDate ||
+        startDateValue
+      : startDateValue;
+
+    const formData = new FormData();
+
+    formData.append('matterId', String(this.formlyModel.law_MatterId));
+    formData.append('activityTypeId', String(activityTypeId));
+    
+    if (this.formlyModel.law_ActivityStatusId != null) {
+      formData.append('activityStatusId', String(this.formlyModel.law_ActivityStatusId));
+    }
+
+    formData.append('description', this.formlyModel.description || '');
+    formData.append('remark', this.formlyModel.remark || '');
+
+    if (startDateValue) {
+      formData.append('startDate', new Date(startDateValue).toISOString());
+    }
+    if (this.formlyModel.endDate) {
+      formData.append('endDate', new Date(this.formlyModel.endDate).toISOString());
+    }
+    if (this.formlyModel.location) {
+      formData.append('location', this.formlyModel.location);
+    }
+    if (this.formlyModel.isPrivate !== undefined && this.formlyModel.isPrivate !== null) {
+      formData.append('isPrivate', String(this.formlyModel.isPrivate));
+    }
+    if (this.formlyModel.visibleToClient !== undefined && this.formlyModel.visibleToClient !== null) {
+      formData.append('visibleToClient', String(this.formlyModel.visibleToClient));
+    }
+
+    if (Array.isArray(this.formlyModel.users)) {
+      this.formlyModel.users.forEach((user: any) => {
+        const userId = user.value || user.id || user;
+        if (userId) {
+          formData.append('assignedUserIds', String(userId));
+        }
+      });
+    }
+    if (isHearing) {
+      if (this.formlyModel.chamber) formData.append('chamber', this.formlyModel.chamber);
+      if (this.formlyModel.rollNumber) formData.append('rollNumber', String(this.formlyModel.rollNumber));
+      if (this.formlyModel.litigatorId) formData.append('litigatorId', this.formlyModel.litigatorId);
+    }
+
+    if (isEdit) {
+      formData.append('id', String(rowData.id));
+      
+      if (this.formlyModel.decission) formData.append('decision', this.formlyModel.decission);
+      if (this.formlyModel.report) formData.append('report', this.formlyModel.report);
+      
+      if (this.formlyModel.law_AdjournmentReasonsId) {
+        formData.append('adjournmentReasonId', String(this.formlyModel.law_AdjournmentReasonsId));
+      }
+      
+      if (this.formlyModel.law_FinalJudgementId) {
+        formData.append('finalJudgementId', String(this.formlyModel.law_FinalJudgementId));
+      }
+      if (this.formlyModel.cassation_Or_AppealPeriod != null) {
+        formData.append('appealPeriodDays', String(this.formlyModel.cassation_Or_AppealPeriod));
+      }
+
+      deletedHearingIds.forEach((id) => formData.append('removeAttachmentIds', String(id)));
+    }
+
+    hearingFilesForPayload.forEach((item: any) => {
+      const file = this.extractFile(item);
+      if (file) formData.append('files', file, file.name);
+    });
+
+    currentHearingRefIds.forEach((id: any) => {
+      formData.append('matterDocumentIds', String(id));
+    });
+
+    if (this.formlyModel?.isNewHearingSession && newSessionModel) {
+      const ns = newSessionModel;
+      const rawDate = ns.hearingStartDate || ns.newSessionStartDate;
+      const nsDate = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+
+      if (nsDate && !isNaN(nsDate.getTime())) {
+        formData.append('NewSession.newSessionStartDate', this.getDate(nsDate) || '');
+      }
+      
+      if (ns.law_ActivityStatusId != null) {
+        formData.append('NewSession.law_ActivityStatusId', String(ns.law_ActivityStatusId));
+      }
+      
+      if (ns.description) formData.append('NewSession.description', String(ns.description));
+      if (ns.remark) formData.append('NewSession.remark', String(ns.remark));
+      if (ns.rollNumber != null && ns.rollNumber !== '') formData.append('NewSession.rollNumber', String(ns.rollNumber));
+      if (ns.chamber) formData.append('NewSession.chamber', String(ns.chamber));
+      if (ns.litigatorId) formData.append('NewSession.litigatorId', String(ns.litigatorId));
+
+      const today = new Date().toISOString().split('T')[0];
+      formData.append('NewSession.DocumentDate', today);
+      formData.append('NewSession.ReceivedDate', today);
+      formData.append('NewSession.DocumentDescription', '');
+
+      newSessionFilesForPayload.forEach((item: any) => {
+        const file = this.extractFile(item);
+        if (file) formData.append('NewSession.Attachments', file, file.name);
+      });
+
+      currentNewSessionRefIds.forEach((id: any) => {
+        formData.append('NewSession.matterDocumentIds', String(id));
+      });
+      
+      deletedNewSessionIds.forEach((id) => {
+        formData.append('NewSession.removeAttachmentIds', String(id));
+      });
+    }
+
+    const url = isEdit
+      ? API_Config.matterActivity.update.replace('{id}', String(rowData.id))
+      : API_Config.matterActivity.create;
+
+    const req$ = isEdit
+      ? this._apiService.put(url, formData)
+      : this._apiService.post(url, formData);
+
+    req$
+      .pipe(
+        finalize(() => (this.isLoading = false)),
+        this._unsubscribe.takeUntilDestroy(),
+      )
+      .subscribe({
+        next: (res: ApiRes) => {
+          if (res?.isSuccess) {
+            this._toastrNotifiService.displaySuccess(res.message);
+            this._dynamicDialogRef.close(true);
+          } else {
+            this._toastrNotifiService.displayError(res.message);
+          }
+        },
+        error: (err: any) => {
+          this._toastrNotifiService.displayError(
+            err?.error?.message || 'Error saving activity',
+          );
+        },
+      });
+  }
+
+    setFormData() {
+    const rowData = this._dynamicDialogConfig?.data?.rowData;
+    this.isEditMode = !!rowData?.id;
+    this.mode = this._dynamicDialogConfig.data.mode;
+    this.formlyOptions.formState = { readonly: this.mode === 'view' };
+
+    if (rowData?.id) {
+      const url = API_Config.matterActivity.getById.replace('{id}', String(rowData.id));
+
+      this._apiService.get(url)
+        .pipe(this._unsubscribe.takeUntilDestroy())
+        .subscribe({
+          next: (res: ApiRes) => {
+            const data = res?.data ?? res?.result;
+            if (!data) return;
+
+            const mappedAttachments = (data.attachments || []).map((doc: any) => ({
+              id: doc.id,
+              documentId: doc.matterDocumentId || doc.id,
+              __docId: doc.id,
+              name: doc.originalFileName,
+              fileName: doc.originalFileName,
+              originalFileName: doc.originalFileName,
+              filePath: doc.attachmentPath || doc.viewUrl,
+              isReference: false,
+              file: null,
+            }));
+
+            const activityType = this.lookupsData.activityType.result.find(
+              (obj: any) => Number(obj.id) === Number(data.activityTypeId),
+            )?.name;
+
+            const mappedUsers = data.assignees?.map((a: any) => ({
+              label: a.name,
+              value: a.userId,
+            })) || [];
+
+            this.formlyModel = {
+              ...data,
+              law_MatterId: Number(data.matterId),
+              law_ActivityTypeId: Number(data.activityTypeId),
+              law_ActivityStatusId: Number(data.activityStatusId),
+              law_AdjournmentReasonsId: data.adjournmentReasonId ? Number(data.adjournmentReasonId) : null,
+              law_FinalJudgementId: data.finalJudgementId ? Number(data.finalJudgementId) : null,
+              decission: data.decision,
+              mtrNo: data.matterCode,
+              law_ActivityType: activityType,
+              startDate: data.startDate ? new Date(data.startDate) : null,
+              endDate: data.endDate ? new Date(data.endDate) : null,
+              attachments: mappedAttachments,
+              users: mappedUsers,
+            };
+
+            this.isProgrammaticMatterUpdate = true;
+            this.lastMatterId = data.matterId;
+
+            this.formlyFields = taskManagementActivityEditorFields(this);
+            this.formly.patchValue(this.formlyModel);
+
+            this.updateFieldsSelectedObj('law_ActivityStatusId', 'activityStatus');
+            this.updateFieldsSelectedObj('law_ActivityTypeId', 'activityType');
+            this.updateFieldsSelectedObj('law_AdjournmentReasonsId', 'adjournmentReasons');
+            this.updateFieldsSelectedObj('law_MatterId', 'matterCode');
+            this.updateFieldsSelectedObj('litigatorId', 'laywer');
+            this.updateFieldsSelectedObj('law_FinalJudgementId', 'finalJudement');
+
+            if (this.formlyModel?.users) {
+              const usersField: FieldTypeConfig = findField(this.formlyFields, 'users');
+              if (usersField) {
+                usersField.props['selectedObj'] = this.setUsersValue();
+              }
+            }
+
+            setTimeout(() => {
+              this.isLoading = false;
+              this.isProgrammaticMatterUpdate = false;
+              this._cdr.detectChanges();
+            }, 100);
+
+            this.initializeDocumentTracking(data);
+          },
+        });
+    } else {
+      // ⭐ التعديل هنا: بنحط القيم الافتراضية في الـ Model في وضع الإضافة
+      this.formlyModel = {
+        ...this.formlyModel,
+        law_ActivityTypeId: this._router.url.includes('activity') ? null : 1,
+        law_ActivityStatusId: 1, // Created
+      };
+      
+      this.formly.patchValue(this.formlyModel);
+      this.isLoading = false;
+
+      setTimeout(() => {
+        this.updateFieldsSelectedObj('law_ActivityTypeId', 'activityType');
+        this.updateFieldsSelectedObj('law_ActivityStatusId', 'activityStatus');
+        this._cdr.detectChanges();
+      }, 100);
+    }
+  }
+
 
   override initForm(): void {
     this.formlyFields = taskManagementActivityEditorFields(this);
@@ -141,18 +501,6 @@ ngOnInit(): void {
       'matters.editContact',
     );
   }
-
-  setUsersValue() {
-    const selectedUsers = this.lookupsData?.users?.result.filter((obj: any) =>
-      this.formlyModel?.users.includes(obj.id),
-    );
-    if (!selectedUsers) return null;
-    return selectedUsers.map((obj: any) => ({
-      label: obj?.name,
-      value: obj?.id,
-    }));
-  }
-  
 
   transformDate(date: any): string | null {
     return date
@@ -212,10 +560,20 @@ ngOnInit(): void {
     ).toISOString();
   }
 
-  deleteItem(item: any) {
-    this.formlyModel.users = this.formlyModel.users.filter(
-      (obj: any) => obj.value != item.value,
-    );
+  getAssigneeName(user: any): string {
+    if (!user) return '';
+    const id = user?.value || user; 
+    const found = this.lookupsData?.users?.result.find((u: any) => u.id === id);
+    return found ? found.name : 'Unknown';
+  }
+
+  deleteItem(user: any) {
+    const idToRemove = user?.value || user; 
+    this.formlyModel.users = this.formlyModel.users.filter((u: any) => {
+      const currentId = u?.value || u;
+      return currentId !== idToRemove;
+    });
+    this.formly.get('users')?.setValue(this.formlyModel.users);
     this.formlyModel = { ...this.formlyModel };
   }
 
@@ -387,7 +745,6 @@ ngOnInit(): void {
         referenceMap.set(id, doc);
       });
 
-
       const mergedReferences = Array.from(referenceMap.values());
 
       const updated = [...localFiles, ...mergedReferences];
@@ -422,13 +779,11 @@ ngOnInit(): void {
           );
         }
       });
-    }
-    else {
+    } else {
       const current = this.formlyModel?.newSession?.newSessionAttachments || [];
 
       console.log('[Main] Current New Session attachments:', current);
 
-  
       const localFiles = current.filter((f: any) => !f?.isReference);
       const existingReferenceFiles = current.filter((f: any) => f?.isReference);
       const selectedReferenceFiles = (docs || [])
@@ -465,7 +820,7 @@ ngOnInit(): void {
             file: null,
           };
         });
-  
+
       const selectedIds = new Set(
         selectedReferenceFiles.map((doc: any) => String(doc.documentId)),
       );
@@ -498,9 +853,11 @@ ngOnInit(): void {
 
       const mergedReferences = Array.from(referenceMap.values());
       const updated = [...localFiles, ...mergedReferences];
-      console.log('[Main] Final merged New Session attachments Tahaaaaaaaaaaa111:', updated);
+      console.log(
+        '[Main] Final merged New Session attachments Tahaaaaaaaaaaa111:',
+        updated,
+      );
 
-  
       this.formlyModel = {
         ...this.formlyModel,
 
@@ -536,8 +893,14 @@ ngOnInit(): void {
         : this.formlyModel?.newSession,
     };
 
-    this.hearingDocumentTracker = { originalDocumentIds: [], deletedDocumentIds: [] };
-    this.newSessionDocumentTracker = { originalDocumentIds: [], deletedDocumentIds: [] };
+    this.hearingDocumentTracker = {
+      originalDocumentIds: [],
+      deletedDocumentIds: [],
+    };
+    this.newSessionDocumentTracker = {
+      originalDocumentIds: [],
+      deletedDocumentIds: [],
+    };
     this.selectedMatterDocIds = [];
 
     this.hearingAttachmentsFieldInstance?.setReferenceDocuments?.([]);
@@ -573,152 +936,64 @@ ngOnInit(): void {
       .map((f: any) => String(f.documentId));
   }
 
-  
-  setFormData() {
-    const rowData = this._dynamicDialogConfig?.data?.rowData;
-    this.isEditMode = !!rowData?.id;
-    this.mode = this._dynamicDialogConfig.data.mode;
-    this.formlyOptions.formState = {
-      readonly: this.mode === 'view',
-    };
+  setUsersValue() {
+    const selectedUsers = this.lookupsData?.users?.result.filter((obj: any) =>
+      this.formlyModel?.users?.some((u: any) => (u.value || u) === obj.id),
+    );
+    if (!selectedUsers) return null;
+    return selectedUsers.map((obj: any) => ({
+      label: obj?.name,
+      value: obj?.id,
+    }));
+  }
 
-    if (rowData?.id) {
-      const param = { id: rowData.id };
-      this._apiService
-        .get(API_Config.taskManagementCalender.getById, param)
-        .pipe(this._unsubscribe.takeUntilDestroy())
-        .subscribe({
-          next: (res: ApiRes) => {
-            if (res && res.isSuccess) {
-              const result = res.result;
-              const activityType = this.lookupsData.activityType.result.find(
-                (obj: any) => obj.id === result?.law_ActivityTypeId,
-              )?.name;
+  onAdjournmentReasonChange(field: FormlyFieldConfig): void {
+    const value = field?.formControl?.value;
+    if (value === null || value === undefined || value === '') return;
 
-              const linkedDocuments = Array.isArray(result?.linkedDocuments)
-                ? result.linkedDocuments
-                : [];
+    const statusControl = this.formly?.get('law_ActivityStatusId');
+    if (statusControl && Number(statusControl.value) !== 4) {
+      statusControl.setValue(4, { emitEvent: false });
+    }
 
-              const mappedDocs = linkedDocuments.map((doc: any) => {
-                const fileName =
-                  doc.fileName ||
-                  doc.originalFileName ||
-                  doc.documentName ||
-                  this.extractFileNameFromUrl(doc.filePath) ||
-                  `document_${doc.documentId}`;
-                return {
-                  id: doc.documentId,
-                  documentId: doc.documentId,
-                  __docId: doc.documentId,
-                  name: fileName,
-                  fileName,
-                  originalFileName: fileName,
-                  filePath: doc.filePath,
-                  isReference: true,
-                  documentDate: doc.documentDate,
-                  receivedDate: doc.receivedDate,
-                  description: doc.description || '',
-                  file: null,
-                };
-              });
-              this.isProgrammaticMatterUpdate = true;
-              this.lastMatterId = result?.law_MatterId ?? null;
+    const newSessionControl = this.formly?.get('isNewHearingSession');
+    if (newSessionControl) {
+      if (newSessionControl.value === true) {
+        newSessionControl.setValue(false, { emitEvent: false });
+      }
 
-              this.formlyModel = {
-                ...result,
-                law_ActivityType: activityType,
-                startDate: result.startDate ? new Date(result.startDate) : null,
-                endDate: result.endDate ? new Date(result.endDate) : null,
-                newSession: result?.newSession
-                  ? {
-                      ...result.newSession,
+      setTimeout(() => {
+        newSessionControl.setValue(true, { emitEvent: true });
+        this._cdr.detectChanges();
+      }, 100);
+    }
+  }
 
-                      startDate: this.transformDate(
-                        result.newSession.startDate,
-                      ),
+  private updateFieldsSelectedObj(key: string, lookupPath: string) {
+    const modelValue = this.formlyModel?.[key];
+    if (!modelValue) return;
 
-                      newSessionAttachments: Array.isArray(
-                        result.newSession.linkedDocuments,
-                      )
-                        ? result.newSession.linkedDocuments.map((doc: any) => {
-                            const documentId = String(doc.documentId ?? doc.id);
+    const lookupData = this.lookupsData?.[lookupPath]?.result || [];
+    const selected = lookupData.find(
+      (obj: any) => Number(obj.id) === Number(modelValue),
+    );
 
-                            const fileName =
-                              doc.fileName ||
-                              doc.originalFileName ||
-                              doc.documentName ||
-                              this.extractFileNameFromUrl(doc.filePath) ||
-                              `document_${documentId}`;
+    if (selected) {
+      const selectedObj = { label: selected.name, value: selected.id };
 
-                            return {
-                              id: documentId,
-
-                              documentId: documentId,
-
-                              __docId: documentId,
-
-                              name: fileName,
-
-                              fileName: fileName,
-
-                              originalFileName: fileName,
-
-                              filePath: doc.filePath || null,
-
-                              isReference: true,
-
-                              documentDate: doc.documentDate || null,
-
-                              receivedDate: doc.receivedDate || null,
-
-                              description: doc.description || '',
-
-                              file: null,
-                            };
-                          })
-                        : [],
-                    }
-                  : null,
-                attachments: mappedDocs,
-              };
-
-              setTimeout(() => {
-                if (
-                  this.hearingAttachmentsFieldInstance?.setReferenceDocuments
-                ) {
-                  this.hearingAttachmentsFieldInstance.setReferenceDocuments(
-                    mappedDocs,
-                  );
-                }
-                 this.isProgrammaticMatterUpdate = false;
-              }, 100);
-
-              this.initializeDocumentTracking(result);
-
-              this.setFieldSelectedObj('law_MatterId', 'matterCode');
-              this.setFieldSelectedObj('law_ActivityTypeId', 'activityType');
-              this.setFieldSelectedObj(
-                'law_ActivityStatusId',
-                'activityStatus',
-              );
-              this.setFieldSelectedObj('litigatorId', 'laywer');
-              this.setFieldSelectedObj('law_FinalJudgementId', 'finalJudement');
-              this.setFieldSelectedObj(
-                'law_AdjournmentReasonsId',
-                'adjournmentReasons',
-              );
-                const usersField: FieldTypeConfig = findField(
-                this.formlyFields,
-                'users'
-              );
-                  if (this.formlyModel?.users && usersField) {
-                usersField.props['selectedObj'] = this.setUsersValue();
-                this.formlyModel.users = this.setUsersValue();
-                console.log('this.setUsersValue()', this.setUsersValue());
-              }
-            }
-          },
+      const traverse = (fields: any[]) => {
+        fields.forEach((field) => {
+          if (field.key === key) {
+            field.props = field.props || {};
+            field.props['selectedObj'] = selectedObj;
+          }
+          if (field.fieldGroup) {
+            traverse(field.fieldGroup);
+          }
         });
+      };
+
+      traverse(this.formlyFields);
     }
   }
 
@@ -753,7 +1028,6 @@ ngOnInit(): void {
   }
   // ============================================================
   // ============================================================
-
 
   private appendValueToFormData(
     formData: FormData,
@@ -855,154 +1129,6 @@ ngOnInit(): void {
 
     return formData;
   }
-
-  override onSubmit(): void {
-    if (this.formly.invalid) return;
-
-    this.isLoading = true;
-    const rowData = this._dynamicDialogConfig?.data?.rowData;
-    const isEdit = !!rowData?.id;
-
-    const hearingAttachments = this.formlyModel?.attachments || [];
-    const hearingFilesForPayload = hearingAttachments.filter(
-      (f: any) => !f?.isReference,
-    );
-
-    const hearingExistingIds = hearingAttachments
-      .filter((f: any) => f?.isReference)
-      .map((f: any) => f?.documentId ?? f?.id ?? f?.__docId)
-      .filter((id: any) => id != null)
-      .map((id: any) => String(id));
-
-    const currentHearingIds = this.getCurrentReferenceDocumentIds(
-      this.hearingAttachmentsFieldInstance,
-      hearingAttachments,
-    );
-    const deletedHearingIds =
-      this.hearingDocumentTracker.originalDocumentIds.filter(
-        (id) => !currentHearingIds.includes(id),
-      );
-
-    const newSessionModel = this.formlyModel?.newSession || {};
-    const newSessionAttachments = newSessionModel.newSessionAttachments || [];
-    const newSessionFilesForPayload = newSessionAttachments.filter(
-      (f: any) => !f?.isReference,
-    );
-    const newSessionExistingIds = newSessionAttachments
-      .filter((f: any) => f?.isReference)
-      .map((f: any) => f?.documentId ?? f?.id ?? f?.__docId)
-      .filter((id: any) => id != null)
-      .map((id: any) => String(id));
-
-    const currentNewSessionIds = this.getCurrentReferenceDocumentIds(
-      this.newSessionAttachmentsFieldInstance,
-      newSessionAttachments,
-    );
-    const deletedNewSessionIds =
-      this.newSessionDocumentTracker.originalDocumentIds.filter(
-        (id) => !currentNewSessionIds.includes(id),
-      );
-    const { attachments, ...restModel } = this.formlyModel;
-
-    let newSessionData: any = null;
-    if (this.formlyModel?.newSession || this.formlyModel?.isNewHearingSession) {
-const newSessionModel = this.formlyModel?.newSession || {};
-
-let hearingStartDate = newSessionModel.hearingStartDate
-  ? new Date(newSessionModel.hearingStartDate)
-  : new Date();
-
-if (isNaN(hearingStartDate.getTime())) {
-  hearingStartDate = new Date();
-}
-
-if (!this.isNewSessionHearingTimeChanged) {
-  hearingStartDate.setHours(8, 0, 0, 0);
-}
-
-newSessionData = {
-  ...newSessionModel,
-  hearingStartDate,
-  DocumentDate: new Date().toISOString().split('T')[0],
-  ReceivedDate: new Date().toISOString().split('T')[0],
-  DocumentDescription: this.formlyModel?.newdocumentDescription || '',
-  ExistingDocumentIds: newSessionExistingIds,
-  DeletedDocumentIds: deletedNewSessionIds,
-};
-    }
-
-    const requestPayload = {
-      ...restModel,
-      litigatorId: this.formlyModel?.litigatorId?.toString(),
-      startDate: this.getDate(this.formlyModel?.startDate),
-      endDate: this.getDate(this.formlyModel?.endDate),
-      existingDocumentIds: hearingExistingIds,
-      deletedDocumentIds: deletedHearingIds,
-      newSession: newSessionData,
-      ...(isEdit
-        ? { id: rowData.id }
-        : { Law_MatterId: this._dynamicDialogConfig?.data?.matterIdentifier }),
-      users: Array.isArray(this.formlyModel?.users)
-        ? this.formlyModel.users.map((u: any) => u.value)
-        : [],
-    };
-    
-
-    let path: string;
-    if (this.formlyModel?.law_ActivityTypeId === 2) {
-      path = isEdit
-        ? API_Config.matterTask.update
-        : API_Config.matterTask.create;
-    } else {
-      path = isEdit
-        ? API_Config.taskManagementCalender.update
-        : API_Config.taskManagementCalender.create;
-    }
-
-    let formData: FormData;
-    if (isEdit) {
-      formData = this.createUpdateFormData(
-        requestPayload,
-        hearingFilesForPayload,
-        newSessionFilesForPayload,
-      );
-    } else {
-      formData = this.createFullFormData(
-        requestPayload,
-        hearingFilesForPayload,
-        newSessionFilesForPayload,
-      );
-    }
-
-    this._apiService
-      .post(path, formData)
-      .pipe(
-        finalize(() => (this.isLoading = false)),
-        this._unsubscribe.takeUntilDestroy(),
-      )
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res?.isSuccess) {
-            this._toastrNotifiService.displaySuccess(res.message);
-            this._dynamicDialogRef.close(true);
-          } else {
-            this._toastrNotifiService.displayError(res.message);
-          }
-        },
-        error: (err: any) => {
-          this._toastrNotifiService.displayError(err?.error?.message);
-        },
-      });
-  }
-
-  private normalizeHearingStartDate(date: Date | string | null): Date | null {
-  if (!date) return null;
-
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return null;
-
-  return d;
-}
 
   // ============================================================
   // FILE OPERATIONS

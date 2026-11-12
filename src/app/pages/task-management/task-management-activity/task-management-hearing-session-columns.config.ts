@@ -1,42 +1,80 @@
+// export const HEARING_SESSION_Columns = [
+//     {
+//         header: 'matters.code',
+//         field: 'id',
+//     },
+//       {
+//         header: 'search.matterNumber',
+//         field: 'mtrNo',
+//     },
+//     {
+//         header: 'search.courtNumber',
+//         field: 'courtNumber',
+//     },
+
+//     {
+//         header: 'matters.description',
+//         field: 'description',
+//         isLargeText: true,
+//         class:'w-56	'
+
+//     },
+//     {
+//         header: 'matters.user',
+//         field: 'user',
+//     },
+
+//     {
+//         header: 'matters.date',
+//         field: 'startDate',
+//         // format:'d MMM y',
+//         format:'yyyy-MM-dd',
+//         isDate: true,
+//         isSort: true,
+//     },
+
+//     {
+//         header: 'matters.status',
+//         field: 'law_ActivityStatusId',
+//         statusLabel: 'law_ActivityStatus',
+//         isStatus: true,
+//     },
+// ]
+
 export const HEARING_SESSION_Columns = [
-    {
-        header: 'matters.code',
-        field: 'id',
-    },
-      {
-        header: 'search.matterNumber',
-        field: 'mtrNo',
-    },
-    {
-        header: 'search.courtNumber',
-        field: 'courtNumber',
-    },
-  
-    {
-        header: 'matters.description',
-        field: 'description',
-        isLargeText: true,
-        class:'w-56	'
-
-    },
-    {
-        header: 'matters.user',
-        field: 'user',
-    },
-
-    {
-        header: 'matters.date',
-        field: 'startDate',
-        // format:'d MMM y',
-        format:'yyyy-MM-dd',
-        isDate: true,
-        isSort: true,
-    },
-
-    {
-        header: 'matters.status',
-        field: 'law_ActivityStatusId',
-        statusLabel: 'law_ActivityStatus',
-        isStatus: true,
-    },
-]
+  {
+    header: 'matters.code',
+    field: 'id',
+  },
+  {
+    header: 'search.matterNumber',
+    field: 'matterCode',
+  },
+  {
+    header: 'search.courtNumber',
+    field: 'courtNumber',
+  },
+  {
+    header: 'matters.description',
+    field: 'description',
+    isLargeText: true,
+    class: 'w-56',
+  },
+  {
+    header: 'matters.user',
+    field: 'createdByName',
+  },
+  {
+    header: 'matters.date',
+    field: 'startDate',
+    format: 'yyyy-MM-dd',
+    isDate: true,
+    isSort: true,
+  },
+  {
+    header: 'matters.status',
+    field: 'activityStatusId', // ⭐ اتغير
+    statusLabel: 'activityStatusName', // ⭐ اتغير
+    isStatus: true,
+  },
+];

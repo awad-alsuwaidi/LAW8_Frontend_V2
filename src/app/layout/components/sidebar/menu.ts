@@ -66,6 +66,7 @@ export class Menu {
                 /^\/matters\/add\/applicant$/,
                 /^\/matters\/add\/billing$/,
                 /^\/matters\/add\/parties$/,
+                /^\/matters\/add\/class$/,
               ],
             },
             {
@@ -79,6 +80,8 @@ export class Menu {
                 /^\/matters\/\d+\/invoice$/,
                 /^\/matters\/\d+\/parties$/,
                 /^\/matters\/\d+\/timesheet$/,
+                /^\/matters\/\d+\/class$/,
+                /^\/matters\/\d+\/applicant$/,
                 /^\/matters\/\d+\/billing$/,
                 /^\/matters\/\d+\/related-matters$/,
                 /^\/matters\/\d+\/contacts$/,
@@ -120,13 +123,13 @@ export class Menu {
           icon: 'icon-task',
           label: 'menu.taskManagement',
           route: '/task-management',
-          permission: 'View_TaskManagement',
+          // permission: 'View_TaskManagement',
 
           children: [
             {
               label: 'menu.tasks',
               route: '/task-management/task/my-tasks',
-              permission: 'View_TaskManagement',
+              // permission: 'View_TaskManagement',
               activeMatchers: [
                 /^\/task-management\/task\/my-tasks$/,
                 /^\/task-management\/task\/assignee-tasks$/,
@@ -136,17 +139,17 @@ export class Menu {
             {
               label: 'menu.hearingSession',
               route: '/task-management/hearing-session',
-              permission: 'View_TaskManagement',
+              // permission: 'View_TaskManagement',
             },
             {
               label: 'menu.activity',
               route: '/task-management/activity',
-              permission: 'View_TaskManagement',
+              // permission: 'View_TaskManagement',
             },
             {
               label: 'menu.calendar',
               route: '/task-management/calendar',
-              permission: 'Calender',
+              // permission: 'Calender',
             },
           ],
         },
@@ -335,17 +338,21 @@ export class Menu {
           permission: 'View_Security',
           activeMatchers: [/^\/security\/.*/],
         },
+      ],
+    },
+    {
+      items: [
         {
           icon: '',
           label: 'menu.doc8',
           action: 'open-doc8',
-          permission: 'View_Security',
+          // permission: 'View_Security',
         },
         {
           icon: '',
           label: 'menu.crm',
           action: 'open-crm',
-          permission: 'View_Security',
+          // permission: 'View_Security',
         },
       ],
     },

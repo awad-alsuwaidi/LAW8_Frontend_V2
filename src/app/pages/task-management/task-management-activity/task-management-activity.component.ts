@@ -56,6 +56,7 @@ export class TaskManagementActivityComponent implements OnInit, OnDestroy {
     orderBy: 'startDate',
   };
   first!: number;
+  filter: any;
   deleteDialogRef!: DynamicDialogRef;
   isLoading: boolean = false;
   @Input() set id(value: number) {
@@ -185,21 +186,7 @@ export class TaskManagementActivityComponent implements OnInit, OnDestroy {
       }
     );
   }
-  deleteActivity(activityId: number) {
-    this._apiService
-      .post(API_Config.matterActivity.delete, {}, { id: activityId })
-      .pipe(this._unsubscribeService.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data.length == 1 ? this.pagination.pageNum-- : null;
-            this.getData();
-            this.deleteDialogRef.close();
-          }
-        },
-      });
-  }
-  filter: any;
+
   onFilterUpdate(e: any) {
     console.log('Filter triggered with:', e);
 
@@ -223,39 +210,7 @@ export class TaskManagementActivityComponent implements OnInit, OnDestroy {
     this.getData();
   }
 
-  // onFilterUpdate(e: any) {
-  //   console.log('Filter event received:', e);
-  //   this.filter = { ...e };
-  //   if(!this.filter.FromDate) delete this.filter.ToDate
-  //   if(!this.filter.ToDate) delete this.filter.FromDate
-  //   this.pagination = {
-  //     ...this.pagination,
-  //     StatusId: e.StatusId?.value,
-  //     AvailabilityId: e.AvailabilityId?.value,
-  //     FromDate: e.FromDate,
-  //     ToDate: e.ToDate,
-  //     TypeId: e.TypeId?.value,
-  //     UserId: e.UserId?.value,
-  //     search: e.search
-  //   };
-  //   this.getData();
-  // }
-
-  // onFilterUpdate(e: any) {
-  //   this.filter = { ...e };
-  //   this.pagination = {
-  //     ...this.pagination,
-  //     StatusId: e.StatusId.value,
-  //     AvailabilityId: e.AvailabilityId.value,
-  //     FromDate: e.FromDate,
-  //     ToDate: e.ToDate,
-  //     TypeId: e.TypeId.value,
-  //     UserId: e.UserId.value,
-  //     search: e.search
-  //   }
-  //   console.log('onFilterUpdate pagination', this.pagination);
-  //   this.getData()
-  // }
+ 
   onActivityFilter(e: any) {
     this.pagination = {
       ...this.pagination,
@@ -263,56 +218,60 @@ export class TaskManagementActivityComponent implements OnInit, OnDestroy {
     };
     this.getData();
   }
-  // onFilterUpdate(e: any) {
-  //   const apiFilter = {
-  //     status: e.status,
-  //     availability: e.availability,
-  //     fromDate: e.fromDate,
-  //     toDate: e.toDate,
-  //     type: e.type,
-  //     userId: e.userId,
-  //     search: e.search
-  //   };
-
-  //   this.filter = apiFilter;
-  //   this.pagination.pageNum = 1;
-  //   this.first = 0;
-  //   this.getData();
-  // }
 
   getData() {
-    const params = {
-      ...this.pagination,
-      matterId: this.matterIdentifier,
-      // ...this.filter
+    const isHearing = this._router.url.includes('hearing-session');
+    this.isLoading = true;
+
+    const params: any = {
+      pageNumber: this.pagination.pageNum,
+      pageSize: this.pagination.pagSize,
+      sortBy: this.pagination.orderBy,
+      isDescending: this.pagination.orderByDirection === 'DESC',
+      'filters[kind]': isHearing ? 'hearing' : 'activity',
     };
 
-    Object.keys(params).forEach((key) => {
-      if (
-        params[key] === null ||
-        params[key] === undefined ||
-        params[key] === ''
-      ) {
-        delete params[key];
-      }
-    });
-    this.isLoading = true; 
-    const path = this._router.url.includes('hearing-session')
-      ? API_Config.hearingSessiontaskMangement.get
-      : API_Config.activitytaskMangement.get;
+    if (this.pagination.search) params.searchTerm = this.pagination.search;
+    if (this.pagination.StatusId) params['filters[statusId]'] = this.pagination.StatusId;
+    if (this.pagination.TypeId) params['filters[activityTypeId]'] = this.pagination.TypeId;
+    if (this.pagination.AvailabilityId) params['filters[availability]'] = this.pagination.AvailabilityId;
+    if (this.pagination.UserId) params['filters[userId]'] = this.pagination.UserId;
+    if (this.pagination.FromDate) params['filters[from]'] = this.pagination.FromDate;
+    if (this.pagination.ToDate) params['filters[to]'] = this.pagination.ToDate;
 
-    this._apiService
-      .get(path, params)
+    const path = API_Config.matterActivity.get;
+
+    this._apiService.get(path, params)
       .pipe(
         finalize(() => (this.isLoading = false)),
         this._unsubscribeService.takeUntilDestroy()
       )
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data = res.result.dataList;
-            this.pagination.totalElements = res.result.totalCount;
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const body = res?.data ?? res?.result;
+          
+          if (isSuccess && body) {
+            this.data = body.items || []; 
+            this.pagination.totalElements = body.totalCount || 0;
             this.pagination = { ...this.pagination };
+          }
+        },
+      });
+  }
+
+  deleteActivity(activityId: number) {
+    const url = API_Config.matterActivity.delete.replace('{id}', String(activityId));
+    
+    this._apiService.delete(url)
+      .pipe(this._unsubscribeService.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          if (isSuccess) {
+            this.data.length == 1 ? this.pagination.pageNum-- : null;
+            this.getData();
+            this.deleteDialogRef.close();
           }
         },
       });

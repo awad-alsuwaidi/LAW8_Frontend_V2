@@ -11,10 +11,6 @@ interface StorageItem<T = any> {
   expiresAt: number;
 }
 
-/**
- * مفاتيح حساسة بتتخزن في sessionStorage (تضيع مع إغلاق التاب)
- * أي مفتاح تاني هيروح localStorage
- */
 const SESSION_ONLY_KEYS = new Set<string>([
   'token',
   'accessToken',

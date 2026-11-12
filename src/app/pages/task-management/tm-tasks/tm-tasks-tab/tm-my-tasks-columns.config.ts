@@ -31,11 +31,10 @@ export const Matter_My_Task_Columns = [
   },
   {
     header: 'matters.assignee',
-    field: 'assigneeList',
-    label: 'assigneeInitial',
-    tooltip: 'assigneeName',
+    field: 'assignees',
+    label: 'initial',
+    tooltip: 'name',
     isColumnNumber: true,
-    isSort: false,
   },
   {
     header: 'CreatedBy',

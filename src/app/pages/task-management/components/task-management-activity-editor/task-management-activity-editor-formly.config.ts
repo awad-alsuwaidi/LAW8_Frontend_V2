@@ -12,37 +12,12 @@ export function taskManagementActivityEditorFields(
     fieldGroup: [
       {
         className: 'col-span-2',
-        template: `<h5 class="mb-4 text-grey500 text-lg font-bold">${THIS._languageService.getTransValue(
-          'matters.mainInfo',
-        )}</h5>`,
+        template: `<h5 class="mb-4 text-grey500 text-lg font-bold">${THIS._languageService.getTransValue('matters.mainInfo')}</h5>`,
       },
       {
         key: 'startDate',
         defaultValue: new Date(),
       },
-
-      // {
-      //   className: 'col-span-2',
-      //   type: 'link',
-      //   key: 'mtrNo',
-      //   props: {
-      //     label: THIS._languageService.getTransValue(
-      //       'common.gotomatterdetails'
-      //     ),
-      //     class: 'text-primary underline cursor-pointer font-bold text-sm mt-3',
-      //     onClick: () => {
-      //       const url = THIS._router.serializeUrl(
-      //         THIS._router.createUrlTree([
-      //           `/matters/${THIS.formlyModel.law_MatterId}`,
-      //         ])
-      //       );
-      //       window.open('#' + url, '_blank');
-      //     },
-      //   },
-      //   expressionProperties: {
-      //     hide: '!formState.readonly',
-      //   },
-      // },
       {
         type: 'select',
         key: 'law_MatterId',
@@ -58,15 +33,14 @@ export function taskManagementActivityEditorFields(
           virtualScroll: true,
         },
         expressions: {
-          // 'props.readonly': 'formState.readonly',
-          'props.readonly': () => THIS.isEditMode || THIS.formlyOptions.formState.readonly,
-
+          'props.readonly': () =>
+            THIS.isEditMode || THIS.formlyOptions.formState.readonly,
         },
       },
       {
         key: 'law_ActivityTypeId',
         type: 'select',
-        defaultValue: THIS._router.url.includes('activity') ? undefined : 1,
+        defaultValue: THIS._router.url.includes('activity') ? null : 1,
         props: {
           label: THIS._languageService.getTransValue('matters.activityType'),
           selectedObj: {},
@@ -81,34 +55,14 @@ export function taskManagementActivityEditorFields(
               ?.get('law_ActivityType')
               ?.setValue(e?.originalEvent.target.innerText);
           },
-          disabled: THIS._router.url?.includes('hearing-session'),
         },
         expressions: {
-          'props.readonly': 'formState.readonly',
+          'props.readonly': () =>
+            THIS._router.url?.includes('hearing-session') ||
+            THIS.formlyOptions.formState.readonly,
         },
       },
       { key: 'law_ActivityType' },
-
-      // {
-      //   className: 'col-span-2',
-      //   type: 'link',
-      //   key: 'mtrNo',
-      //   props: {
-      //     label: 'Matter No.',
-      //     class: 'text-primary underline cursor-pointer font-bold text-sm mt-3',
-      //     onClick: () => {
-      //       const url = THIS._router.serializeUrl(
-      //         THIS._router.createUrlTree([
-      //           `/matters/${THIS.formlyModel.law_MatterId}`,
-      //         ])
-      //       );
-      //       window.open('#' + url, '_blank');
-      //     },
-      //   },
-      //   expressionProperties: {
-      //     hide: '!formState.readonly',
-      //   },
-      // },
     ],
     validators: {
       validation: [
@@ -123,6 +77,7 @@ export function taskManagementActivityEditorFields(
       ],
     },
   });
+
   const createTaskSection = (): FormlyFieldConfig => ({
     fieldGroupClassName:
       'grid gap-4 md:grid-cols-2 bg-white rounded-2xl my-4 p-6',
@@ -131,9 +86,7 @@ export function taskManagementActivityEditorFields(
         className: 'col-span-2',
         expressionProperties: {
           template: (model) =>
-            `<h5 class="mb-4 text-grey500 text-lg font-bold">${
-              model.law_ActivityType || 'Task'
-            }</h5>`,
+            `<h5 class="mb-4 text-grey500 text-lg font-bold">${model.law_ActivityType || 'Task'}</h5>`,
         },
       },
       {
@@ -144,11 +97,8 @@ export function taskManagementActivityEditorFields(
           label: THIS._languageService.getTransValue('common.description'),
           required: true,
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Start Date
       {
         key: 'tastStartDate',
         type: 'date',
@@ -161,11 +111,8 @@ export function taskManagementActivityEditorFields(
             THIS.formly?.get('startDate')?.setValue(e);
           },
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Due Date
       {
         key: 'DueDate',
         type: 'date',
@@ -174,11 +121,8 @@ export function taskManagementActivityEditorFields(
           label: THIS._languageService.getTransValue('matters.dueDate'),
           required: true,
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Assigned (full width as shown in image)
       {
         key: 'assigneeList',
         type: 'multi-select',
@@ -192,11 +136,8 @@ export function taskManagementActivityEditorFields(
             'name',
           ),
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Priority
       {
         key: 'Periority',
         type: 'select',
@@ -210,11 +151,8 @@ export function taskManagementActivityEditorFields(
           ),
           selectedObj: {},
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Status
       {
         key: 'law_ActivityStatusId',
         type: 'select',
@@ -228,23 +166,15 @@ export function taskManagementActivityEditorFields(
             'name',
           ),
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Notes/Remark (full width as shown in image)
       {
         className: 'col-span-2',
         key: 'remark',
         type: 'input',
-        props: {
-          label: THIS._languageService.getTransValue('matters.remark'),
-        },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        props: { label: THIS._languageService.getTransValue('matters.remark') },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // File attachment (full width as shown in image)
       {
         key: 'AttachmentList',
         type: 'attachment-list',
@@ -254,11 +184,8 @@ export function taskManagementActivityEditorFields(
           fileType: 'blob',
           multiple: true,
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-      // Private switch
       {
         key: 'isPrivate',
         type: 'switch',
@@ -267,28 +194,21 @@ export function taskManagementActivityEditorFields(
           label: THIS._languageService.getTransValue('matters.isPrivate'),
           class: 'd-block',
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
     ],
     expressions: {
-      hide: (field: FormlyFieldConfig) => {
-        return field.model?.law_ActivityTypeId !== 2;
-      },
+      hide: (field: FormlyFieldConfig) => field.model?.law_ActivityTypeId !== 2,
     },
   });
 
-  // Helper function to create hearing session section (law_ActivityTypeId = 1)
   const createHearingSessionSection = (): FormlyFieldConfig => ({
     fieldGroupClassName:
       'grid gap-4 md:grid-cols-2 bg-white rounded-2xl my-4 p-6',
     fieldGroup: [
       {
         className: 'col-span-2',
-        template: `<h5 class="mb-4 text-grey500 text-lg font-bold">${THIS._languageService.getTransValue(
-          'matters.hearingSession',
-        )}</h5>`,
+        template: `<h5 class="mb-4 text-grey500 text-lg font-bold">${THIS._languageService.getTransValue('matters.hearingSession')}</h5>`,
       },
       {
         className: 'col-span-2',
@@ -301,9 +221,7 @@ export function taskManagementActivityEditorFields(
           autosizeMinRows: 3,
           autosizeMaxRows: 8,
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         className: 'col-span-2',
@@ -321,9 +239,7 @@ export function taskManagementActivityEditorFields(
         className: 'col-span-2',
         key: 'report',
         type: 'input',
-        props: {
-          label: THIS._languageService.getTransValue('matters.report'),
-        },
+        props: { label: THIS._languageService.getTransValue('matters.report') },
         expressions: {
           'props.readonly': 'formState.readonly',
           hide: () => !THIS._dynamicDialogConfig.data?.rowData,
@@ -333,12 +249,8 @@ export function taskManagementActivityEditorFields(
         className: 'col-span-2',
         key: 'remark',
         type: 'input',
-        props: {
-          label: THIS._languageService.getTransValue('matters.remark'),
-        },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        props: { label: THIS._languageService.getTransValue('matters.remark') },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         key: 'rollNumber',
@@ -346,10 +258,7 @@ export function taskManagementActivityEditorFields(
         props: {
           label: THIS._languageService.getTransValue('matters.rollNumber'),
         },
-
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         key: 'chamber',
@@ -357,42 +266,8 @@ export function taskManagementActivityEditorFields(
         props: {
           label: THIS._languageService.getTransValue('matters.chamber'),
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
-
-      // {
-      //   key: 'rollNumber',
-      //   type: 'input',
-      //   props: {
-      //     type: 'text',
-      //     label: THIS._languageService.getTransValue('matters.rollNumber'),
-      //     inputmode: 'numeric',
-      //   },
-      //   hooks: {
-      //     onInit: (field) => {
-      //       const control = field?.formControl;
-      //       if (!control) return;
-
-      //       control.valueChanges.subscribe((value: string) => {
-      //         if (value && /[^0-9]/.test(value)) {
-      //           const numericOnly = value.replace(/[^0-9]/g, '');
-      //           control.setValue(numericOnly, { emitEvent: false });
-      //         }
-      //       });
-      //     },
-      //   },
-      //   expressions: {
-      //     'props.readonly': 'formState.readonly',
-      //   },
-      //   validation: {
-      //     messages: {
-      //       required: () =>
-      //         THIS._languageService.getTransValue('matters.required'),
-      //     },
-      //   },
-      // },
       {
         key: 'law_AdjournmentReasonsId',
         type: 'select',
@@ -400,7 +275,6 @@ export function taskManagementActivityEditorFields(
           label: THIS._languageService.getTransValue(
             'matters.adjournmentReason',
           ),
-          // virtualScroll: true,
           selectedObj: {},
           optionsArr: getOptionsArray(
             THIS.lookupsData.adjournmentReasons.result,
@@ -429,9 +303,7 @@ export function taskManagementActivityEditorFields(
             'name',
           ),
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         key: 'startDate',
@@ -446,9 +318,6 @@ export function taskManagementActivityEditorFields(
           required: true,
           showTime: true,
           hourFormat: '24',
-          // onSelect: (e: any) => {
-          //   THIS.formly?.get('startDate')?.setValue(e);
-          // },
           onSelect: (e: any) => {
             THIS.formly?.get('startDate')?.patchValue(e, { emitEvent: false });
           },
@@ -462,9 +331,7 @@ export function taskManagementActivityEditorFields(
             control.setValue(value, { emitEvent: false });
           },
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         key: 'law_ActivityStatusId',
@@ -485,16 +352,11 @@ export function taskManagementActivityEditorFields(
             '[1,4, 7].includes(field.model?.law_ActivityTypeId)',
         },
       },
-
-      // last edit to add attachment
-
       {
         key: 'documentDate',
         type: 'input',
         defaultValue: new Date().toISOString().split('T')[0],
-        props: {
-          type: 'hidden',
-        },
+        props: { type: 'hidden' },
         hide: true,
       },
       {
@@ -524,22 +386,16 @@ export function taskManagementActivityEditorFields(
             THIS.hearingAttachmentsFieldInstance = instance;
           },
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
     ],
     expressions: {
-      hide: (field: FormlyFieldConfig) => {
-        return (
-          field.model?.law_ActivityTypeId !== 1 ||
-          !field.model?.law_ActivityTypeId
-        );
-      },
+      hide: (field: FormlyFieldConfig) =>
+        field.model?.law_ActivityTypeId !== 1 ||
+        !field.model?.law_ActivityTypeId,
     },
   });
 
-  // Helper function to create other activities section (Notes, Meetings, etc.)
   const createOtherActivitiesSection = (): FormlyFieldConfig => ({
     fieldGroupClassName:
       'grid gap-4 md:grid-cols-2 bg-white rounded-2xl my-4 p-6',
@@ -551,7 +407,6 @@ export function taskManagementActivityEditorFields(
             `<h5 class="mb-4 text-grey500 text-lg font-bold">${model.law_ActivityType}</h5>`,
         },
       },
-
       {
         key: 'activityStartDate',
         type: 'date',
@@ -568,7 +423,6 @@ export function taskManagementActivityEditorFields(
         hooks: {
           onInit: (field) => {
             if (!field?.formControl) return;
-
             const control = field.formControl;
             const rowData = THIS._dynamicDialogConfig?.data?.rowData;
             const isEditMode = !!rowData;
@@ -585,11 +439,8 @@ export function taskManagementActivityEditorFields(
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![3, 5, 6, 8, 4, 7].includes(
-              field.model?.law_ActivityTypeId,
-            );
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![3, 5, 6, 8, 4, 7].includes(field.model?.law_ActivityTypeId),
         },
       },
       {
@@ -601,9 +452,8 @@ export function taskManagementActivityEditorFields(
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![4].includes(field.model?.law_ActivityTypeId);
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![4].includes(field.model?.law_ActivityTypeId),
           'props.required': '[4].includes(field.model?.law_ActivityTypeId)',
         },
       },
@@ -615,9 +465,8 @@ export function taskManagementActivityEditorFields(
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![4].includes(field.model?.law_ActivityTypeId);
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![4].includes(field.model?.law_ActivityTypeId),
         },
       },
       {
@@ -632,13 +481,11 @@ export function taskManagementActivityEditorFields(
             'id',
             'name',
           ),
-          
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![4, 5, 7].includes(field.model?.law_ActivityTypeId);
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![4, 5, 7].includes(field.model?.law_ActivityTypeId),
           'props.required': '[4, 7].includes(field.model?.law_ActivityTypeId)',
         },
       },
@@ -651,11 +498,8 @@ export function taskManagementActivityEditorFields(
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![3, 5, 6, 8, 4, 7].includes(
-              field.model?.law_ActivityTypeId,
-            );
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![3, 5, 6, 8, 4, 7].includes(field.model?.law_ActivityTypeId),
           'props.required':
             '[3, 5, 6, 8, 4, 7].includes(field.model?.law_ActivityTypeId)',
         },
@@ -664,14 +508,11 @@ export function taskManagementActivityEditorFields(
         className: 'col-span-2',
         key: 'remark',
         type: 'input',
-        props: {
-          label: THIS._languageService.getTransValue('matters.remark'),
-        },
+        props: { label: THIS._languageService.getTransValue('matters.remark') },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return [1].includes(field.model?.law_ActivityTypeId);
-          },
+          hide: (field: FormlyFieldConfig) =>
+            [1].includes(field.model?.law_ActivityTypeId),
         },
       },
       {
@@ -684,21 +525,18 @@ export function taskManagementActivityEditorFields(
         },
         expressions: {
           'props.readonly': 'formState.readonly',
-          hide: (field: FormlyFieldConfig) => {
-            return ![3, 5, 6, 4, 7].includes(field.model?.law_ActivityTypeId);
-          },
+          hide: (field: FormlyFieldConfig) =>
+            ![3, 5, 6, 4, 7].includes(field.model?.law_ActivityTypeId),
         },
       },
     ],
     expressions: {
-      hide: (field: FormlyFieldConfig) => {
-        return (
-          [1, 2].includes(field.model?.law_ActivityTypeId) ||
-          !field.model?.law_ActivityTypeId
-        );
-      },
+      hide: (field: FormlyFieldConfig) =>
+        [1, 2].includes(field.model?.law_ActivityTypeId) ||
+        !field.model?.law_ActivityTypeId,
     },
   });
+
   const createNewHearingSessionSection = (): FormlyFieldConfig => ({
     fieldGroupClassName:
       'grid gap-4 md:grid-cols-2 bg-white rounded-2xl my-4 p-6',
@@ -771,9 +609,7 @@ export function taskManagementActivityEditorFields(
               autosizeMinRows: 3,
               autosizeMaxRows: 8,
             },
-            expressions: {
-              'props.readonly': 'formState.readonly',
-            },
+            expressions: { 'props.readonly': 'formState.readonly' },
           },
           {
             className: 'col-span-2',
@@ -782,39 +618,31 @@ export function taskManagementActivityEditorFields(
             props: {
               label: THIS._languageService.getTransValue('matters.remark'),
             },
-            expressions: {
-              'props.readonly': 'formState.readonly',
+            expressions: { 'props.readonly': 'formState.readonly' },
+          },
+          {
+            key: 'rollNumber',
+            type: 'input',
+            props: {
+              type: 'text',
+              label: THIS._languageService.getTransValue('matters.rollNumber'),
+            },
+            expressions: { 'props.readonly': 'formState.readonly' },
+            validation: {
+              messages: {
+                required: () =>
+                  THIS._languageService.getTransValue('matters.required'),
+              },
             },
           },
-          
-    {
-      key: 'rollNumber',
-      type: 'input',
-      props: {
-        type: 'text',
-        label: THIS._languageService.getTransValue('matters.rollNumber'),
-      },
-      expressions: {
-        'props.readonly': 'formState.readonly',
-      },
-      validation: {
-        messages: {
-          required: () =>
-            THIS._languageService.getTransValue('matters.required'),
-        },
-      },
-    },
           {
             key: 'chamber',
             type: 'input',
             props: {
               label: THIS._languageService.getTransValue('matters.chamber'),
             },
-            expressions: {
-              'props.readonly': 'formState.readonly',
-            },
+            expressions: { 'props.readonly': 'formState.readonly' },
           },
-
           {
             key: 'litigatorId',
             type: 'select',
@@ -827,99 +655,43 @@ export function taskManagementActivityEditorFields(
                 'name',
               ),
             },
-            expressions: {
-              'props.readonly': 'formState.readonly',
+            expressions: { 'props.readonly': 'formState.readonly' },
+          },
+          {
+            key: 'hearingStartDate',
+            type: 'date',
+            defaultValue: (() => {
+              const date = new Date();
+              date.setHours(8, 0, 0, 0);
+              return date;
+            })(),
+            props: {
+              label: THIS._languageService.getTransValue('matters.date'),
+              required: true,
+              showTime: true,
+              hourFormat: '24',
+              onSelect: (value: Date) => {
+                if (!value) return;
+                THIS.isNewSessionHearingTimeChanged =
+                  value.getHours() !== 8 || value.getMinutes() !== 0;
+                THIS.formly
+                  ?.get('newSession.hearingStartDate')
+                  ?.setValue(value, { emitEvent: false });
+              },
+            },
+            hooks: {
+              onInit: (field) => {
+                if (!field?.formControl) return;
+                const control = field.formControl;
+                if (!control.value) {
+                  const date = new Date();
+                  date.setHours(8, 0, 0, 0);
+                  control.setValue(date, { emitEvent: false });
+                }
+                THIS.isNewSessionHearingTimeChanged = false;
+              },
             },
           },
-          //          {
-          //   key: 'hearingStartDate',
-          //   type: 'date',
-          //   defaultValue: (() => {
-          //     const d = new Date();
-          //     d.setHours(8, 0, 0, 0);
-          //     return d;
-          //   })(),
-          //   props: {
-          //     label: THIS._languageService.getTransValue('matters.date'),
-          //     required: true,
-          //     showTime: true,
-          //     hourFormat: '24',
-          //     onSelect: (e: Date) => {
-          //       THIS.formly?.get('startDate')?.setValue(e);
-          //     },
-          //   },
-          //   hooks: {
-          //     onInit: (field) => {
-          //       if (!field?.formControl) return;
-
-          //       const control = field.formControl;
-          //       if (control.value) return;
-          //       const d = new Date();
-          //       d.setHours(8, 0, 0, 0);
-          //       control.setValue(d, { emitEvent: false });
-          //     },
-          //   },
-          //   expressions: {
-          //     'props.readonly': 'formState.readonly',
-          //   },
-          // }
-          // ,
-
-{
-  key: 'hearingStartDate',
-  type: 'date',
-  defaultValue: (() => {
-    const date = new Date();
-    date.setHours(8, 0, 0, 0);
-    return date;
-  })(),
-  props: {
-    label: THIS._languageService.getTransValue('matters.date'),
-    required: true,
-    showTime: true,
-    hourFormat: '24',
-
-    onSelect: (value: Date) => {
-      if (!value) return;
-
-      THIS.isNewSessionHearingTimeChanged =
-        value.getHours() !== 8 || value.getMinutes() !== 0;
-
-      THIS.formly
-        ?.get('newSession.hearingStartDate')
-        ?.setValue(value, { emitEvent: false });
-    },
-  },
-  hooks: {
-    onInit: (field) => {
-      if (!field?.formControl) return;
-
-      const control = field.formControl;
-
-      if (!control.value) {
-        const date = new Date();
-        date.setHours(8, 0, 0, 0);
-
-        control.setValue(date, { emitEvent: false });
-      }
-
-      THIS.isNewSessionHearingTimeChanged = false;
-    },
-  },
-},
-          // {
-          //     key: 'startDate',
-          //     type: 'date',
-          //     defaultValue: new Date(),
-          //     props: {
-          //         label: THIS._languageService.getTransValue('matters.startDate'),
-          //         required: true,
-          //         showTime: true,
-          //     },
-          //     expressions: {
-          //         'props.readonly': 'formState.readonly',
-          //     },
-          // },
           {
             key: 'law_ActivityStatusId',
             type: 'select',
@@ -933,67 +705,40 @@ export function taskManagementActivityEditorFields(
                 'name',
               ),
             },
-            expressions: {
-              'props.readonly': 'formState.readonly',
-            },
+            expressions: { 'props.readonly': 'formState.readonly' },
           },
-
-// last edit to add attachment hereeeeeeeeee
-      // {
-      //   key: 'newdocumentDate',
-      //   type: 'input',
-      //   defaultValue: new Date(),
-      //   props: {
-      //     type: 'hidden',
-      //   },
-      //   hide: true,
-      // },
-      // {
-      //   key: 'newreceivedDate',
-      //   type: 'input',
-      //   defaultValue: new Date(),
-      //   props: { type: 'hidden' },
-      //   hide: true,
-      // },
-      {
-        key: 'newdocumentDescription',
-        type: 'input',
-        props: { type: 'hidden' },
-        hide: true,
-      },
-      {
-  key: 'newSessionAttachments',
-  type: 'attachment-list',
-  className: 'col-span-2',
-  props: {
-    fileType: 'blob',
-    multiple: true,
-    showSelectFromMatterBtn: true,
-    onSelectFromMatterClick: () => THIS.openSelectMatterDocumentsForNewSession(),
-    registerApi: (instance: any) => {
-      THIS.newSessionAttachmentsFieldInstance = instance;
-    },
-  },
-  expressions: {
-    'props.readonly': 'formState.readonly',
-  },
-},
-      
-
+          {
+            key: 'newdocumentDescription',
+            type: 'input',
+            props: { type: 'hidden' },
+            hide: true,
+          },
+          {
+            key: 'newSessionAttachments',
+            type: 'attachment-list',
+            className: 'col-span-2',
+            props: {
+              fileType: 'blob',
+              multiple: true,
+              showSelectFromMatterBtn: true,
+              onSelectFromMatterClick: () =>
+                THIS.openSelectMatterDocumentsForNewSession(),
+              registerApi: (instance: any) => {
+                THIS.newSessionAttachmentsFieldInstance = instance;
+              },
+            },
+            expressions: { 'props.readonly': 'formState.readonly' },
+          },
         ],
       },
     ],
     expressions: {
-      hide: () => {
-        return (
-          !THIS.formly.get('law_AdjournmentReasonsId')?.value ||
-          !!THIS._dynamicDialogConfig?.data?.rowData?.law_AdjournmentReasonsId
-        );
-      },
+      hide: () =>
+        !THIS.formly.get('law_AdjournmentReasonsId')?.value ||
+        !!THIS._dynamicDialogConfig?.data?.rowData?.law_AdjournmentReasonsId,
     },
   });
 
-  // Helper function to create final judgement section
   const createFinalJudgementSection = (): FormlyFieldConfig => ({
     fieldGroupClassName:
       'grid gap-4 md:grid-cols-2 bg-white rounded-2xl my-4 p-6',
@@ -1005,10 +750,13 @@ export function taskManagementActivityEditorFields(
         className: 'col-span-2',
         props: {
           label: THIS._languageService.getTransValue('matters.finalJudgement'),
+          onChange: (e: any) => {
+            if (e.checked) {
+              THIS.formly?.get('law_ActivityStatusId')?.setValue(4);
+            }
+          },
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
       {
         key: 'law_FinalJudgementId',
@@ -1043,12 +791,11 @@ export function taskManagementActivityEditorFields(
       },
     ],
     expressions: {
-      hide: (field: FormlyFieldConfig) => {
-        return !(
+      hide: (field: FormlyFieldConfig) =>
+        !(
           [1].includes(field.model?.law_ActivityTypeId) &&
           THIS._dynamicDialogConfig.data?.rowData
-        );
-      },
+        ),
     },
   });
 
@@ -1059,7 +806,7 @@ export function taskManagementActivityEditorFields(
       {
         className: 'col-span-2',
         expressionProperties: {
-          template: (model) =>
+          template: () =>
             `<h5 class="mb-4 text-grey500 text-lg font-bold">Attendees</h5>`,
         },
       },
@@ -1076,20 +823,16 @@ export function taskManagementActivityEditorFields(
             'object',
           ),
         },
-        expressions: {
-          'props.readonly': 'formState.readonly',
-        },
+        expressions: { 'props.readonly': 'formState.readonly' },
       },
     ],
     expressions: {
-      hide: (field: FormlyFieldConfig) => {
-        return (
-          field.model?.law_ActivityTypeId !== 4 ||
-          !field.model?.law_ActivityTypeId
-        );
-      },
+      hide: (field: FormlyFieldConfig) =>
+        field.model?.law_ActivityTypeId !== 4 ||
+        !field.model?.law_ActivityTypeId,
     },
   });
+
   return [
     createMainInfoSection(),
     createTaskSection(),
@@ -1100,4 +843,3 @@ export function taskManagementActivityEditorFields(
     createMeetingAttendeesSection(),
   ];
 }
-[]

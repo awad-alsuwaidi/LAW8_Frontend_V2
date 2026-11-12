@@ -124,7 +124,7 @@ export class SelectMatterDocumentsComponent implements OnInit {
     );
 
     const params = {
-      matterId,
+      'filters[matterId]': matterId,
       pagSize: 999999,
       pageNumber: 1,
     };
@@ -167,11 +167,6 @@ export class SelectMatterDocumentsComponent implements OnInit {
             this.documents.length,
           );
 
-          console.log(
-            '[SelectMatterDocuments] First normalized document:',
-            this.documents[0],
-          );
-
           this.selectedDocs =
             this.documents.filter((doc: any) => {
               const documentId =
@@ -186,14 +181,6 @@ export class SelectMatterDocumentsComponent implements OnInit {
           console.log(
             '[SelectMatterDocuments] Pre-selected documents count:',
             this.selectedDocs.length,
-          );
-
-          console.log(
-            '[SelectMatterDocuments] Pre-selected document IDs:',
-            this.selectedDocs.map(
-              (doc: any) =>
-                this.getDocumentId(doc),
-            ),
           );
 
           this._cdr.detectChanges();

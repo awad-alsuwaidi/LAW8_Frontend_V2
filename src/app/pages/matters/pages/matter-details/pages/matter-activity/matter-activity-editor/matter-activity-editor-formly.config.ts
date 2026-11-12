@@ -251,10 +251,10 @@ export function matterActivityEditorFields(
           },
         },
 
-        {
+            {
           key: 'law_ActivityStatusId',
-          defaultValue: !THIS._dynamicDialogConfig?.data?.rowData ? 1 : '',
           type: 'select',
+          defaultValue: !THIS._dynamicDialogConfig?.data?.rowData ? 1 : '',
           props: {
             label: THIS._languageService.getTransValue('matters.status'),
             optionsArr: THIS.lookupsData.activityStatus.result.map(
@@ -265,9 +265,16 @@ export function matterActivityEditorFields(
             ),
           },
           expressions: {
-            'props.required':
-              '[1,4, 7].includes(field.model?.law_ActivityTypeId)',
             'props.readonly': 'formState.readonly',
+            hide: (field: FormlyFieldConfig) => {
+              return ![2, 4, 5, 7].includes(field.model?.law_ActivityTypeId);
+            },
+            'props.required': (field: FormlyFieldConfig) => {
+              const type = THIS.lookupsData.activityType.result.find(
+                (t: any) => t.id === field.model?.law_ActivityTypeId
+              );
+              return type?.requiresStatus === true;
+            },
           },
         },
 
