@@ -116,7 +116,7 @@ export class Menu {
           icon: 'icon-contacts',
           label: 'common.contacts',
           route: '/contacts',
-          permission: 'View_Contacts1',
+          // permission: 'View_Contacts1',
         },
 
         {
@@ -264,48 +264,48 @@ export class Menu {
           icon: 'icon-report',
           label: 'menu.reports',
           route: '/reports',
-          permission: 'View_Report',
+          // permission: 'View_Report',
 
           children: [
             {
               label: 'menu.activityreport',
               route: '/reports/activity',
-              permission: 'Activity_ViewReports',
+              // permission: 'Activity_ViewReports',
             },
             {
               label: 'menu.activityreport2',
               route: '/reports/activity2',
-              permission: 'Activity_ViewReports',
+              // permission: 'Activity_ViewReports',
             },
             {
               label: 'menu.matterReport',
               route: '/reports/matter',
-              permission: 'Matter_ViewReports',
+              // permission: 'Matter_ViewReports',
             },
             {
               label: isInhouse ? 'menu.entityReport' : 'menu.clientReport',
               route: '/reports/client',
-              permission: 'Clients_ViewReport',
+              // permission: 'Clients_ViewReport',
             },
             {
               label: 'menu.timeSheetReport',
               route: '/reports/timesheet',
-              permission: 'TimeSheet_ViewReports',
+              // permission: 'TimeSheet_ViewReports',
             },
             {
               label: 'menu.productivityReport',
               route: '/reports/productivity',
-              permission: 'Productivity_ViewReports',
+              // permission: 'Productivity_ViewReports',
             },
             {
               label: 'menu.utilizationReport',
               route: '/reports/utilization',
-              permission: 'Utilization_ViewReports',
+              // permission: 'Utilization_ViewReports',
             },
             {
               label: 'menu.documentExpiryTracker',
               route: '/reports/document-expiry-tracker',
-              permission: 'DocumentExpiry_ViewReports',
+              // permission: 'DocumentExpiry_ViewReports',
             },
             {
               label: 'menu.billing',
@@ -350,8 +350,8 @@ export class Menu {
         },
         {
           icon: '',
-          label: 'menu.crm',
-          action: 'open-crm',
+          label: 'menu.link8',
+          action: 'open-link8',
           // permission: 'View_Security',
         },
       ],

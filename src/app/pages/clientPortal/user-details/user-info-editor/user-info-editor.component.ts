@@ -178,7 +178,7 @@ export class UserInfoEditorComponent
                 IsActive: activation,
               };
               this._apiService
-                .post(API_Config.users.activeUser, {}, params)
+                .post(API_Config.users.toggleActive, {}, params)
                 .pipe(this._unsubscribe.takeUntilDestroy())
                 .subscribe({
                   next: (res: any) => {
@@ -232,7 +232,7 @@ export class UserInfoEditorComponent
               : 'bg-textErrorBase text-white',
             command: () => {
               const endpoint = `${
-                API_Config.users.lockedUser
+                API_Config.users.toggleLock
               }?UserId=${encodeURIComponent(userId)}&IsLocked=${locked}`;
 
               this._apiService

@@ -1,13 +1,13 @@
 {
   "setting": {
-    "accountSystemIntegration": "Account System Integration",
-    "sapAccountingSystem": "SAP Accounting System",
-    "serverName": "Server Name",
-    "databaseName": "Database Name",
-    "taxes": "Taxes",
-    "fees": "Fees",
-    "disbursements": "Disbursements",
-    "systemCurrency":"System Currency",
-    "defaultCurrency":"Default Currency"
+    "accountSystemIntegration": "ربط نظام الحسابات",
+    "sapAccountingSystem": "نظام SAP المحاسبي",
+    "serverName": "اسم الخادم",
+    "databaseName": "اسم قاعدة البيانات",
+    "taxes": "الضرائب",
+    "fees": "الرسوم",
+    "disbursements": "المصروفات",
+    "systemCurrency": "عملة النظام",
+    "defaultCurrency": "العملة الافتراضية"
   }
 }

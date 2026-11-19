@@ -24,13 +24,15 @@ export class ApiService {
           };
         }
         return res;
-      })
+      }),
     );
   }
 
   private resolveBase(apiUrl: string): string {
     const clean = apiUrl.replace(/^\/+/, '');
-    const isAuth = clean.toLowerCase().startsWith('auth/');
+    const lower = clean.toLowerCase();
+    const isAuth =
+      lower.startsWith('auth/') || lower === 'users/me/change-password';
     return isAuth ? environment.authUrl : environment.apiUrl;
   }
 
@@ -65,12 +67,12 @@ export class ApiService {
     if (params) url += this.getParams(params);
     return this.http.get(this.getFullUrl(url), { responseType: 'blob' });
   }
-patch<T = any>(url: string, body: any = {}, params?: {}): Observable<T> {
-  if (params) url += this.getParams(params);
-  return this.normalize<T>(this.http.patch(this.getFullUrl(url), body));
-}
+  patch<T = any>(url: string, body: any = {}, params?: {}): Observable<T> {
+    if (params) url += this.getParams(params);
+    return this.normalize<T>(this.http.patch(this.getFullUrl(url), body));
+  }
 
-private getParams(args: any): string {
+  private getParams(args: any): string {
     if (!args) return '';
     const params = Object.keys(args)
       .filter((key) => args[key] != null)
@@ -83,12 +85,17 @@ private getParams(args: any): string {
   private optionToString(key: string, value: any): string {
     if (value === null || value === undefined) return '';
     if (Array.isArray(value)) {
-      return value.map((element, index) => `${key}[${index}]=${element}`).join('&');
+      return value
+        .map((element, index) => `${key}[${index}]=${element}`)
+        .join('&');
     }
     if (typeof value === 'object') {
       return Object.keys(value)
         .map((element) => {
-          const serialized = this.serializeObject(value[element], `${key}[${element}]`);
+          const serialized = this.serializeObject(
+            value[element],
+            `${key}[${element}]`,
+          );
           return Array.isArray(value[element])
             ? serialized
             : `${key}[${element}]=${value[element]}`;

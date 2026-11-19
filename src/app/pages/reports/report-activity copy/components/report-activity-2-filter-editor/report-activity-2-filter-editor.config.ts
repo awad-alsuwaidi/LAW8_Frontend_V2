@@ -1,9 +1,12 @@
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ReportActivity2FilterEditorComponent } from './report-activity-2-filter-editor.component';
 
-export function reportActivityFilterConfig(
-  THIS: ReportActivity2FilterEditorComponent
+export function reportActivity2FilterConfig(
+  THIS: ReportActivity2FilterEditorComponent,
 ): FormlyFieldConfig[] {
+  const currentLang =
+    THIS._languageService.getSelectedLanguage() === 'en' ? 'en' : 'ar';
+
   return [
     {
       fieldGroupClassName: 'grid md:grid-cols-3 gap-6',
@@ -27,6 +30,7 @@ export function reportActivityFilterConfig(
         {
           key: 'matterIds',
           type: 'multi-select',
+          defaultValue: [],                          
           props: {
             virtualScroll: true,
             label: THIS._languageService.getTransValue('matters.title'),
@@ -39,6 +43,7 @@ export function reportActivityFilterConfig(
         {
           key: 'activityTypeIds',
           type: 'multi-select',
+          defaultValue: [],                          
           props: {
             label: THIS._languageService.getTransValue('matters.activityType'),
             optionsArr: [],
@@ -46,8 +51,9 @@ export function reportActivityFilterConfig(
           },
         },
         {
+          key: 'jurisdictionIds',
           type: 'multi-select',
-          key: 'juriductionsIds',
+          defaultValue: [],                        
           props: {
             label: THIS._languageService.getTransValue('matters.jurisdicion'),
             optionsArr: [],
@@ -55,8 +61,9 @@ export function reportActivityFilterConfig(
           },
         },
         {
-          type: 'multi-select',
           key: 'matterStatusIds',
+          type: 'multi-select',
+          defaultValue: [],                         
           props: {
             label: THIS._languageService.getTransValue('matters.matterStatus'),
             optionsArr: [],
@@ -64,8 +71,9 @@ export function reportActivityFilterConfig(
           },
         },
         {
+          key: 'stageIds',
           type: 'multi-select',
-          key: 'stagesIds',
+          defaultValue: [],                          
           props: {
             label: THIS._languageService.getTransValue('matters.stage'),
             optionsArr: [],
@@ -73,8 +81,9 @@ export function reportActivityFilterConfig(
           },
         },
         {
-          type: 'multi-select',
           key: 'matterTypeIds',
+          type: 'multi-select',
+          defaultValue: [],                           
           props: {
             label: THIS._languageService.getTransValue('matters.matterType'),
             optionsArr: [],
@@ -82,8 +91,9 @@ export function reportActivityFilterConfig(
           },
         },
         {
-          type: 'multi-select',
           key: 'lawyerIds',
+          type: 'multi-select',
+          defaultValue: [],                          
           props: {
             label: THIS._languageService.getTransValue('report.lawyer'),
             optionsArr: [],
@@ -91,17 +101,21 @@ export function reportActivityFilterConfig(
           },
         },
         {
-          type: 'multi-select',
           key: 'clientIds',
+          type: 'multi-select',
+          defaultValue: [],                         
           props: {
-            label: THIS._languageService.getTransValue(THIS.isInhouse ? 'report.entity' : 'report.client'),
+            label: THIS._languageService.getTransValue(
+              THIS.isInhouse ? 'report.entity' : 'report.client',
+            ),
             optionsArr: [],
             loading: true,
           },
         },
         {
-          type: 'select',
-          key: 'law_BranchId',
+          key: 'branchIds',
+          type: 'multi-select',
+          defaultValue: [],                           
           props: {
             label: THIS._languageService.getTransValue('common.branch'),
             optionsArr: [],
@@ -109,38 +123,24 @@ export function reportActivityFilterConfig(
           },
         },
         {
+          key: 'lang',
           type: 'select',
-          key: 'printLanguage',
           props: {
             label: THIS._languageService.getTransValue('report.printLanguage'),
             optionsArr: [
-              {
-                label: THIS._languageService.getTransValue('report.english'),
-                value: 1,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.arabic'),
-                value: 2,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.french'),
-                value: 3,
-              },
+              { label: THIS._languageService.getTransValue('report.english'), value: 'en' },
+              { label: THIS._languageService.getTransValue('report.arabic'),  value: 'ar' },
             ],
           },
-          defaultValue:
-            THIS._languageService.getSelectedLanguage() === 'en' ? 1 : 2,
+          defaultValue: currentLang,
           hooks: {
             onInit: (field) => {
-              const defaultValue =
-                THIS._languageService.getSelectedLanguage() === 'en' ? 1 : 2;
               if (!field.formControl?.value) {
-                field.formControl?.setValue(defaultValue, { emitEvent: false });
+                field.formControl?.setValue(currentLang, { emitEvent: false });
               }
-
               field.formControl?.valueChanges.subscribe((value) => {
                 if (!value) {
-                  delete field.formControl?.parent?.value['printLanguage'];
+                  delete field.formControl?.parent?.value['lang'];
                 }
               });
             },
@@ -164,21 +164,15 @@ export function reportActivityFilterConfig(
       fieldGroupClassName: 'grid grid-cols-1 py-2',
       fieldGroup: [
         {
-          key: 'printTypeId',
+          key: 'format',
           type: 'radio',
-          defaultValue: 1,
+          defaultValue: 'pdf',
           props: {
             label: THIS._languageService.getTransValue('report.printType'),
             required: true,
             options: [
-              {
-                label: THIS._languageService.getTransValue('report.excel'),
-                value: 2,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.pdf'),
-                value: 1,
-              },
+              { label: THIS._languageService.getTransValue('report.pdf'),   value: 'pdf'  },
+              { label: THIS._languageService.getTransValue('report.excel'), value: 'xlsx' },
             ],
           },
         },

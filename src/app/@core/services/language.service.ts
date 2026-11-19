@@ -40,34 +40,9 @@ export class LanguageService {
       this.translateService.use(selectedLang);
       this.changeDirection(selectedLang);
       this.setCalendarLocale(selectedLang); 
-      // this.convertCalendarNumbersToArabic();
         resolve(true);
     });
   }
-
-// private convertCalendarNumbersToArabic() {
-//   if (!isPlatformBrowser(this.platformId)) return;
-
-//   const observer = new MutationObserver((mutations) => {
-//     const lang = this.document.documentElement.lang;
-//     if (lang !== 'ar') return;
-
-//     const dayCells = this.document.querySelectorAll('.p-datepicker td span');
-
-//     dayCells.forEach((el: any) => {
-//       const text = el.textContent?.trim();
-//       if (text && /^\d+$/.test(text)) {
-//         el.textContent = text.replace(/\d/g, (d: string | number) => '٠١٢٣٤٥٦٧٨٩'[+d]);
-//       }
-//     });
-//   });
-
-//   observer.observe(this.document.body, {
-//     childList: true,
-//     subtree: true,
-//   });
-// }
-
 
   setLanguage(lang: string) {
     if (isPlatformBrowser(this.platformId)) {

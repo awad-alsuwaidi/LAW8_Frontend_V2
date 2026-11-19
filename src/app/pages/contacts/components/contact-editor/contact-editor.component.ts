@@ -32,20 +32,44 @@ export class ContactEditorComponent extends FormBaseClass implements OnInit {
   override getLookupsData(): void {
     combineLatest({
       category: this._apiService.get(API_Config.general.getContactsCategory),
-      type: this._apiService.get(API_Config.general.getContactsType),
     })
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res) => {
-          this.lookupsData = res;
+        next: (res: any) => {
+          const extractList = (response: any): any[] => {
+            if (!response) return [];
+            const body = response?.data || response?.result || response;
+            if (Array.isArray(body)) return body;
+            return body?.items || body?.dataList || [];
+          };
+
+          const categories = extractList(res.category).map((c: any) => ({
+            ...c,
+            name: c.nameEn || c.nameAr || c.name || '',
+          }));
+
+          const types = extractList(res.type).map((t: any) => ({
+            ...t,
+            name: t.nameEn || t.nameAr || t.name || '',
+          }));
+
+          this.lookupsData = {
+            category: { result: categories },
+            type: { result: types },
+          };
+
+          this.initForm();
+        },
+        error: (err) => {
+          this.lookupsData = {
+            category: { result: [] },
+            type: { result: [] },
+          };
           this.initForm();
         },
       });
   }
-  // initForm(): void {
-  //   this.formlyFields = contactEditorFormlyConfig(this);
-  //   if (this._dynamicDialogConfig.data.rowData) this.setFormData();
-  // }
+  
   initForm(): void {
     this.formlyFields = contactEditorFormlyConfig(this);
 
@@ -57,46 +81,40 @@ export class ContactEditorComponent extends FormBaseClass implements OnInit {
       this.setFormData();
     }
   }
+
   setFormData() {
-    const params = {
-      id: this._dynamicDialogConfig.data.rowData.id,
-    };
+    const url = `${API_Config.contacts.getById}/${this._dynamicDialogConfig.data.rowData.id}`;
 
     this._apiService
-      .get(API_Config.contacts.getById, params)
+      .get(url)
       .pipe(this._unsubscribe.takeUntilDestroy())
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const data = res?.data ?? res?.result;
+          
+          if (isSuccess && data) {
             this.formlyModel = {
-              ...res.result,
-              categoryId: Number(res.result.categoryId),
+              ...data,
+              contactCategoryId: Number(data.contactCategoryId),
+              
+              category: data.contactCategoryName || '', 
+              phone1: data.phone1 ?? '',
+              phone2: data.phone2 ?? '',
+              mobile1: data.mobile1 ?? '',
+              mobile2: data.mobile2 ?? '',
+              fax: data.fax ?? '',
+              position: data.position ?? '',
+              remarks: data.remarks ?? ''
             };
 
             this.formlyOptions = {
               ...this.formlyOptions,
-              formState: {
-                readonly: this.mode === 'view',
-                isViewMode: this.mode === 'view',
-              },
+              formState: { readonly: this.mode === 'view', isViewMode: this.mode === 'view' },
             };
           }
         },
       });
-  }
-  // onEdit() {
-  //   this.formlyOptions.formState.readonly = false;
-  // }
-  onEdit() {
-    this.formlyOptions = {
-      ...this.formlyOptions,
-      formState: {
-        readonly: false,
-        isViewMode: false,
-      },
-    };
-    this._dynamicDialogConfig.header = this._languageService.getTransValue('matters.editContact'); 
-    this.formlyFields = [...contactEditorFormlyConfig(this)];
   }
 
   onSubmit(): void {
@@ -104,18 +122,23 @@ export class ContactEditorComponent extends FormBaseClass implements OnInit {
       this.formly.markAllAsTouched();
       return;
     }
-    const requestPayload = this._dynamicDialogConfig?.data?.rowData
-      ? {
-          ...this.formlyModel,
-          id: this._dynamicDialogConfig?.data?.rowData?.id,
-        }
-      : this.formlyModel;
-    const path = this._dynamicDialogConfig?.data?.rowData
-      ? API_Config.contacts.update
+
+    const isUpdate = !!this._dynamicDialogConfig?.data?.rowData?.id;
+    const rowData = this._dynamicDialogConfig?.data?.rowData;
+
+    const requestPayload = { ...this.formlyModel };
+
+    const path = isUpdate
+      ? `${API_Config.contacts.update}/${rowData.id}`
       : API_Config.contacts.create;
+
     this.isSubmitted = true;
-    this._apiService
-      .post(path, requestPayload)
+    
+    const req$ = isUpdate
+      ? this._apiService.put(path, requestPayload)
+      : this._apiService.post(path, requestPayload);
+
+    req$
       .pipe(
         finalize(() => (this.isSubmitted = false)),
         this._unsubscribe.takeUntilDestroy(),
@@ -130,8 +153,21 @@ export class ContactEditorComponent extends FormBaseClass implements OnInit {
           }
         },
         error: (err: any) => {
-          this._toastrNotifiService.displayError(err?.error?.message);
+          this._toastrNotifiService.displayError(err?.error?.message || 'Something went wrong');
         },
       });
   }
+
+  onEdit() {
+    this.formlyOptions = {
+      ...this.formlyOptions,
+      formState: {
+        readonly: false,
+        isViewMode: false,
+      },
+    };
+    this._dynamicDialogConfig.header = this._languageService.getTransValue('matters.editContact'); 
+    this.formlyFields = [...contactEditorFormlyConfig(this)];
+  }
+
 }

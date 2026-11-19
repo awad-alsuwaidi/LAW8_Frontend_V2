@@ -2,10 +2,12 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ReportTimesheetFilterEditorComponent } from './report-timesheet-filter-editor.component';
 
 export function reportTimesheetFilterEditorConfig(
-  THIS: ReportTimesheetFilterEditorComponent
+  THIS: ReportTimesheetFilterEditorComponent,
 ): FormlyFieldConfig[] {
+  const currentLang =
+    THIS._languageService.getSelectedLanguage() === 'en' ? 'en' : 'ar';
+
   return [
-   
     {
       fieldGroupClassName: 'grid md:grid-cols-3 gap-6',
       fieldGroup: [
@@ -28,8 +30,9 @@ export function reportTimesheetFilterEditorConfig(
           },
         },
         {
-          key: 'mtrNo',
-          type: 'select',
+          key: 'matterIds',
+          type: 'multi-select',
+          defaultValue: [],
           props: {
             virtualScroll: true,
             label: THIS._languageService.getTransValue('matters.title'),
@@ -39,7 +42,8 @@ export function reportTimesheetFilterEditorConfig(
         },
         {
           type: 'multi-select',
-          key: 'laywersIds',
+          key: 'lawyerIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('report.lawyer'),
             optionsArr: [],
@@ -47,36 +51,28 @@ export function reportTimesheetFilterEditorConfig(
           },
         },
         {
-          type: 'select',
+          type: 'multi-select',
           key: 'clientIds',
+          defaultValue: [],
           props: {
-            label: THIS._languageService.getTransValue(THIS.isInhouse ? 'report.entity' : 'report.client'),
+            label: THIS._languageService.getTransValue(
+              THIS.isInhouse ? 'report.entity' : 'report.client',
+            ),
             optionsArr: [],
             loading: true,
           },
         },
         {
           type: 'select',
-          key: 'printLanguage',
+          key: 'lang',
           props: {
             label: THIS._languageService.getTransValue('report.printLanguage'),
             optionsArr: [
-              {
-                label: THIS._languageService.getTransValue('report.english'),
-                value: 1,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.arabic'),
-                value: 2,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.french'),
-                value: 3,
-              },
+              { label: THIS._languageService.getTransValue('report.english'), value: 'en' },
+              { label: THIS._languageService.getTransValue('report.arabic'),  value: 'ar' },
             ],
           },
-          defaultValue:
-            THIS._languageService.getSelectedLanguage() === 'en' ? 1 : 2,
+          defaultValue: currentLang,
         },
       ],
       validators: {
@@ -92,25 +88,19 @@ export function reportTimesheetFilterEditorConfig(
         ],
       },
     },
-     {
+    {
       fieldGroupClassName: 'grid grid-cols-1 py-2',
       fieldGroup: [
         {
-          key: 'printTypeId',
+          key: 'format',
           type: 'radio',
-          defaultValue: 1,
+          defaultValue: 'pdf',
           props: {
             label: THIS._languageService.getTransValue('report.printType'),
             required: true,
             options: [
-              {
-                label: THIS._languageService.getTransValue('report.excel'),
-                value: 2,
-              },
-              {
-                label: THIS._languageService.getTransValue('report.pdf'),
-                value: 1,
-              },
+              { label: THIS._languageService.getTransValue('report.pdf'),   value: 'pdf'  },
+              { label: THIS._languageService.getTransValue('report.excel'), value: 'xlsx' },
             ],
           },
         },

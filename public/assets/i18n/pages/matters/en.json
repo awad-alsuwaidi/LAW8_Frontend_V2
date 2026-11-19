@@ -150,6 +150,8 @@
         "deletePartyMessage": "Are you sure you want to delete this Party ?",
         "deleteActivityTitle": "Delete Activity",
         "deleteActivityMessage": "Are you sure you want to delete this Activity ?",
+        "deleteContactTitle": "Are you sure you want to delete this Contact ?",
+        "deleteContactMessage": "You Will Delete Contact",
         "deleteClassTitle": "Delete Class ({{value}})",
         "deleteClassMessage": "Are you sure you want to delete this Class ?",
         "deleteAddressTitle": "Delete Address",

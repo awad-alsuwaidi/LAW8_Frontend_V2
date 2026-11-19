@@ -13,8 +13,4 @@
             [label]="'report.generateReport' | translate" [isLoading]="isLoading" [btnType]="'submit'" />
     </div>
 </form>
-
-<ng-container *ngIf="urlSafe">
-    <iframe [src]="urlSafe" frameborder="0" width="100%" height="800"></iframe>
-</ng-container>
 }

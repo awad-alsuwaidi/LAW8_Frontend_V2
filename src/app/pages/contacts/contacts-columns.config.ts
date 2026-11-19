@@ -2,32 +2,33 @@ export const Clients_Columns = [
   {
     header: 'common.name',
     field: 'name',
-    isSort: true
+    isSort: true,
   },
   {
     header: 'common.category',
-    field: 'category',
-    isSort: true
+    field: 'contactCategoryName',
+    isSort: true,
   },
   {
     header: 'common.type',
-    field: 'type',
-    isSort: true
+    field: 'ownerType',
+    isSort: true,
   },
   {
-    header: 'common.clientNo',
-    field: 'clientNo',
+    // header: 'common.clientNo',  // تعديل كويس
+    header: 'common.codeNo',
+    field: 'ownerCode',
     isClientNo: true,
-    isSort: true
+    isSort: true,
   },
   {
     header: 'common.phone',
-    field: 'phone',
-    isSort: true
+    field: 'phone1',
+    isSort: true,
   },
   {
     header: 'common.email',
     field: 'email',
-    isSort: true
-  }
+    isSort: true,
+  },
 ];

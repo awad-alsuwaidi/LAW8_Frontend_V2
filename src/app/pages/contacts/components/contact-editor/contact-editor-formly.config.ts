@@ -26,21 +26,8 @@ export function contactEditorFormlyConfig(
           },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
-        // {
-        //   key: 'categoryId',
-        //   type: 'select',
-        //   props: {
-        //     label: THIS._languageService.getTransValue('common.category'),
-        //     optionsArr: getOptionsArray(
-        //       THIS.lookupsData?.category?.result || [],
-        //       'id',
-        //       'name'
-        //     ),
-        //     required: true,
-        //   },
-        // },
         {
-          key: 'categoryId',
+          key: 'contactCategoryId',
           type: 'select',
           hideExpression: (model, formState) => formState.isViewMode,
           props: {
@@ -50,11 +37,9 @@ export function contactEditorFormlyConfig(
               'id',
               'name',
             ),
-
             required: true,
           },
         },
-
         {
           key: 'category',
           type: 'input',
@@ -80,12 +65,8 @@ export function contactEditorFormlyConfig(
             type: 'email',
             placeholder: 'name@email.com',
           },
-          validators: {
-            validation: ['email'],
-          },
-          expressions: {
-            'props.readonly': 'formState.readonly',
-          },
+          validators: { validation: ['email'] },
+          expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
           key: 'address',
@@ -96,7 +77,7 @@ export function contactEditorFormlyConfig(
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'phone',
+          key: 'phone1',
           type: 'phone',
           props: {
             label: THIS._languageService.getTransValue('clients.phone'),
@@ -105,11 +86,11 @@ export function contactEditorFormlyConfig(
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
-                  const validValue = value.replace(/[^0-9+ ]/g, '');
-                  control.setValue(validValue, { emitEvent: false });
+                  control.setValue(value.replace(/[^0-9+ ]/g, ''), {
+                    emitEvent: false,
+                  });
                 }
               });
             },
@@ -117,7 +98,7 @@ export function contactEditorFormlyConfig(
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'mobile',
+          key: 'mobile1',
           type: 'phone',
           props: {
             label: THIS._languageService.getTransValue('clients.mobile'),
@@ -126,11 +107,11 @@ export function contactEditorFormlyConfig(
             onInit: (field) => {
               const control = field?.formControl;
               if (!control) return;
-
               control.valueChanges.subscribe((value: string) => {
                 if (value && /[^0-9+ ]/.test(value)) {
-                  const validValue = value.replace(/[^0-9+ ]/g, '');
-                  control.setValue(validValue, { emitEvent: false });
+                  control.setValue(value.replace(/[^0-9+ ]/g, ''), {
+                    emitEvent: false,
+                  });
                 }
               });
             },
@@ -140,13 +121,11 @@ export function contactEditorFormlyConfig(
         {
           key: 'fax',
           type: 'input',
-          props: {
-            label: THIS._languageService.getTransValue('clients.fax'),
-          },
+          props: { label: THIS._languageService.getTransValue('clients.fax') },
           expressions: { 'props.readonly': 'formState.readonly' },
         },
         {
-          key: 'notes',
+          key: 'remarks',
           type: 'input',
           props: {
             label: THIS._languageService.getTransValue('clients.remark'),

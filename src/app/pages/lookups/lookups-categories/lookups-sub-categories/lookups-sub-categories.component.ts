@@ -29,7 +29,6 @@ import { map } from 'rxjs';
   templateUrl: './lookups-sub-categories.component.html',
   styleUrl: './lookups-sub-categories.component.scss',
 })
-
 export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
   private _lookupsCategoriesService = inject(LookupsCategoriesService);
   protected _router = inject(Router);
@@ -133,61 +132,61 @@ export class LookupsSubCategoriesComponent implements OnInit, OnDestroy {
       });
   }
 
-getData(): void {
-  clearTimeout(this.getDataTimeout);
-  this.getDataTimeout = setTimeout(() => {
-    if (!this.categoryIdentifier) {
-      console.warn('categoryIdentifier not set — abort');
-      return;
-    }
+  getData(): void {
+    clearTimeout(this.getDataTimeout);
+    this.getDataTimeout = setTimeout(() => {
+      if (!this.categoryIdentifier) {
+        console.warn('categoryIdentifier not set — abort');
+        return;
+      }
 
-    this.isLoading = true;
-    const params = {
-      matterCategoryId: this.categoryIdentifier,        
-      pageNumber: this.pagination.pageNumber,
-      pageSize: this.pagination.pageSize,
-      sortBy: this.sortBy,
-      isDescending: this.isDescending,
-    };
+      this.isLoading = true;
+      const params = {
+        matterCategoryId: this.categoryIdentifier,
+        pageNumber: this.pagination.pageNumber,
+        pageSize: this.pagination.pageSize,
+        sortBy: this.sortBy,
+        isDescending: this.isDescending,
+      };
 
-    const url = Lookups_API.matterTypes.get;          
-    this._apiService
-      .get<any>(url, params)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: any) => {
-          const body = res?.data ?? res?.result ?? res;
-          const list = body?.items ?? body?.dataList ?? [];
+      const url = Lookups_API.matterTypes.get;
+      this._apiService
+        .get<any>(url, params)
+        .pipe(this._unsubscribe.takeUntilDestroy())
+        .subscribe({
+          next: (res: any) => {
+            const body = res?.data ?? res?.result ?? res;
+            const list = body?.items ?? body?.dataList ?? [];
 
-          this.data = list.map((obj: any) => ({
-            id: obj.id,
-            matterCategoryId: obj.matterCategoryId,
-            nameEn: obj.nameEn,
-            nameAr: obj.nameAr,
-            appealPeriod: obj.appealPeriod,
-            cassationPeriod: obj.cassationPeriod,
-            isActive: obj.isActive,
-            active: obj.isActive,
-            activeText: this._languageService.getTransValue(
-              obj.isActive ? 'common.active' : 'common.inactive',
-            ),
-          }));
+            this.data = list.map((obj: any) => ({
+              id: obj.id,
+              matterCategoryId: obj.matterCategoryId,
+              nameEn: obj.nameEn,
+              nameAr: obj.nameAr,
+              appealPeriod: obj.appealPeriod,
+              cassationPeriod: obj.cassationPeriod,
+              isActive: obj.isActive,
+              active: obj.isActive,
+              activeText: this._languageService.getTransValue(
+                obj.isActive ? 'common.active' : 'common.inactive',
+              ),
+            }));
 
-          this.pagination.totalElements = body?.totalCount ?? 0;
-          this.pagination = { ...this.pagination };
-          this.isLoading = false;
-          this.hasLoaded = true;
-        },
-        error: (err) => {
-          console.error('Subcategories fetch failed:', err);
-          this.data = [];
-          this.pagination.totalElements = 0;
-          this.isLoading = false;
-          this.hasLoaded = true;
-        },
-      });
-  }, 200);
-}
+            this.pagination.totalElements = body?.totalCount ?? 0;
+            this.pagination = { ...this.pagination };
+            this.isLoading = false;
+            this.hasLoaded = true;
+          },
+          error: (err) => {
+            console.error('Subcategories fetch failed:', err);
+            this.data = [];
+            this.pagination.totalElements = 0;
+            this.isLoading = false;
+            this.hasLoaded = true;
+          },
+        });
+    }, 200);
+  }
 
   openCategoryEditor(): void {
     const ref = this._dialogService.open(LookupsCategoryEditorComponent, {
@@ -237,6 +236,62 @@ getData(): void {
     this.pagination = { ...this.pagination };
     this.getData();
   }
+
+onDeleteCategory(): void {
+  if (!this.category?.id) return;
+
+  this.deleteDialogRef = this._dialogService.open(
+    SharedConfirmDialogComponent,
+    {
+      modal: true,
+      styleClass: 'w-[400px]',
+      data: {
+        type: ConfirmDialogType.Danger,
+        title: this._languageService.getTransValue('messages.deleteTitle', {
+          value: this.category.id,
+        }),
+        message: this._languageService.getTransValue('messages.deleteMessage'),
+        btns: [
+          {
+            label: this._languageService.getTransValue('lookups.discard'),
+            styleClass: 'border border-grey500 text-grey500',
+            command: () => this.deleteDialogRef.close(),
+          },
+          {
+            label: this._languageService.getTransValue('lookups.delete'),
+            styleClass: 'bg-textErrorBase text-white',
+            command: () => this.deleteCategory(this.category!.id),
+          },
+        ],
+      },
+    },
+  );
+}
+
+deleteCategory(categoryId: number): void {
+  const url = `${Lookups_API.matterCategories.delete}/${categoryId}`;
+  this._apiService
+    .delete<ApiRes>(url)
+    .pipe(this._unsubscribe.takeUntilDestroy())
+    .subscribe({
+      next: (res: any) => {
+        const ok = res?.isSuccess === true || res?.success === true;
+        this.deleteDialogRef.close();
+        if (ok) {
+          this._toastrNotifiService.displaySuccess(res?.message ?? 'Deleted');
+          this._router.navigate(['../../'], { relativeTo: this._route }); 
+        } else {
+          this._toastrNotifiService.displayError(res?.message ?? 'Failed');
+        }
+      },
+      error: (err) => {
+        this.deleteDialogRef.close();
+        this._toastrNotifiService.displayError(
+          err?.error?.message ?? 'Failed to delete',
+        );
+      },
+    });
+}
 
   onDelete(rowData: LookupSubCategoryDto): void {
     this.deleteDialogRef = this._dialogService.open(

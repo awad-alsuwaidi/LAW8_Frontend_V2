@@ -289,13 +289,27 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
           const rows = this.unwrapList(res);
           this.getFormArray.clear();
           this.selectedRows = [];
+
           rows.forEach((item: any) =>
             this.addRow(this.mapFromServer(item), true),
           );
+
           this.ensureTrailingEmpty();
           this.reindexRows();
           this.preloadTaskCodes();
-          this.updateLocalSummary();
+
+          const apiResponseData = res.data || res.result || res;
+
+          if (apiResponseData && apiResponseData.summary) {
+            this.summary = {
+              billableHours: apiResponseData.summary.billableHours || 0,
+              nonBillableHours: apiResponseData.summary.nonBillableHours || 0,
+              noChargeHours: apiResponseData.summary.noChargeHours || 0,
+              totalHours: apiResponseData.summary.totalHours || 0,
+            };
+          } else {
+            this.updateLocalSummary();
+          }
         },
         error: (err) => console.error('❌ Drafts failed:', err),
       });
@@ -331,18 +345,23 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
       const hours = Number(v.hours) || 0;
       if (hours <= 0) return;
 
-      if (v.isBillable) {
+      const taskList =
+        this.taskCodesByRow[ctrl.get('rowIndex')?.value] || this.taskCodes;
+      const task = taskList.find((t: any) => t.value === v.taskCodeId);
+
+      const isRowBillable = v.isBillable === true;
+      const isTaskBillable = task?.isBillable === true;
+
+      const isTaskNoCharge =
+        task?.isNoCharge === true ||
+        (task?.label && task.label.toLowerCase().includes('no-charge'));
+
+      if (isTaskNoCharge) {
+        noCharge += hours;
+      } else if (isRowBillable || isTaskBillable) {
         billable += hours;
       } else {
-        const taskList =
-          this.taskCodesByRow[ctrl.get('rowIndex')?.value] || this.taskCodes;
-        const task = taskList.find((t: any) => t.value === v.taskCodeId);
-
-        if (task && (task as any).isNoCharge) {
-          noCharge += hours;
-        } else {
-          nonBillable += hours;
-        }
+        nonBillable += hours;
       }
     });
 
@@ -438,12 +457,33 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
 
     const hours = Number(row.get('hours')?.value) || 0;
     const rate = Number(row.get('rateAmount')?.value) || 0;
-    const isBillable = row.get('isBillable')?.value ?? false;
 
-    const effectiveRate = isBillable ? rate : 0;
+    const taskList =
+      this.taskCodesByRow[this.getRowKey(rowIndex)] || this.taskCodes;
+    const task = taskList.find(
+      (t: any) => t.value === row.get('taskCodeId')?.value,
+    );
+
+    const isRowBillable = row.get('isBillable')?.value === true;
+    const isTaskBillable = task?.isBillable === true;
+    const isTaskNoCharge =
+      task?.isNoCharge === true ||
+      (task?.label && task.label.toLowerCase().includes('no-charge'));
+
+    const isActuallyBillable =
+      (isRowBillable || isTaskBillable) && !isTaskNoCharge;
+
+    const effectiveRate = isActuallyBillable ? rate : 0;
     const amount = (hours * effectiveRate).toFixed(2);
 
-    row.patchValue({ amount: amount }, { emitEvent: false });
+    row.patchValue(
+      {
+        amount: amount,
+        isBillable: isActuallyBillable,
+      },
+      { emitEvent: false },
+    );
+
     this.updateLocalSummary();
   }
 
@@ -643,7 +683,7 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
             rateId: prevRow.get('rateId')?.value,
             rateAmount: prevRow.get('rateAmount')?.value,
             isBillable: prevRow.get('isBillable')?.value,
-            isNewRow: true, 
+            isNewRow: true,
           });
 
           if (prevRow.get('matterId')?.value) {
@@ -656,7 +696,7 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
           this.updateLocalSummary();
         }
       }
-      this.addRow(); 
+      this.addRow();
     }
   }
 
@@ -830,7 +870,7 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
       amount: [obj?.amount ?? 0],
       effectiveBillable: [obj?.effectiveBillable ?? null],
       isBillable: [obj?.isBillable ?? inheritedIsBillable],
-      description: [obj?.description ?? '', Validators.required], 
+      description: [obj?.description ?? '', Validators.required],
       notes: [obj?.notes ?? ''],
       hold: [obj?.hold ?? this.defaultHold()],
       holdName: [obj?.holdName ?? ''],
@@ -838,7 +878,7 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
       statusName: [obj?.statusName ?? ''],
       canEdit: [obj?.canEdit ?? true],
       hidden: [false],
-      isNewRow: [obj?.isNewRow ?? true], 
+      isNewRow: [obj?.isNewRow ?? true],
     });
 
     this.getFormArray.push(row);
@@ -882,7 +922,7 @@ export class TimesheetEditorComponent implements OnInit, OnDestroy {
       rateId: null,
       rateAmount: null,
       amount: 0,
-      isNewRow: !row.get('id')?.value, 
+      isNewRow: !row.get('id')?.value,
     });
 
     const key = this.getRowKey(rowIndex);

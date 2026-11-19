@@ -148,21 +148,10 @@ export class MatterDetailsEditorComponent
               taskCodes: mapName(data.taskCodes),
             };
 
-            // ============ Clients ============
-            // ⭐ extractList بتتعامل مع {data:{items:[]}} و {items:[]} و array مباشرة
-            // const clientsList = this.extractList(res.clients).map((c: any) => ({
-            //   ...c,
-            //   name:
-            //     c.nameEn ||
-            //     c.nameAr ||
-            //     c.name ||
-            //     c.clientCode ||
-            //     `Client #${c.id}`,
-            // }));
             const clientsList = this.extractList(res.clients).map((c: any) => ({
               ...c,
               name: c.clientCode
-                ? `${c.clientCode} - ${c.nameEn || c.nameAr || ''}`.trim()
+                ? `${c.clientCode} | ${c.nameEn || c.nameAr || ''}`.trim()
                 : c.nameEn || c.nameAr || `Client #${c.id}`,
             }));
             this.lookupsData = {

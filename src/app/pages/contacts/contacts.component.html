@@ -9,6 +9,46 @@
 
     <div class='bg-white rounded-2xl px-6'>
         <app-contact-filter (onFilter)="onFilter($event)"/>
+            @if (isLoading) {
+      <div class="w-full p-6 animate-pulse">
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-24 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-32 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-20 bg-gray-200 rounded"></div>
+                </th>
+                <th class="px-4 py-3">
+                  <div class="h-6 w-28 bg-gray-200 rounded"></div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]">
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-24 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-32 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-20 bg-gray-200 rounded"></div>
+                </td>
+                <td class="px-4 py-4 border-t">
+                  <div class="h-5 w-28 bg-gray-200 rounded"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else {
         <app-shared-table [columns]="columns" [data]="data" [pagination]="pagination"
             (onPageChange)="onPageChange($event)" (onSort)="onSort($event)">
             <ng-template #customColumn let-rowData let-rowIndex="rowIndex">
@@ -24,6 +64,6 @@
             </div>
               </ng-template>
         </app-shared-table>
-
+    }
     </div>
 </section>

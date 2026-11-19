@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { API_Config } from 'src/app/@core/api/api-config/api.config';
 import { FormBaseClass } from 'src/app/@core/classes/form-base.class';
@@ -6,10 +7,10 @@ import { SharedButtonComponent } from 'src/app/@shared/components/shared-button/
 import { FormlyConfigModule } from 'src/app/@shared/modules/formly-config/formly-config.module';
 import { SharedModule } from 'src/app/@shared/shared.module';
 import { SharedSkeletonGridComponent } from 'src/app/@shared/components/shared-skeleton-grid/shared-skeleton-grid.component';
-import { reportActivityFilterConfig } from './report-utilization-filter-editor.config';
-import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
+import { reportUtilizationFilterConfig } from './report-utilization-filter-editor.config';
 import { findField } from 'src/app/@core/utilities/functions/find-field';
-import { ApiRes } from 'src/app/@core/models/apiRes-model';
+import { getOptionsArray } from 'src/app/@core/utilities/functions/get-options-arr';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-report-utilization-editor',
@@ -27,116 +28,87 @@ export class ReportUtilizationEditorComponent
   extends FormBaseClass
   implements OnInit, OnDestroy
 {
+  private _http = inject(HttpClient);
+
   ngOnInit(): void {
     this.initForm();
     this.getLookupsData();
-    this.formlyModelChanges();
   }
 
-  initForm(): void {
-    this.formlyFields = reportActivityFilterConfig(this);
+  override getLookupsData(): void {
+    this.loadBulkLookups();
+    this.loadLawyers();
   }
-  private formlyModelChanges() {
-    this.formly.valueChanges
+
+  /** GET /lookups?types=branches,departments */
+  private loadBulkLookups(): void {
+    const types = ['branches', 'departments'].join(',');
+
+    this._apiService
+      .get(API_Config.general.getLookups, { types })
       .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((model) => {
-        const { branchId, departmentId } = model;
-        this.loadLawyers(branchId, departmentId);
+      .subscribe({
+        next: (res: any) => {
+          const d = res?.data ?? res?.result ?? res ?? {};
+          this.updateFieldOptions('branchIds',     d.branches    ?? []);
+          this.updateFieldOptions('departmentIds', d.departments ?? []);
+        },
+        error: (err) => console.error('Bulk lookups failed:', err),
       });
   }
-private loadLawyers(
-  branchIds?: number[] | number,
-  departmentIds?: number[] | number
-) {
-  const endpoint = API_Config.general.GetLawyersByDeptAndBranch;
 
-  // تأكد إن القيم Arrays
-  const branches = Array.isArray(branchIds)
-    ? branchIds
-    : branchIds
-    ? [branchIds]
-    : [];
-  const departments = Array.isArray(departmentIds)
-    ? departmentIds
-    : departmentIds
-    ? [departmentIds]
-    : [];
-
-  // نحول الأرقام إلى نصوص (Strings)
-  const body = {
-    branches: branches.map((b) => String(b)),
-    departments: departments.map((d) => String(d)),
-  };
-
+private loadLawyers(): void {
   this._apiService
-    .post(endpoint, body)
+    .get(API_Config.general.getUsersLookupForReports)
     .pipe(this._unsubscribe.takeUntilDestroy())
-    .subscribe((res: ApiRes) => {
-      this.updateFieldOptions('lawyerIds', res.result);
+    .subscribe({
+      next: (res: any) => {
+        const raw = res?.data ?? res?.result ?? res ?? [];
+        const list = Array.isArray(raw) ? raw : (raw.items ?? raw.dataList ?? []);
+
+        const normalized = list.map((u: any) => ({
+          id: u.id ?? u.userId ?? u.Id ?? u.UserId ?? u.userGuid ?? u.guid,
+          nameEn:
+            u.nameEn ?? u.userName ?? u.fullName ?? u.displayName ?? u.name ?? '',
+          nameAr:
+            u.nameAr ?? u.nameArabic ?? u.arabicName ?? u.fullName ?? u.name ?? '',
+        }));
+        const valid = normalized.filter((u: any) => u.id != null);
+
+        this.updateFieldOptions('lawyerIds', valid);
+      },
     });
 }
 
-
-  override getLookupsData(): void {
-    this.loadLawyers();
-    this.loadClients();
-    this.loadMatters();
-    this.loadBranches();
-    this.loadDepartments();
-  }
-  private loadDepartments() {
-    this._apiService
-      .get(API_Config.general.getDepartmentLookup)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res: ApiRes) => {
-        this.updateFieldOptions('departmentId', res.result);
-      });
-  }
-  private loadBranches() {
-    this._apiService
-      .get(API_Config.general.getAllBranches)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res: ApiRes) => {
-        this.updateFieldOptions('branchId', res.result);
-      });
-  }
-
-  private updateFieldOptions(fieldKey: string, result: any[]) {
+  private updateFieldOptions(fieldKey: string, result: any): void {
     const field = findField(this.formlyFields, fieldKey);
-    if (field && field.props) {
-      field.props = {
-        ...field.props,
-        optionsArr: getOptionsArray(result, 'id', 'name'),
-        loading: false,
-      };
+    if (!field || !field.props) return;
+
+    const list: any[] = Array.isArray(result) ? result : [];
+    if (list.length === 0) {
+      field.props = { ...field.props, optionsArr: [], loading: false };
+      return;
     }
+
+    const lang = this._languageService.getSelectedLanguage();
+    const hasLocalizedName =
+      list[0].nameEn != null || list[0].nameAr != null;
+
+    const optionsArr = hasLocalizedName
+      ? list.map((item) => ({
+          label:
+            lang === 'ar'
+              ? (item.nameAr ?? item.nameEn ?? item.name ?? '')
+              : (item.nameEn ?? item.nameAr ?? item.name ?? ''),
+          value: item.id,
+        }))
+      : getOptionsArray(list, 'id', 'name');
+
+    field.props = { ...field.props, optionsArr, loading: false };
   }
 
-  // private loadLawyers() {
-  //   this._apiService
-  //     .get(API_Config.general.getLawyerShort)
-  //     .pipe(this._unsubscribe.takeUntilDestroy())
-  //     .subscribe((res: ApiRes) => {
-  //       this.updateFieldOptions('lawyerIds', res.result);
-  //     });
-  // }
-
-  private loadClients() {
-    this._apiService
-      .get(API_Config.matterClientSecurity.get)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res: ApiRes) => {
-        this.updateFieldOptions('clientIds', res.result);
-      });
-  }
-
-  private loadMatters() {
-    this._apiService
-      .get(API_Config.general.getAllMatter)
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe((res: ApiRes) => {
-        this.updateFieldOptions('matterIds', res.result);
-      });
+  initForm(): void {
+    this.formlyFields = reportUtilizationFilterConfig(this);
   }
 
   reset() {
@@ -144,16 +116,63 @@ private loadLawyers(
     this.formlyModel = {};
   }
 
+  /** GET /Reports/utilization/export → blob */
   onSubmit(): void {
     this.isLoading = true;
-    this._apiService
-      .post(API_Config.utilizationReport.create, this.formlyModel)
+
+    const q: any = this.formlyModel ?? {};
+    let params = new HttpParams();
+
+    if (q.dateFrom) params = params.set('dateFrom', this.formatDate(q.dateFrom));
+    if (q.dateTo)   params = params.set('dateTo',   this.formatDate(q.dateTo));
+
+    params = this.appendMulti(params, 'branchIds',     q.branchIds);
+    params = this.appendMulti(params, 'departmentIds', q.departmentIds);
+    params = this.appendMulti(params, 'lawyerIds',     q.lawyerIds);
+
+    params = params.set('format', q.format ?? 'pdf');
+    params = params.set('lang',   q.lang   ?? 'en');
+
+    const url = `${environment.apiUrl}/${API_Config.utilizationReport.export}`;
+    const ext = q.format === 'xlsx' ? 'xlsx' : 'pdf';
+
+    this._http
+      .get(url, { params, responseType: 'blob' })
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: (res: any) => {
-          window.open(res.result, '_blank');
+        next: (blob: Blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = `utilization-report.${ext}`;
+          a.click();
+          URL.revokeObjectURL(objectUrl);
         },
+        error: (err) => console.error('Export failed:', err),
       });
+  }
+
+  private appendMulti(params: HttpParams, key: string, values: any): HttpParams {
+    if (Array.isArray(values)) {
+      const clean = values.filter(
+        (v) => v != null && v !== '' && String(v).trim() !== '' && String(v) !== 'undefined'
+      );
+      if (clean.length === 0) return params;
+      return clean.reduce((p, v) => p.append(key, String(v)), params);
+    }
+    if (values != null && values !== '' && String(values) !== 'undefined') {
+      return params.append(key, String(values));
+    }
+    return params;
+  }
+
+  private formatDate(value: any): string {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return String(value);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   ngOnDestroy(): void {

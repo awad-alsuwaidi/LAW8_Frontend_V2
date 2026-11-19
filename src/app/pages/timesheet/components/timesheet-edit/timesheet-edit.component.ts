@@ -196,7 +196,11 @@ export class TimesheetEditComponent extends FormBaseClass implements OnInit {
       taskCodeId: formValue.law_TaskCodeId,
       userId: formValue.law_LawerId,
       hours: Number(formValue.hours) || 0,
-      rateId: this.formlyModel?.rateId || null,
+
+      rateId: this.formlyModel?.rateId || null, 
+      rateAmount: Number(formValue.rate) || 0, 
+      amount: Number(formValue.amount) || 0, 
+
       description: formValue.explanationExplanation,
       notes: formValue.notes || '',
       hold: formValue.holdId || 1,

@@ -1,31 +1,33 @@
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { ReportMatterFilterEditorComponent } from './report-matter-filter-editor.component';
-import { DropdownChangeEvent } from 'primeng/dropdown';
 
 export function reportMatterFilterEditorConfig(
-  THIS: ReportMatterFilterEditorComponent
+  THIS: ReportMatterFilterEditorComponent,
 ): FormlyFieldConfig[] {
+  const currentLang =
+    THIS._languageService.getSelectedLanguage() === 'en' ? 'en' : 'ar';
+
   return [
     {
       fieldGroupClassName: 'grid md:grid-cols-3 gap-6',
       fieldGroup: [
         {
           type: 'radio',
-          key: 'typeId',
-          defaultValue: 1,
+          key: 'dateType',
+          defaultValue: 'created',
           className: 'col-span-3',
           props: {
             label: THIS._languageService.getTransValue('report.dateType'),
             options: [
               {
                 label: THIS._languageService.getTransValue('report.openDate'),
-                value: 0,
+                value: 'open',
               },
               {
                 label: THIS._languageService.getTransValue(
-                  'report.creationDate'
+                  'report.creationDate',
                 ),
-                value: 1,
+                value: 'created',
               },
             ],
           },
@@ -49,8 +51,11 @@ export function reportMatterFilterEditorConfig(
         {
           type: 'multi-select',
           key: 'clientIds',
+          defaultValue: [],
           props: {
-            label: THIS._languageService.getTransValue(THIS.isInhouse ? 'report.entity' : 'report.client'),
+            label: THIS._languageService.getTransValue(
+              THIS.isInhouse ? 'report.entity' : 'report.client',
+            ),
             optionsArr: [],
             loading: true,
           },
@@ -58,6 +63,7 @@ export function reportMatterFilterEditorConfig(
         {
           type: 'multi-select',
           key: 'lawyerIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('report.lawyer'),
             optionsArr: [],
@@ -66,7 +72,8 @@ export function reportMatterFilterEditorConfig(
         },
         {
           type: 'multi-select',
-          key: 'matterCategoryIds',
+          key: 'categoryIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('common.matterCategory'),
             optionsArr: [],
@@ -76,27 +83,28 @@ export function reportMatterFilterEditorConfig(
         {
           type: 'multi-select',
           key: 'matterTypeIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('matters.matterType'),
             optionsArr: [],
             loading: true,
-          },
-        },
-        {
-          type: 'select',
-          key: 'juriductionsIds',
-          props: {
-            label: THIS._languageService.getTransValue('matters.jurisdicion'),
-            optionsArr: [],
-            loading: true,
-            onChange: (e: DropdownChangeEvent) => {
-              THIS.getJudicatureByJurisdiction(e.value);
-            },
+            virtualScroll: true,
           },
         },
         {
           type: 'multi-select',
-          key: 'juriductureIds',
+          key: 'jurisdictionIds',
+          defaultValue: [],
+          props: {
+            label: THIS._languageService.getTransValue('matters.jurisdicion'),
+            optionsArr: [],
+            loading: true,
+          },
+        },
+        {
+          type: 'multi-select',
+          key: 'judicatureIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('matters.court'),
             optionsArr: [],
@@ -105,7 +113,8 @@ export function reportMatterFilterEditorConfig(
         },
         {
           type: 'multi-select',
-          key: 'matterStatusIds',
+          key: 'statusIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('matters.matterStatus'),
             optionsArr: [],
@@ -114,7 +123,8 @@ export function reportMatterFilterEditorConfig(
         },
         {
           type: 'multi-select',
-          key: 'stagesIds',
+          key: 'stageIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('matters.stage'),
             optionsArr: [],
@@ -124,6 +134,7 @@ export function reportMatterFilterEditorConfig(
         {
           type: 'multi-select',
           key: 'referralTypeIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('matters.referralType'),
             optionsArr: [],
@@ -131,15 +142,33 @@ export function reportMatterFilterEditorConfig(
           },
         },
         {
-          type: 'select',
-          key: 'branchId',
-          className: 'col-lg-3 col-md-4',
+          type: 'multi-select',
+          key: 'branchIds',
+          defaultValue: [],
           props: {
             label: THIS._languageService.getTransValue('common.branch'),
             optionsArr: [],
             loading: true,
           },
         },
+        // {
+        //   type: 'select',
+        //   key: 'lang',
+        //   props: {
+        //     label: THIS._languageService.getTransValue('report.printLanguage'),
+        //     optionsArr: [
+        //       {
+        //         label: THIS._languageService.getTransValue('report.english'),
+        //         value: 'en',
+        //       },
+        //       {
+        //         label: THIS._languageService.getTransValue('report.arabic'),
+        //         value: 'ar',
+        //       },
+        //     ],
+        //   },
+        //   defaultValue: currentLang,
+        // },
       ],
       validators: {
         validation: [
@@ -158,20 +187,20 @@ export function reportMatterFilterEditorConfig(
     //   fieldGroupClassName: 'grid grid-cols-1 py-2',
     //   fieldGroup: [
     //     {
-    //       key: 'printTypeId',
+    //       key: 'format',
     //       type: 'radio',
-    //       defaultValue: 1,
+    //       defaultValue: 'pdf',
     //       props: {
     //         label: THIS._languageService.getTransValue('report.printType'),
     //         required: true,
     //         options: [
     //           {
-    //             label: THIS._languageService.getTransValue('report.excel'),
-    //             value: 2,
+    //             label: THIS._languageService.getTransValue('report.pdf'),
+    //             value: 'pdf',
     //           },
     //           {
-    //             label: THIS._languageService.getTransValue('report.pdf'),
-    //             value: 1,
+    //             label: THIS._languageService.getTransValue('report.excel'),
+    //             value: 'xlsx',
     //           },
     //         ],
     //       },

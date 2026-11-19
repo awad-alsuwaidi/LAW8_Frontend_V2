@@ -31,9 +31,9 @@ export class SidebarComponent implements OnInit, AfterViewInit {
   _router = inject(Router);
   _appConfigService = inject(AppConfigService);
   _authService = inject(AuthService);
-  showCrmDialog = false;
-
-  readonly doc8Url = 'https://white-desert-093726a00.3.azurestaticapps.net/';
+  showLink8Dialog = false;
+  showMessageDialog = false;
+  messageText = '';
   contextMenuVisible = false;
   contextMenuPosition = { x: 0, y: 0 };
   selectedItem: any = null;
@@ -122,19 +122,23 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     this.contextMenuVisible = false;
   }
 
-  openDoc8(): void {
-    window.open(this.doc8Url, '_blank', 'noopener,noreferrer');
+
+    openDoc8(): void {
+    this.openUnavailableModule();
   }
 
-  openCrm(): void {
-    this.showCrmDialog = true;
+  openlink8(): void {
+    this.openUnavailableModule();
   }
 
   openUnavailableModule(): void {
-    this._toastrNotifiService.displayError(
-      this._languageService.getTransValue('menu.moduleUnavailable'),
+    this.messageText = this._languageService.getTransValue(
+      'menu.moduleUnavailable',
     );
+    this.showLink8Dialog = false;
+    this.showMessageDialog = true;
   }
+  
 
   public onMenuItemClick(item: SubMenuItem, event: MouseEvent) {
     event.stopPropagation();
@@ -144,8 +148,8 @@ export class SidebarComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    if (item.action === 'open-crm') {
-      this.openCrm();
+    if (item.action === 'open-link8') {
+      this.openlink8();
       return;
     }
 

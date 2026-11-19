@@ -55,9 +55,6 @@ export const Timesheet_API = {
 } as const;
 
 
-// =====================================================
-// دالة مساعدة لبناء query string للـ batch lookups
-// =====================================================
 export function buildLookupsQuery(types: string[]): string {
   return types.map((t) => `types[]=${encodeURIComponent(t)}`).join('&');
 }

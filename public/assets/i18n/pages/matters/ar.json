@@ -215,6 +215,8 @@
         "importantMatter": "قضية هامة",
         "taxes": "الضرائب",
         "rateExceptions": "استثناءات السعر",
+        "deleteContactTitle": "هل أنت متأكد أنك تريد حذف جهه الاتصال ؟",
+        "deleteContactMessage": "سوف يتم حذف جهه الاتصال",
         "deletePartyMessage": "هل أنت متأكد أنك تريد حذف هذا الطرف؟",
         "deletePartyTitle": "حذف الطرف ({{value}})",
         "deleteActivityTitle": "حذف الإجراء",

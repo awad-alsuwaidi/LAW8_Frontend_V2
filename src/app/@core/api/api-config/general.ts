@@ -1,11 +1,9 @@
 export const General_API = {
   general: {
-    // ============ NEW ============
+    // ============ V2 ============
     getLookups: 'lookups',
     searchClients: 'lookups/clients',
     getMainMatters: 'lookups/matters',
-
-    // ============ V2 ============
     getIndustryModel: 'lookups/industries',
     getRateTypeLookup: 'lookups/rate-types',
     getDepartmentLookup: 'lookups/departments',
@@ -23,6 +21,7 @@ export const General_API = {
     getTaskPriority: 'lookups/task-priorities',
     getContactsCategory: 'lookups/contact-categories',
     getClients: 'lookups/clients',
+    getMatters: 'lookups/matters',
     getPractsAreaLookup: 'lookups/practice-areas',
     getMatterStatus: 'lookups/matter-statuses',
     getMatterCategoriesLookup: 'lookups/matter-categories',
@@ -42,32 +41,27 @@ export const General_API = {
     getJudicatureByJurisdictionId: 'AppLookup/GetLaw_JudicatureLookup',
     getLawMattertCodeByClient: 'AppLookup/GetLawMattertCodeByClientLookup',
     getContactsType: 'lookups/GetContactsType',
-    getUsersLookupForReports: 'users/lookup',   
-    getMattersForReport:      'Matters',        
+    getUsersLookupForReports: 'users/lookup?isLawyer=true',
+    getMattersForReport: 'Matters',
 
-    // ============ V1 (شغالة) ============
+    // ============ V1 (ال شغال حاليا) ============
     getLawyer: '/GetSPList',
     getClientGroups: 'AppLookup/GetClientGroupLookup',
     getCountryLookup: 'AppLookup/GetCountryLookup',
     getParties: '/GetBPpartiesList',
-    getStatesByCountry: 'AppLookup/GetCountryLookup',
     getLawyers: '/GetSPList',
     gettaskCodesGroup: 'Law_TaskCodesGroup/GetList',
     getItemLookup: 'AppLookup/GetLaw_SEC_ItmLookup',
     getLawyerMyPermissionCalendar:
       'AppLookup/GetLaw_LawyerMyPermissionCalander',
     getLawTaskCodesByMatterId: 'AppLookup/GetLaw_TaskCodesByMatterId',
-    // getTaskCode: 'AppLookup/GetLaw_TaskCodeLookup',
     getRecentMatters: 'AppLookup/GetRecentMatterCodeForUserLookup',
-    // getMatterCodes: 'AppLookup/GetLawMattertCodeLookup',
     getAssignedUsersCalender:
       'AppLookup/GetLaw_AssignViewUsersForCalendertLookup',
     getLawyerShort: 'AppLookup/GetLaw_LawyerShortLookup',
     getPartyPosition: 'AppLookup/GetLaw_MatterPartiesPositionsLookup',
     getUsersInitialSaparateForTimeShet:
       'AppLookup/GetLaw_AssignAddUsersInitialSaparateForTimeShetLookup',
-    // getUsersInitialViewForTimeShet:
-    //   'AppLookup/GetLaw_AssignViewUsersForTimeShetLookup',
     getAllMatterTypes: 'AppLookup/GetLaw_MtrTyppLookup',
     getAllMatter: 'AppLookup/GetLawMattertLookup',
     getAllCurrencies: 'AppLookup/GetCurrencyLookup',
@@ -92,8 +86,6 @@ export const General_API = {
     getDefaultRate: 'AppLookup/GetDefaultRate',
     getDisbursements: 'AppLookup/GetDisbursements',
     getDisbursementsType: 'AppLookup/GetDisbursementsType',
-    // getContactsType: 'AppLookup/GetContactsType',
     Payments: 'Payments/GetList',
-    // getContactsCategory: 'AppLookup/GetContactsCategory',
   },
 };

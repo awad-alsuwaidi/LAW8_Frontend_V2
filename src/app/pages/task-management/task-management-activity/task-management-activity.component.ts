@@ -131,26 +131,6 @@ export class TaskManagementActivityComponent implements OnInit, OnDestroy {
     this.getData();
   }
 
-  // getData() {
-  //   this.pagination = {
-  //     ...this.pagination,
-  //     matterId: this.matterIdentifier,
-  //     ...this.filter
-  //   };
-  //   const path = this._router.url.includes('hearing-session') ? API_Config.hearingSessionDashboard.get : API_Config.activityDashboard.get
-  //   this._apiService.get(path, this.pagination).pipe(
-  //     this._unsubscribeService.takeUntilDestroy()
-  //   ).subscribe({
-  //     next: (res: ApiRes) => {
-  //       if (res && res.isSuccess) {
-  //         this.data = res.result.dataList;
-  //         this.pagination.totalElements = res.result.totalCount
-  //         this.pagination = { ...this.pagination }
-  //       }
-
-  //     }
-  //   })
-  // }
   onDelete(rowData: MatterActivityDto) {
     this.deleteDialogRef = this._dialogService.open(
       SharedConfirmDialogComponent,

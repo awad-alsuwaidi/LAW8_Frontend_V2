@@ -19,6 +19,7 @@ import { ContactFilterComponent } from './components/contact-filter/contact-filt
 import { ContactEditorComponent } from './components/contact-editor/contact-editor.component';
 import { PermissionService } from 'src/app/@core/services/permission.service';
 import { environment } from 'src/environments/environment';
+import { finalize } from 'rxjs'; 
 
 @Component({
   selector: 'app-contacts',
@@ -43,75 +44,133 @@ export class ContactsComponent implements OnInit, OnDestroy {
   protected _route = inject(ActivatedRoute);
   protected data: any[] = [];
   protected columns: any[] = Clients_Columns;
-  protected pagination: any = {
-    pagSize: PAGESIZE,
-    pageNum: 1,
-    orderByDirection: 'ASC',
+  pagination: any = {
+    PageNumber: 1,
+    PageSize: PAGESIZE,
+    SortBy: 'firstName',
+    IsDescending: false,
   };
   protected first!: number;
   private deleteDialogRef!: DynamicDialogRef;
   _permissionService = inject(PermissionService);
   isInhouse = environment.brand === 'inhouse';
 
+  isLoading: boolean = false;
+
   menuItems: MenuItem[] = [];
   selectedRow: any;
+
   ngOnInit(): void {
     this.getData();
     this.columns = this.columns.map((col) => {
       if (col.isClientNo) {
         return {
           ...col,
-          header: this.isInhouse ? 'common.entityNo' : 'common.clientNo',
+          header: this.isInhouse ? 'common.entityNo' : 'common.codeNo',
         };
       }
       return col;
     });
   }
+
   onFilter(e: any) {
     this.pagination.search = e.search;
+    this.pagination.PageNumber = 1;
     this.getData();
   }
-  onPageChange(e: any) {
-    this.pagination.pagSize = Number(e.rows);
-    this.pagination.pageNum = e.first / e.rows + 1;
-    this.first = e?.first;
-    this.getData();
-  }
+
   getData() {
+    this.isLoading = true; 
     this.setMenuItems();
+    const params = {
+      ...this.pagination,
+      SearchTerm: this.pagination.search,
+    };
+
     this._apiService
-      .get(API_Config.contacts.get, this.pagination)
-      .pipe(this._unsubscribe.takeUntilDestroy())
+      .get(API_Config.contacts.get, params)
+      .pipe(
+        finalize(() => (this.isLoading = false)), 
+        this._unsubscribe.takeUntilDestroy(),
+      )
       .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data = res.result.dataList.map((obj: any) => {
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          const body = res?.data ?? res?.result;
+
+          if (isSuccess && body) {
+            this.data = (body.items || body.dataList || []).map((obj: any) => {
+              const fullName = [obj.firstName, obj.middleName, obj.lastName]
+                .filter((part) => part && part.trim() !== '')
+                .join(' ');
+
               return {
                 ...obj,
-                name: obj.firstName + ' ' + obj.lastName,
+                name: fullName || 'Unknown',
               };
             });
-            this.pagination.totalElements = res.result.totalCount;
+
+            this.pagination.totalElements = body.totalCount || 0;
             this.pagination = { ...this.pagination };
           }
         },
       });
   }
-  // openContactEditor() {
-  //   const ref = this._dialogService.open(ContactEditorComponent, {
-  //     header: this.selectedRow ? 'Update Contact' : 'Add Contact',
-  //     width: '600px',
-  //     data: { rowData: this.selectedRow }
-  //   })
-  //   ref.onClose.pipe(this._unsubscribe.takeUntilDestroy()).subscribe({
-  //     next: (res) => {
-  //       this.selectedRow = null;
-  //       if (res) {
-  //         this.getData()
-  //       }
-  //     }
-  //   })
-  // }
+
+  onPageChange(e: any) {
+    const newPageSize = Number(e.rows);
+    const newPageNumber = e.first / e.rows + 1;
+    if (
+      this.pagination.PageSize === newPageSize &&
+      this.pagination.PageNumber === newPageNumber
+    ) {
+      return;
+    }
+
+    this.pagination.PageSize = newPageSize;
+    this.pagination.PageNumber = newPageNumber;
+    this.first = e?.first;
+    this.getData();
+  }
+
+  onSort(e: any) {
+    if (!e || !e.field) return;
+
+    const newDescending = e.order === -1;
+    if (
+      this.pagination.SortBy === e.field &&
+      this.pagination.IsDescending === newDescending
+    ) {
+      return;
+    }
+
+    this.pagination.SortBy = e.field;
+    this.pagination.IsDescending = newDescending;
+    this.pagination.PageNumber = 1;
+    this.first = 0;
+
+    this.getData();
+  }
+
+  deleteContact() {
+    const url = `${API_Config.contacts.delete}/${this.selectedRow.id}`;
+
+    this._apiService
+      .delete(url)
+      .pipe(this._unsubscribe.takeUntilDestroy())
+      .subscribe({
+        next: (res: any) => {
+          const isSuccess = res?.success ?? res?.isSuccess;
+          if (isSuccess) {
+            this.data.length == 1 ? this.pagination.PageNumber-- : null;
+            this.getData();
+            this._toastrNotifiService.displaySuccess(res.message);
+            this.deleteDialogRef.close();
+          }
+        },
+      });
+  }
+
   openContactEditor(mode?: 'view' | 'edit' | 'add') {
     const ref = this._dialogService.open(ContactEditorComponent, {
       header:
@@ -120,9 +179,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
           : this.selectedRow
             ? 'Update Contact'
             : 'Add Contact',
-
       width: '600px',
-
       data: {
         rowData: this.selectedRow,
         mode: mode,
@@ -150,12 +207,10 @@ export class ContactsComponent implements OnInit, OnDestroy {
         },
       },
       { separator: true },
-
       {
         label: 'Edit',
         icon: 'icon-edit',
         visible: this._permissionService.hasPermission('Update_Contacts'),
-
         command: () => {
           this.openContactEditor();
         },
@@ -171,6 +226,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
       },
     ];
   }
+
   onRowSelected(rowData: any) {
     this.selectedRow = rowData;
   }
@@ -184,11 +240,11 @@ export class ContactsComponent implements OnInit, OnDestroy {
         data: {
           type: ConfirmDialogType.Danger,
           title: this._languageService.getTransValue(
-            'matters.deleteTaskTitle',
+            'matters.deleteContactTitle',
             { value: this.selectedRow?.id },
           ),
           message: this._languageService.getTransValue(
-            'matters.deleteTaskMessage',
+            'matters.deleteContactMessage',
           ),
           btns: [
             {
@@ -210,40 +266,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
       },
     );
   }
-  onSort(e: any) {
-    if (!e || !e.field) return;
 
-    const direction = e.order === 1 ? 'ASC' : 'DESC';
-
-    if (
-      this.pagination.orderBy === e.field &&
-      this.pagination.orderByDirection === direction
-    ) {
-      return;
-    }
-
-    this.pagination.orderBy = e.field;
-    this.pagination.orderByDirection = direction;
-    this.pagination.pageNum = 1;
-    this.first = 0;
-
-    this.getData();
-  }
-  deleteContact() {
-    this._apiService
-      .post(API_Config.contacts.delete, {}, { id: this.selectedRow.id })
-      .pipe(this._unsubscribe.takeUntilDestroy())
-      .subscribe({
-        next: (res: ApiRes) => {
-          if (res && res.isSuccess) {
-            this.data.length == 1 ? this.pagination.pageNum-- : null;
-            this.getData();
-            this._toastrNotifiService.displaySuccess(res.message);
-            this.deleteDialogRef.close();
-          }
-        },
-      });
-  }
   ngOnDestroy(): void {
     this._unsubscribe.destroy();
   }
